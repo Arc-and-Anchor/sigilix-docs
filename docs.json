@@ -17,7 +17,7 @@
     "default": "dark",
     "strict": false
   },
-  "favicon": "/logo/sigil-logo.png",
+  "favicon": "/logo/sigil-favicon.png",
   "logo": {
     "light": "/logo/sigil-wordmark-light.png",
     "dark": "/logo/sigil-wordmark-dark.png",
