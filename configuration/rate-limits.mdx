@@ -1,0 +1,115 @@
+---
+title: "Rate Limits"
+description: "How the 5-hour window works, burst behavior, monitoring usage, and what happens when you hit the cap."
+---
+
+Sigilix limits review volume to keep shared infrastructure stable. This page covers the window, the per-tier caps, and what happens at the limit.
+
+## The 5-hour window
+
+Sigilix uses a **rolling 5-hour window** keyed by GitHub installation:
+
+| Tier | Reviews per 5-hour window |
+|---|---|
+| Free | 3-4 |
+| Pro | 8-10 |
+| Max | 15-20 |
+
+The window is rolling, not fixed. At any moment, Sigilix counts how many reviews you've completed in the past 5 hours. As old reviews age out, fresh capacity is freed up.
+
+## What counts as a "review"
+
+A review is one full pass of the specialist ensemble on a PR. That includes:
+- Initial review on `pull_request.opened`
+- Re-reviews on `pull_request.synchronize` (each push counts)
+- Reviews on `pull_request.reopened` and `pull_request.ready_for_review`
+
+**Mentions don't count.** Replying to `@sigilix` on a comment thread is a lighter pipeline that's not subject to the rate limit.
+
+## Burst behavior
+
+If your team pushes 20 commits to a single PR in 30 minutes, Sigilix sees 20 `pull_request.synchronize` events and tries to run 20 reviews. Without throttling, that would burn your entire budget on one PR.
+
+**Sigilix coalesces synchronize events.** When a synchronize event arrives, Sigilix waits ~30 seconds for additional pushes before starting the review. If more pushes arrive within that window, they're collapsed into one review on the latest SHA. The earlier SHAs aren't reviewed.
+
+This means: a rapid push-fix-push-fix sequence costs one review, not three.
+
+## Hitting the cap
+
+When you hit your rate limit:
+
+1. Sigilix doesn't review the PR
+2. A small comment is posted: *"Rate limit reached. Next review available in ~42 minutes."*
+3. The review will run automatically once a slot frees up
+
+Old reviews on prior SHAs of the same PR remain visible — they don't disappear when you hit the cap.
+
+## Monitoring usage
+
+### Headers
+
+Every Sigilix-posted review has an HTTP-style footer in its body:
+
+```
+_Sigilix · 2 of 4 reviews used in the past 5h · resets in 38m_
+```
+
+Use this to gauge how close you are to the cap.
+
+### Dashboard
+
+The upcoming Pro/Max insights dashboard shows usage over time, with peak-window analysis to help you decide if the next tier is worth it.
+
+### Webhook
+
+For programmatic monitoring, a `review.completed` webhook is available on Pro+ tiers. It includes:
+
+```json
+{
+  "event": "review.completed",
+  "pr": { "owner": "...", "repo": "...", "number": 42 },
+  "rate_limit": {
+    "tier": "pro",
+    "window_hours": 5,
+    "max_reviews": 10,
+    "used": 6,
+    "resets_at": "2026-05-05T03:42:00Z"
+  }
+}
+```
+
+See [Webhooks](/api/webhooks) for setup.
+
+## Tuning (advanced)
+
+If you want to lower the rate limit on a specific repo (e.g., for a low-traffic archive), set it in `sigilix.yaml`:
+
+```yaml
+rate_limit:
+  window_hours: 5
+  max_reviews: 2
+```
+
+You can lower below your tier's cap, never raise above it.
+
+## When to upgrade
+
+Some signals that suggest you've outgrown Free:
+- Reviews queuing during peak hours
+- Hitting the cap multiple days per week
+- Multi-repo install (Free is single-repo)
+
+Pro is sized for an active 3-10 person team. Max is sized for orgs with multiple parallel workstreams.
+
+If you're hitting Max's limits regularly, [contact us](mailto:hello@sigilix.ai) — we have a custom-throughput tier for high-volume teams.
+
+## Read next
+
+<CardGroup cols={2}>
+  <Card title="sigilix.yaml" icon="gear" href="/configuration/sigilix-yaml">
+    Configure rate limits per repo.
+  </Card>
+  <Card title="Pricing" icon="tag" href="https://sigilix.ai/signup">
+    Compare tiers and pick a plan.
+  </Card>
+</CardGroup>

@@ -1,0 +1,28 @@
+---
+title: "GitLab"
+description: "GitLab support is on the roadmap. Targeting Q3 2026."
+---
+
+GitLab integration is **on the roadmap**. Estimated availability: **Q3 2026**.
+
+## What's coming
+
+The GitLab integration will mirror the GitHub experience as closely as possible:
+
+- Install Sigilix as an [OAuth app](https://docs.gitlab.com/ee/integration/oauth_provider.html) on your GitLab instance
+- Sigilix listens for Merge Request events and posts reviews as MR comments
+- The same five-agent ensemble runs unchanged
+- Same `sigilix.yaml` config; per-MR review limits same as PR limits
+- Self-hosted GitLab supported on Max tier
+
+## Differences vs. GitHub
+
+A few GitLab-specific behaviors:
+
+- **Discussions vs. notes.** GitLab uses "discussions" (resolvable thread groups) and "notes" (top-level comments). Sigilix posts findings as a single discussion with inline notes per finding, mirroring how it posts on GitHub.
+- **Approval rules.** Sigilix's verdict will count as a GitLab approval if the MR project's approval rules allow bot approvers.
+- **`@sigilix` mentions.** Use the same syntax — Sigilix replies in the same discussion thread.
+
+## Get notified
+
+If GitLab support is critical for your team, [register interest at sigilix.ai/signup](https://sigilix.ai/signup) and we'll prioritize based on demand. Upgrades to GitLab support will be announced here once shipped.

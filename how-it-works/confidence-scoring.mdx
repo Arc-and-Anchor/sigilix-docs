@@ -1,0 +1,109 @@
+---
+title: "Confidence Scoring"
+description: "How Sigilix ranks, suppresses, and escalates findings."
+---
+
+Every Sigilix finding goes through three rounds of confidence scoring before it reaches a PR. This page explains the math.
+
+## Per-specialist confidence (1-5)
+
+Each specialist scores its own findings on a 1-5 scale:
+
+| Score | Meaning |
+|---|---|
+| 5 | Critical — broken correctness, security, or data integrity |
+| 4 | Important but not catastrophic |
+| 3 | Material maintainability concern |
+| 2 | Minor improvement (taste, naming, small refactor) |
+| 1 | Nit — surfaced for awareness |
+
+Scores 1-2 are advisory. Scores 3-5 may block the merge depending on category.
+
+## Cross-reference adjustment
+
+When Core synthesizes, each finding's confidence is adjusted by structural-provenance checks:
+
+| Check | Adjustment |
+|---|---|
+| Line valid in diff | No change |
+| Line invalid (hallucinated) | Drop entirely |
+| Symbol exists in file | No change |
+| Symbol doesn't exist | Drop entirely |
+| Pattern matches claimed unsafe code | No change |
+| Pattern doesn't match | Down-grade by 1 or drop |
+
+A score-5 finding can become score-3 or be dropped if its structural provenance is weak.
+
+## Agreement-based escalation
+
+Multiple specialists flagging the same code is a strong signal. Core escalates:
+
+| Inputs | Resulting score |
+|---|---|
+| 1 specialist, score 3 | Score 3 (no change) |
+| 2 specialists agree, scores 3 + 3 | Score 4 |
+| 3 specialists agree | Score 5 |
+| 1 specialist score 4 + Core's structural check confirms | Score 5 |
+
+A finding posted at score 5 blocks the merge with a Critical badge. Score 4 is Warning. Score 3 is Info.
+
+## Score-1 advisory cap
+
+To prevent comment dilution, Core caps the number of score-1 (nit-level) findings posted inline:
+
+- The top 5 score-1 findings (by alphabetical headline) are aggregated into a single "Advisory nits" line in the synthesizer summary
+- The remaining score-1 findings are recorded in telemetry but not surfaced
+
+You can change the cap via [`sigilix.yaml`](/configuration/sigilix-yaml).
+
+## Severity vs. score
+
+Severity is a categorical label shown to the reader. Score is an internal numeric used by Core. The mapping:
+
+- Score 5 → **Critical**
+- Score 4 → **Warning**
+- Score 3 → **Warning** (or down-graded to Info if cross-reference is weak)
+- Score 2 → **Info**
+- Score 1 → **Info** (aggregated into summary, not posted inline)
+
+The verdict (Approve vs. Request changes) is decided as:
+
+- Any Critical → **Request changes**
+- Otherwise → **Approve**
+
+## Tuning thresholds
+
+You can tune what counts as Critical / Warning / Info via `sigilix.yaml`:
+
+```yaml
+thresholds:
+  critical_min_score: 5  # default — only top-tier blocks
+  warning_min_score: 4
+  info_min_score: 2
+  score1_cap: 5          # how many score-1 nits to aggregate
+```
+
+See the [`sigilix.yaml` reference](/configuration/sigilix-yaml) for the full schema.
+
+## Telemetry
+
+Every finding's lifecycle is recorded in telemetry, including:
+
+- Original specialist score
+- Cross-reference adjustments (and reasons)
+- Agreement escalations
+- Final severity
+- Whether it was posted, suppressed, or aggregated
+
+Telemetry is internal — used for monitoring and prompt-engineering. Customer-visible analytics (per-repo finding counts, severity distribution over time) are part of the upcoming Pro/Max insights dashboard.
+
+## Read next
+
+<CardGroup cols={2}>
+  <Card title="sigilix.yaml" icon="gear" href="/configuration/sigilix-yaml">
+    Tune thresholds, disable specialists, configure ignore patterns.
+  </Card>
+  <Card title="Common Errors" icon="triangle-exclamation" href="/troubleshooting/common-errors">
+    What to do when reviews don't appear, or appear with footnotes.
+  </Card>
+</CardGroup>

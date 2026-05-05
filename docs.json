@@ -1,0 +1,112 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Sigilix",
+  "colors": {
+    "primary": "#C6234A",
+    "light": "#D13D62",
+    "dark": "#0B0C10"
+  },
+  "background": {
+    "color": {
+      "dark": "#0B0C10",
+      "light": "#FAFAF7"
+    }
+  },
+  "appearance": {
+    "default": "dark",
+    "strict": false
+  },
+  "favicon": "/logo/sigil-logo.png",
+  "logo": {
+    "light": "/logo/sigil-logo.png",
+    "dark": "/logo/sigil-logo.png"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Marketing site",
+        "href": "https://sigilix.ai"
+      },
+      {
+        "label": "GitHub",
+        "href": "https://github.com/Arc-and-Anchor/sigilix"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Install on GitHub",
+      "href": "https://sigilix.ai/signup"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/Arc-and-Anchor/sigilix"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "getting-started/quickstart",
+              "getting-started/installation",
+              "getting-started/first-review"
+            ]
+          },
+          {
+            "group": "How It Works",
+            "pages": [
+              "how-it-works/the-ensemble",
+              "how-it-works/specialists",
+              "how-it-works/synthesizer",
+              "how-it-works/review-lifecycle",
+              "how-it-works/confidence-scoring"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/sigilix-yaml",
+              "configuration/ignore-patterns",
+              "configuration/custom-rules",
+              "configuration/rate-limits"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/github",
+              "integrations/gitlab",
+              "integrations/bitbucket"
+            ]
+          },
+          {
+            "group": "Troubleshooting",
+            "pages": [
+              "troubleshooting/common-errors",
+              "troubleshooting/billing"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "API",
+            "pages": [
+              "api/authentication",
+              "api/endpoints",
+              "api/webhooks"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

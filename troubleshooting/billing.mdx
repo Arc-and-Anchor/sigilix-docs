@@ -1,0 +1,107 @@
+---
+title: "Billing"
+description: "Plan changes, usage tracking, invoicing, and payment-method updates."
+---
+
+This page covers billing operations for Sigilix subscriptions.
+
+## Plans
+
+| Plan | Price | Reviews / 5h | Repos | Support |
+|---|---|---|---|---|
+| Free | $0 | 3-4 | 1 | Community / GitHub issues |
+| Pro | TBD | 8-10 | Up to 10 | Priority email |
+| Max | TBD | 15-20 | Unlimited | Dedicated channel + SLA |
+
+See the live pricing at [sigilix.ai/signup](https://sigilix.ai/signup).
+
+## Plan changes
+
+### Upgrade
+
+Upgrade at any time from the dashboard. The new plan's limits apply immediately. Billing is prorated to your current cycle.
+
+### Downgrade
+
+Downgrade takes effect at your next renewal date. Until then, your current plan's limits and features remain.
+
+If your current usage exceeds the lower plan's limits (e.g., on Pro you're using 8 repos, but Max → Pro), the downgrade is allowed but new repo installs will be blocked until you remove some.
+
+### Cancellation
+
+Cancellation drops you to Free at the next renewal date. You're billed for the current cycle. To cancel immediately and prorate a refund, [contact billing](mailto:billing@sigilix.ai).
+
+## Usage tracking
+
+The dashboard shows:
+- Reviews used in the current 5-hour window
+- Reviews used per day for the past 30 days
+- Peak-window analysis (busiest hours of the week)
+- Per-repo review distribution
+
+API access to the same data is in the [`/v1/usage`](/api/endpoints) endpoint.
+
+## Invoices
+
+Invoices are emailed to the billing contact on file at the start of each billing cycle. Past invoices are downloadable from the dashboard.
+
+To change the billing contact: dashboard → Settings → Billing → Edit.
+
+### Invoice format
+
+PDFs include:
+- Plan name + cycle dates
+- Number of reviews used vs. cap
+- Line items for any add-ons (e.g., custom-throughput uplift)
+- Tax (if applicable based on your billing region)
+
+## Payment methods
+
+Supported:
+- Credit cards (Visa, Mastercard, Amex)
+- ACH (Pro/Max only; configure on the dashboard or [contact us](mailto:billing@sigilix.ai))
+- Wire transfer (Max + custom-throughput only)
+
+To update your payment method: dashboard → Settings → Billing → Payment methods.
+
+## Failed payments
+
+If a charge fails (expired card, insufficient funds), Sigilix:
+1. Emails the billing contact immediately
+2. Retries the charge after 3 days
+3. Retries again after 7 days
+4. After 14 days of failed retries, the subscription drops to Free until a successful payment is made
+
+Reviews continue at Free-tier limits during the grace period. Pro/Max features (multi-repo, Custom rules with priority, etc.) remain enabled until day 14.
+
+## Refunds
+
+Refunds are evaluated case-by-case. We typically refund:
+- Service outages where Sigilix was unavailable for >4 hours
+- Accidental upgrade if reversed within 7 days
+- Duplicate charges
+
+We don't typically refund:
+- Plan downgrades within a paid cycle
+- Unused review capacity at the end of a cycle (use it or lose it)
+
+Contact [billing@sigilix.ai](mailto:billing@sigilix.ai) with your invoice number and reason.
+
+## Tax & compliance
+
+Sigilix is provided by **Arc and Anchor LLC** (US). We collect:
+- US state sales tax where required
+- EU VAT for European customers (reverse-charge for VAT-registered businesses)
+
+For tax-exempt status (e.g., 501(c)(3) nonprofits), email [billing@sigilix.ai](mailto:billing@sigilix.ai) with your exemption certificate.
+
+## Read next
+
+<CardGroup cols={2}>
+  <Card title="Rate Limits" icon="gauge" href="/configuration/rate-limits">
+    Detailed coverage of the 5-hour window.
+  </Card>
+  <Card title="Pricing" icon="tag" href="https://sigilix.ai/signup">
+    Live pricing and plan comparison.
+  </Card>
+</CardGroup>

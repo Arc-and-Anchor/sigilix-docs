@@ -1,0 +1,71 @@
+---
+title: "Quickstart"
+description: "Install the Sigilix GitHub App and get your first review in under five minutes."
+---
+
+This guide installs Sigilix on a single repository and walks you through your first review.
+
+## Prerequisites
+
+- A GitHub account with admin permissions on at least one repository
+- 5 minutes
+
+## 1. Install the GitHub App
+
+<Steps>
+  <Step title="Pick a plan">
+    Go to [sigilix.ai/signup](https://sigilix.ai/signup) and pick a plan. Free is fine to start — it covers 3-4 PRs every 5 hours, which is enough to evaluate.
+  </Step>
+  <Step title="Sign in with GitHub">
+    Click **Sign in with GitHub** and authorize the Sigilix OAuth app. This is read-only at this stage — no code is fetched yet.
+  </Step>
+  <Step title="Install the GitHub App">
+    Click **Install Sigilix on a repository**. GitHub's standard App-installation flow opens. Choose:
+
+    - **The account or org** that owns the repository
+    - **Which repositories** to install on (start with one)
+
+    Required permissions:
+    - Pull requests · Read & write (to post reviews and inline comments)
+    - Contents · Read (to fetch the diff)
+    - Metadata · Read (default)
+    - Issues · Read & write (to handle `@sigilix` mentions)
+
+    Click **Install**. You're returned to your Sigilix dashboard.
+  </Step>
+</Steps>
+
+## 2. Trigger your first review
+
+Open any pull request on the installed repository — or push a new commit to an existing PR. Sigilix listens for the `pull_request.opened` and `pull_request.synchronize` webhook events.
+
+<Tip>
+**Don't have a PR handy?** Open a tiny one — change a single string in the README — to see Sigilix in action without burning your real review budget.
+</Tip>
+
+Within 30-90 seconds, you'll see a new review on the PR from `sigilix[bot]`. The comment includes:
+
+- A summary from **Core** (the synthesizer): what was reviewed, how many findings, what verdict
+- Inline findings (if any) anchored to specific lines, tagged by specialist
+- Severity badges: Critical / Warning / Info
+
+## 3. Resolve findings
+
+If Sigilix flagged real issues, fix them and push again. Sigilix re-reviews on every push (`pull_request.synchronize`) and updates the verdict — if all findings are resolved, the next review approves.
+
+If a finding is a false positive or out of scope for the PR, just dismiss it on GitHub. Sigilix doesn't track resolved/unresolved threads — it re-evaluates on each push.
+
+## 4. Configure (optional)
+
+If you need to tune behavior — disable a specialist, ignore generated files, change the rate-limit window — drop a `sigilix.yaml` at the root of your repo. See [Configuration](/configuration/sigilix-yaml) for the full schema.
+
+## What's next
+
+<CardGroup cols={2}>
+  <Card title="The Ensemble" icon="diagram-project" href="/how-it-works/the-ensemble">
+    Understand what each of the 5 agents does and why ensemble review beats single-agent.
+  </Card>
+  <Card title="GitHub Integration" icon="github" href="/integrations/github">
+    Branch protection, required checks, multi-repo install, deeper GitHub integration.
+  </Card>
+</CardGroup>

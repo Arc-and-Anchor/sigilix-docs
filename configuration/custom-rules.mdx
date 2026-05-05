@@ -1,0 +1,117 @@
+---
+title: "Custom Rules"
+description: "Inject team-specific heuristics into specialist prompts. How to write rules that catch bugs without producing false positives."
+---
+
+Custom rules let your team encode invariants that Sigilix's default specialists don't know about — architecture conventions, naming standards, security policies. They're injected into the relevant specialist's system prompt at review time.
+
+## Where rules go
+
+Rules are scoped to one of the four specialists, written in `sigilix.yaml`:
+
+```yaml
+custom_rules:
+  glyph:
+    - "Domain code in `src/domain/` may not import from `src/infra/`."
+    - "Repository pattern: data access lives only in `src/repositories/`."
+
+  warden:
+    - "All routes accepting POST/PUT/DELETE must use requireCsrf middleware from `src/middleware/csrf.ts`."
+    - "User-supplied URLs must pass through `validateUrl()` before fetch()."
+
+  spark:
+    - "Database queries inside React render functions are forbidden."
+
+  weave:
+    - "Function names with side effects (network, filesystem, database) must include a verb describing the side effect."
+    - "Public exports without JSDoc are flagged for the API stability lane."
+```
+
+Each rule is a single English sentence. Sigilix appends them to that specialist's system prompt before the review runs.
+
+## What makes a good rule
+
+A good rule:
+- **Is specific.** Names the file paths, function names, or symbols involved.
+- **Is testable.** A reviewer reading the diff can determine whether the rule is violated without ambiguity.
+- **Is actionable.** A clear fix is implied by the rule.
+
+A bad rule:
+- ❌ "Code should be readable." (untestable)
+- ❌ "Avoid magic numbers." (not specific)
+- ❌ "Architecture should be clean." (subjective)
+
+Rewrite vague rules into concrete ones:
+- ✅ "Magic numbers in `src/config/` may be inline. Magic numbers elsewhere must be named constants."
+
+## Example rule sets
+
+### Hexagonal architecture
+
+```yaml
+custom_rules:
+  glyph:
+    - "Domain code lives in `src/domain/` and may only import from `src/domain/`."
+    - "Application services live in `src/app/` and may import from `src/domain/` and `src/ports/`."
+    - "Infrastructure lives in `src/infra/` and may import from anywhere."
+    - "Inversion: domain types are referenced by infra; never the reverse."
+```
+
+### Strict CSRF + auth
+
+```yaml
+custom_rules:
+  warden:
+    - "All Express routes accepting non-idempotent methods (POST/PUT/PATCH/DELETE) must apply requireCsrf middleware."
+    - "All routes returning user-specific data must apply requireAuth middleware."
+    - "Session tokens must never appear in JSON response bodies — use the `safeUser()` shape from `src/api/shapes.ts`."
+```
+
+### React performance discipline
+
+```yaml
+custom_rules:
+  spark:
+    - "Components named with the suffix `List` or `Table` must memoize their item-rendering with `React.memo`."
+    - "Sorting or filtering in render is a Critical-severity finding; use `useMemo` keyed by the sort/filter state."
+    - "useEffect with empty dependency arrays must have a comment explaining why."
+```
+
+### Naming + side-effect discipline
+
+```yaml
+custom_rules:
+  weave:
+    - "Functions that send email or trigger external side effects must have names starting with verbs: `dispatch`, `notify`, `enqueue`, `trigger`."
+    - "Boolean variables and props use `is`/`has`/`can` prefixes."
+    - "Generic function names like `handleClick`, `handleStuff`, `processData` are flagged unless the side effect is explicit."
+```
+
+## What NOT to do
+
+Custom rules amplify the specialist's prompt. Too many rules = the prompt gets crowded and the specialist starts missing things. Some failure modes:
+
+- **Don't enumerate every coding standard.** Pick the rules that catch real bugs in your code, not stylistic preferences. Use a linter (ESLint, ruff, etc.) for stylistic rules.
+- **Don't repeat what specialists already do.** Sigilix's defaults catch SQL injection, N+1 queries, and dead code. Don't add custom rules for those — you'll just get duplicate findings.
+- **Don't write rules that require non-local context.** "All API endpoints must follow the pattern in `src/api/v1/users.ts`" is hard for the model to verify if `src/api/v1/users.ts` isn't in the diff. Specialists have access to retrieved chunks but coverage isn't guaranteed.
+
+## Iteration
+
+Custom rules are an iterative discipline:
+1. Write a rule
+2. See if it produces useful findings on real PRs
+3. If false positives are high, rewrite the rule to be more specific
+4. If false negatives are high, add concrete examples to the rule
+
+Sigilix's telemetry tracks per-rule firing rates and false-positive flags (when a finding is dismissed by the developer). This data is exposed in the upcoming Pro/Max insights dashboard.
+
+## Read next
+
+<CardGroup cols={2}>
+  <Card title="sigilix.yaml" icon="gear" href="/configuration/sigilix-yaml">
+    The full configuration schema.
+  </Card>
+  <Card title="The Ensemble" icon="diagram-project" href="/how-it-works/the-ensemble">
+    How specialists interact, so you understand which rule goes where.
+  </Card>
+</CardGroup>

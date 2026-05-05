@@ -1,0 +1,65 @@
+---
+title: "Authentication"
+description: "API authentication via OAuth2 personal access tokens. Required scopes per endpoint."
+---
+
+The Sigilix API is **in private beta**. This page documents the authentication model; endpoints will land in subsequent releases.
+
+## Authentication
+
+All API requests use a personal access token (PAT) in the `Authorization` header:
+
+```bash
+curl https://api.sigilix.ai/v1/reviews \
+  -H "Authorization: Bearer sgx_pat_xxxxxxxxxxxx"
+```
+
+PATs are minted on the [Sigilix dashboard](https://sigilix.ai/dashboard) (coming soon). They're scoped to a single Sigilix installation — one PAT per GitHub org.
+
+## Scopes
+
+PATs have four scopes:
+
+| Scope | Endpoints |
+|---|---|
+| `reviews:read` | List and fetch past reviews |
+| `findings:read` | Fetch individual findings + suggested patches |
+| `webhooks:write` | Configure outbound webhooks for `review.completed` events |
+| `config:write` | Modify `sigilix.yaml` programmatically (CI integration) |
+
+Choose the minimum scopes you need. The dashboard shows which endpoints each scope unlocks.
+
+## Rate limits
+
+API requests are rate-limited separately from review limits:
+
+| Tier | API requests / hour |
+|---|---|
+| Free | 100 |
+| Pro | 1,000 |
+| Max | 10,000 |
+
+Headers on every response:
+
+```
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 982
+X-RateLimit-Reset: 2026-05-05T04:00:00Z
+```
+
+When you hit the limit, the API returns 429 with a `Retry-After` header.
+
+## OAuth2 (coming)
+
+For server-to-server integrations (e.g., a third-party platform integrating with Sigilix on behalf of customer orgs), an OAuth2 flow is on the roadmap. Estimated: Q2 2026.
+
+## Read next
+
+<CardGroup cols={2}>
+  <Card title="Endpoints" icon="cloud" href="/api/endpoints">
+    The reviews and findings endpoints (private beta).
+  </Card>
+  <Card title="Webhooks" icon="bolt" href="/api/webhooks">
+    Outbound webhook events Sigilix can fire on your endpoints.
+  </Card>
+</CardGroup>

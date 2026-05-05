@@ -1,0 +1,136 @@
+---
+title: "Ignore Patterns"
+description: "What to skip and why. Generated files, lockfiles, vendor code, and per-line suppression."
+---
+
+Ignoring the right files keeps Sigilix focused on code your team writes. This guide covers the defaults and how to extend them.
+
+## What's ignored by default
+
+Sigilix skips these path patterns out of the box:
+
+```yaml
+ignore:
+  paths:
+    - "node_modules/**"
+    - "vendor/**"
+    - "dist/**"
+    - "build/**"
+    - "out/**"
+    - ".next/**"
+    - ".nuxt/**"
+    - ".turbo/**"
+    - "coverage/**"
+    - "**/__snapshots__/**"
+    - "**/*.generated.*"
+    - "**/*.gen.*"
+    - "package-lock.json"
+    - "yarn.lock"
+    - "pnpm-lock.yaml"
+    - "Cargo.lock"
+    - "Gemfile.lock"
+    - "go.sum"
+```
+
+You don't need to repeat these in your `sigilix.yaml` — they're applied automatically.
+
+## Common additions
+
+### Auto-generated code
+
+```yaml
+ignore:
+  paths:
+    - "src/__generated__/**"     # GraphQL codegen
+    - "**/*.pb.go"               # Protobuf-generated Go
+    - "**/*_pb2.py"              # Protobuf-generated Python
+    - "src/api/openapi/**"       # OpenAPI clients
+```
+
+### Migration files
+
+Migrations are time-stamped, often committed in bulk, and not meaningfully reviewable as isolated diffs:
+
+```yaml
+ignore:
+  paths:
+    - "db/migrations/**"
+    - "supabase/migrations/**"
+    - "alembic/versions/**"
+```
+
+If you DO want migration review (recommended for security-sensitive schemas), don't ignore them — Glyph and Warden have specific heuristics for migration files.
+
+### Test fixtures
+
+Large fixture files often trip Spark's Big-O heuristics with false positives:
+
+```yaml
+ignore:
+  paths:
+    - "**/fixtures/**"
+    - "**/*.fixture.json"
+    - "**/test/data/**"
+```
+
+### Markdown / documentation
+
+Markdown is reviewed by default but you can opt out if your docs are huge and noisy:
+
+```yaml
+ignore:
+  paths:
+    - "docs/**"
+    - "**/*.md"   # Aggressive — opts out of all markdown
+```
+
+## Per-line suppression
+
+If you want to keep a file under review but suppress specific lines, use the `ignore.patterns` regex:
+
+```yaml
+ignore:
+  patterns:
+    - "// sigilix-ignore"
+    - "# noqa: sigilix"
+    - "/\\*\\s*sigilix-ignore\\s*\\*/"
+```
+
+Now lines containing those markers are skipped during analysis:
+
+```ts
+// sigilix-ignore — pre-existing race; tracked in JIRA-1234
+const counter = sharedState.increment()
+```
+
+This is the right pattern for false positives you've already triaged.
+
+## What NOT to ignore
+
+Some patterns look ignorable but are valuable:
+
+- **Lockfiles for security review.** Dependency lockfile changes can introduce supply-chain risk. Sigilix's defaults skip them but Warden has a specialized lockfile-diff prompt that you can re-enable explicitly via `specialists.warden.review_lockfiles: true`.
+- **Test files for coverage gaps.** Don't ignore `*.test.ts` — Weave specifically looks for missing-test patterns when you add a new branch.
+- **Configuration files.** Things like `next.config.ts`, `wrangler.toml`, GitHub Actions workflows can have real security issues (overly broad permissions, leaked secrets in env vars). Keep them under review.
+
+## Path-pattern syntax
+
+Sigilix uses [glob syntax](https://en.wikipedia.org/wiki/Glob_(programming)) (the `picomatch` flavor):
+
+| Pattern | Matches |
+|---|---|
+| `**/*.ts` | Any `.ts` file at any depth |
+| `src/**/*.ts` | `.ts` files anywhere under `src/` |
+| `*.lock` | `.lock` files at the repo root only |
+| `**/__tests__/**` | Anything inside any `__tests__` folder |
+| `!src/critical.ts` | Negation — keeps `src/critical.ts` under review even if a broader rule excludes it |
+
+## Validating
+
+To check that your ignore rules are matching the right files, push a draft PR with files in the patterns and check the Sigilix review summary — it includes a footer like:
+
+```
+_Ignored 12 files via sigilix.yaml (matched: dist/**, **/*.generated.*)._
+```
+
+If the count doesn't match what you expect, your patterns probably aren't matching as intended.
