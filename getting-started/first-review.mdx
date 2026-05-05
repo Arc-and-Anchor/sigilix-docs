@@ -7,29 +7,50 @@ Every review Sigilix posts has the same shape. Once you know the shape, you can 
 
 ## The structure
 
-```
-┌─ Sigilix · 12 minutes ago ───────── Request changes ┐
-│                                                      │
-│  ┌─ Sigilix Summary ──────────────────────┐          │
-│  │ Core synthesized 4 findings across 3  │          │
-│  │ specialists. 1 requires action before │          │
-│  │ merge.                                 │          │
-│  └────────────────────────────────────────┘          │
-│                                                      │
-│  ▾ Warden · Security              [Critical]         │
-│    Unsanitized userId passed to SQL...               │
-│    [View diff →]                                     │
-│                                                      │
-│  ▾ Spark · Performance             [Warning]         │
-│    Nested loop scales with repo count...             │
-│    [View diff →]                                     │
-│                                                      │
-│  ▾ Weave · Semantics                  [Info]         │
-│    Function name doesn't describe...                 │
-│    [View diff →]                                     │
-│                                                      │
-└──────────────────────────────────────────────────────┘
-```
+<style>{`
+  .sigilix-review-chrome { padding: 1.25rem 1.25rem 0.5rem; }
+  .sigilix-review-topbar { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 0.875rem; }
+  .sigilix-verdict-pill { padding: 0.125rem 0.625rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; color: #C6234A; background: rgba(198,35,74,0.12); border: 1px solid rgba(198,35,74,0.35); white-space: nowrap; }
+  .sigilix-synth-note { margin: 0 0 1rem !important; }
+  .sigilix-sev-critical { background: #C6234A !important; color: #fff !important; }
+  .sigilix-sev-warning { background: #B45309 !important; color: #fff !important; }
+  .sigilix-sev-info { background: #4B5563 !important; color: #E5E7EB !important; }
+  .sigilix-diff-link { display: inline-block; margin-top: 0.5rem; font-family: ui-monospace, monospace; font-size: 0.8125rem; color: #C6234A; text-decoration: none; border-bottom: 1px dashed rgba(198,35,74,0.4); }
+  .sigilix-diff-link:hover { border-bottom-color: #C6234A; }
+`}</style>
+
+<Frame>
+  <div className="sigilix-review-chrome">
+    <div className="sigilix-review-topbar">
+      <span><strong>Sigilix</strong> · 12 minutes ago</span>
+      <span className="sigilix-verdict-pill">Request changes</span>
+    </div>
+
+    <Note className="sigilix-synth-note">
+      **Sigilix Summary** — Core synthesized 4 findings across 3 specialists. 1 requires action before merge.
+    </Note>
+
+    <AccordionGroup>
+      <Accordion title="Warden · Security · Critical">
+        Unsanitized `userId` from `req.params` passed directly into a SQL template in `auth.ts:142`. Use the parameterized query pattern established in `authService.ts`.
+
+        <a href="#" className="sigilix-diff-link">View diff →</a>
+      </Accordion>
+
+      <Accordion title="Spark · Performance · Warning">
+        Nested loop in `aggregateReports` scales with repo count. Consider indexing `createdAt` or paginating upstream.
+
+        <a href="#" className="sigilix-diff-link">View diff →</a>
+      </Accordion>
+
+      <Accordion title="Weave · Semantics · Info">
+        Function name `handleStuff` does not describe its side effects (sends email + writes audit). Recommend `dispatchAuditEmail`.
+
+        <a href="#" className="sigilix-diff-link">View diff →</a>
+      </Accordion>
+    </AccordionGroup>
+  </div>
+</Frame>
 
 ## The verdict badge
 
