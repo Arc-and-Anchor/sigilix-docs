@@ -19,8 +19,9 @@
   },
   "favicon": "/logo/sigil-logo.png",
   "logo": {
-    "light": "/logo/sigil-logo.png",
-    "dark": "/logo/sigil-logo.png"
+    "light": "/logo/sigil-wordmark-light.png",
+    "dark": "/logo/sigil-wordmark-dark.png",
+    "href": "https://sigilix.ai"
   },
   "navbar": {
     "links": [

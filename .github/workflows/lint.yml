@@ -1,0 +1,42 @@
+name: lint
+
+on:
+  pull_request:
+  push:
+    branches: [init/scaffold, main]
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate docs.json is valid JSON
+        run: python3 -m json.tool docs.json > /dev/null
+      - name: Verify referenced logo assets exist
+        run: |
+          for f in $(python3 -c 'import json; d=json.load(open("docs.json")); print(d.get("favicon","")); l=d.get("logo",{}); print(l.get("light","")); print(l.get("dark",""))'); do
+            f="${f#/}"
+            [ -z "$f" ] && continue
+            test -f "$f" || { echo "missing asset: $f"; exit 1; }
+          done
+      - name: Verify each MDX page in navigation actually exists
+        run: |
+          python3 - <<'PY'
+          import json, os, sys
+          d = json.load(open("docs.json"))
+          missing = []
+          for tab in d.get("navigation", {}).get("tabs", []):
+              for grp in tab.get("groups", []):
+                  for page in grp.get("pages", []):
+                      if not isinstance(page, str):
+                          continue
+                      candidate = page + ".mdx"
+                      if not os.path.exists(candidate):
+                          missing.append(candidate)
+          if missing:
+              print("Missing pages:")
+              for m in missing:
+                  print(" -", m)
+              sys.exit(1)
+          PY
