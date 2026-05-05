@@ -31,7 +31,7 @@
       },
       {
         "label": "GitHub",
-        "href": "https://github.com/Arc-and-Anchor/sigilix"
+        "href": "https://github.com/Arc-and-Anchor"
       }
     ],
     "primary": {
@@ -42,7 +42,7 @@
   },
   "footer": {
     "socials": {
-      "github": "https://github.com/Arc-and-Anchor/sigilix"
+      "github": "https://github.com/Arc-and-Anchor"
     }
   },
   "navigation": {
