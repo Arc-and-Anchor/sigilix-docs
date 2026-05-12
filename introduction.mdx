@@ -1,23 +1,25 @@
 ---
 title: "Introduction"
-description: "Sigilix runs a five-agent specialist ensemble on every PR. Here's how to install it, what it catches, and why it's not just another AI reviewer."
+description: "Sigilix runs a four-specialist ensemble plus a synthesizer on every PR, with a deterministic-checks layer that fires before the LLMs. Here's how to install it, what it catches, and why it's not just another AI reviewer."
 ---
 
 # Sigilix
 
-Sigilix is a multi-agent code review GitHub App. Every pull request is read in parallel by four domain specialists — Glyph (architecture), Warden (security), Spark (performance), and Weave (semantics) — and a synthesizer (Core) that cross-checks their findings, deduplicates noise, and posts a single coherent review.
+Sigilix is a multi-agent code review GitHub App. Every pull request is read in parallel by four domain specialists — Glyph (architecture), Warden (security), Pulse (performance), and Weave (semantics) — and a synthesizer (Core) that cross-checks their findings, deduplicates noise, and posts a single coherent review.
 
-The output looks like one comment from a senior engineer who's read everything carefully. Behind that comment, five models did the work.
+Before the four LLM specialists fire, a deterministic layer scans the diff for secrets, dependency vulnerabilities, AST rule violations, and any regex rules you've defined in `sigilix.json`. Those findings are injected into the specialists as authoritative facts.
+
+The output looks like one comment from a senior engineer who's read everything carefully.
 
 <CardGroup cols={2}>
   <Card title="Quickstart" icon="rocket" href="/getting-started/quickstart">
     Install the GitHub App, point it at a repo, and get your first review in under five minutes.
   </Card>
   <Card title="The Ensemble" icon="diagram-project" href="/how-it-works/the-ensemble">
-    Why five specialists beats one generalist — the architectural argument with diagrams.
+    Why four specialists plus a synthesizer beats one generalist — the architectural argument with diagrams.
   </Card>
-  <Card title="Configuration" icon="gear" href="/configuration/sigilix-yaml">
-    The full `sigilix.yaml` schema — disable specialists, ignore paths, tune severity.
+  <Card title="Configuration" icon="gear" href="/configuration/configuration-reference">
+    The full `sigilix.json` schema — guidance, per-role rules, path filters, deterministic checks.
   </Card>
   <Card title="GitHub Integration" icon="github" href="/integrations/github">
     Permissions, scopes, branch protection, and how Sigilix interacts with checks.
@@ -35,7 +37,7 @@ The output looks like one comment from a senior engineer who's read everything c
 When Sigilix reviews a PR, you get one comment from `sigilix[bot]` containing:
 
 1. A **synthesizer summary** — what changed, what concerns survived dedup, and whether the verdict is *Approved* or *Request changes*.
-2. **Inline findings** anchored to specific lines, tagged by specialist (Glyph, Warden, Spark, Weave) and severity (Critical / Warning / Info).
+2. **Inline findings** anchored to specific lines, tagged by specialist (Glyph, Warden, Pulse, Weave) and severity (Critical / Warning / Info).
 3. **Suggested patches** for findings where a clean fix is in scope.
 
 That's the whole interface. No dashboard. No chat. The comment goes where developers already are — in the PR thread.
@@ -44,4 +46,4 @@ That's the whole interface. No dashboard. No chat. The comment goes where develo
 
 If you're evaluating Sigilix, [skim the architecture](/how-it-works/the-ensemble) to understand the depth claim, then [install on a single repo](/getting-started/quickstart) to see it review a real PR.
 
-If you're already installed and need to tune behavior, head to [Configuration](/configuration/sigilix-yaml).
+If you're already installed and need to tune behavior, head to [Configuration](/configuration/configuration-reference).

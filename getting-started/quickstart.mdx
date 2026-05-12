@@ -57,13 +57,13 @@ If a finding is a false positive or out of scope for the PR, just dismiss it on 
 
 ## 4. Configure (optional)
 
-If you need to tune behavior — disable a specialist, ignore generated files, change the rate-limit window — drop a `sigilix.yaml` at the root of your repo. See [Configuration](/configuration/sigilix-yaml) for the full schema.
+If you need to tune behavior — ignore generated files, add per-role guidance, define deterministic regex rules — drop a `sigilix.json` at the root of your repo. See [Configuration](/configuration/configuration-reference) for the full schema.
 
 ## What's next
 
 <CardGroup cols={2}>
   <Card title="The Ensemble" icon="diagram-project" href="/how-it-works/the-ensemble">
-    Understand what each of the 5 agents does and why ensemble review beats single-agent.
+    Understand what each of the four specialists does and why ensemble review beats single-agent.
   </Card>
   <Card title="GitHub Integration" icon="github" href="/integrations/github">
     Branch protection, required checks, multi-repo install, deeper GitHub integration.

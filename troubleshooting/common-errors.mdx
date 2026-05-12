@@ -23,7 +23,7 @@ Sigilix doesn't review draft PRs by default. Convert to ready and Sigilix re-rev
 
 ### 4. Is the file ignored?
 
-If the PR only touches files matching your `sigilix.yaml` `ignore.paths`, Sigilix posts no review. Check the `Recent Deliveries` for a `webhook_skipped` log entry.
+If the PR only touches files matching your `sigilix.json` `pathFilters`, Sigilix posts no review (the "no specialists need to fire" short-circuit). Check the `Recent Deliveries` for a `webhook_skipped` log entry.
 
 ### 5. Did you hit the rate limit?
 
@@ -68,16 +68,16 @@ This is a webhook-signature mismatch. Sigilix verifies the `X-Hub-Signature-256`
 
 If you've rotated the GitHub App's webhook secret, you need to update the secret on the Sigilix deployment side. Reach out to [support@arcanchor.com](mailto:support@arcanchor.com) and we'll re-sync.
 
-## "Sigilix is reviewing but my custom rules aren't firing"
+## "Sigilix is reviewing but my `rules.<role>` aren't firing"
 
-Custom rules are appended to the relevant specialist's system prompt. Check:
+Per-role rules are appended to the relevant specialist's system prompt. Check:
 
-1. **Is `sigilix.yaml` at the repo root?** Sigilix only reads it from the root. Subfolder configs are ignored.
-2. **Is the YAML valid?** Sigilix logs validation warnings in the review footer. Look for `_⚠️ sigilix.yaml validation: ..._`.
+1. **Is `sigilix.json` at the repo root?** Sigilix only reads it from the root. Subfolder configs are ignored.
+2. **Does the file parse?** A JSON-parse failure posts a single sticky `Sigilix config parse error` comment on the PR with the line/column of the failure. If you don't see your rules taking effect AND there's no parse-error comment, the file is parsing but might not contain your intended schema — double-check with `cat sigilix.json | jq`.
 3. **Is the rule too vague?** The model can't enforce "Code should be readable." Rewrite to something concrete.
-4. **Does the rule scope to the right specialist?** A security rule under `glyph:` won't fire — security rules go under `warden:`.
+4. **Does the rule scope to the right role?** The role tokens are `logic`, `security`, `performance`, `tests`. A security rule under `rules.logic` won't fire on the security specialist — put it under `rules.security`.
 
-See [Custom Rules](/configuration/custom-rules) for guidance on writing effective rules.
+See [Rules & Guidance](/configuration/rules-and-guidance) for writing effective rules.
 
 ## Still stuck?
 

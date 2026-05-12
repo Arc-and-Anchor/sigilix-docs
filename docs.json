@@ -45,6 +45,20 @@
       "github": "https://github.com/Arc-and-Anchor"
     }
   },
+  "redirects": [
+    {
+      "source": "/configuration/sigilix-yaml",
+      "destination": "/configuration/configuration-reference"
+    },
+    {
+      "source": "/configuration/custom-rules",
+      "destination": "/configuration/rules-and-guidance"
+    },
+    {
+      "source": "/configuration/ignore-patterns",
+      "destination": "/configuration/path-filters-and-profile"
+    }
+  ],
   "navigation": {
     "tabs": [
       {
@@ -65,6 +79,8 @@
               "how-it-works/the-ensemble",
               "how-it-works/specialists",
               "how-it-works/synthesizer",
+              "how-it-works/deterministic-checks",
+              "how-it-works/review-memory",
               "how-it-works/review-lifecycle",
               "how-it-works/confidence-scoring"
             ]
@@ -72,10 +88,22 @@
           {
             "group": "Configuration",
             "pages": [
-              "configuration/sigilix-yaml",
-              "configuration/ignore-patterns",
-              "configuration/custom-rules",
+              "configuration/configuration-reference",
+              "configuration/rules-and-guidance",
+              "configuration/path-filters-and-profile",
+              "configuration/deterministic-checks-config",
+              "configuration/commands",
+              "configuration/opt-outs",
               "configuration/rate-limits"
+            ]
+          },
+          {
+            "group": "Evidence & Provenance",
+            "pages": [
+              "evidence-and-provenance/secret-scanning",
+              "evidence-and-provenance/dependency-vulnerabilities",
+              "evidence-and-provenance/sarif-evidence",
+              "evidence-and-provenance/review-provenance"
             ]
           },
           {
@@ -84,6 +112,14 @@
               "integrations/github",
               "integrations/gitlab",
               "integrations/bitbucket"
+            ]
+          },
+          {
+            "group": "Operations & Releases",
+            "pages": [
+              "operations-and-releases/release-notes",
+              "operations-and-releases/known-issues",
+              "operations-and-releases/durable-objects"
             ]
           },
           {

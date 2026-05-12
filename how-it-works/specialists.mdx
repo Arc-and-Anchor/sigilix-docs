@@ -1,9 +1,18 @@
 ---
 title: "Specialists"
-description: "Glyph, Warden, Spark, Weave — what each specialist catches, sample findings, and model selection."
+description: "Glyph, Warden, Pulse, Weave — what each specialist catches, sample findings, and model selection."
 ---
 
-Sigilix runs four parallel specialists per review. Each has a focused prompt, a tuned model, and a defined surface of failure modes it covers.
+Sigilix runs four parallel specialists per review. Each has a focused prompt, a tuned primary model, and a cross-provider fallback so a single provider outage never silences a specialist.
+
+Internally each specialist has a **role** name (`logic`, `security`, `performance`, `tests`) that appears in `sigilix.json` under `rules.<role>`. The public-facing brand names (Glyph, Warden, Pulse, Weave) are the same specialists with the same prompts.
+
+| Brand | Role | Domain |
+|---|---|---|
+| Glyph | `logic` | Architecture, layering, dead code |
+| Warden | `security` | Auth, input validation, secret leakage |
+| Pulse | `performance` | N+1, hot paths, big-O regressions |
+| Weave | `tests` | Naming, semantics, test coverage |
 
 ## Glyph · Architecture
 
@@ -13,9 +22,10 @@ Sigilix runs four parallel specialists per review. Each has a focused prompt, a 
 - Interface drift between code and its tests/types
 - Module cohesion issues
 
-**Model:** deepseek-v4-pro
+**Primary model:** `deepseek-v4-pro:cloud`<br/>
+**Cross-provider fallback:** `kimi-k2.5:cloud`
 
-deepseek-v4-pro is Sigilix's logic-heavy workhorse. Its proof-style chain-of-thought reasoning is well-suited for Glyph's architectural arguments — tracing imports across files, evaluating layered architecture rules, and judging cohesion.
+deepseek-v4-pro is Sigilix's logic-heavy workhorse. Its proof-style chain-of-thought reasoning is well-suited for Glyph's architectural arguments — tracing imports across files, evaluating layered architecture rules, and judging cohesion. When DeepSeek's provider returns 503 (which is correlated across DeepSeek models), Sigilix falls back to kimi-k2.5 on Moonshot — different provider, uncorrelated outage profile.
 
 **Sample finding:**
 
@@ -35,7 +45,8 @@ Suggested fix: Introduce `PaymentGateway` port in domain/.
 - Insecure regex patterns prone to ReDoS
 - OWASP Top-10 patterns
 
-**Model:** deepseek-v4-flash with cross-provider fallback to qwen3-coder-next
+**Primary model:** `deepseek-v4-flash:cloud`<br/>
+**Cross-provider fallback:** `qwen3-coder-next:cloud`
 
 Warden uses a faster model than Glyph because security findings are higher-volume per PR and need turnaround. The cross-provider fallback ensures that if one provider is down, Warden still produces a verdict — security checks should never silently skip.
 
@@ -47,7 +58,7 @@ utils/fetcher.ts:71 — user-supplied URL passed to fetch()
 without an allowlist. Validate against approvedHosts[].
 ```
 
-## Spark · Performance
+## Pulse · Performance
 
 **What it catches:**
 - N+1 query patterns in ORM-heavy code
@@ -56,14 +67,15 @@ without an allowlist. Validate against approvedHosts[].
 - Unbounded recursion or iteration
 - Big-O regressions vs. the previous implementation
 
-**Model:** minimax-m2.1
+**Primary model:** `glm-5.1:cloud`<br/>
+**Cross-provider fallback:** `kimi-k2.5:cloud`
 
-minimax-m2.1 is selected for Spark because of its strong systems-level reasoning. Performance findings often require understanding that a function is on a hot path or that a loop's bound is data-dependent — both require systems intuition.
+glm-5.1 was promoted from fallback to primary in Phase 4a.1 after shadow telemetry showed it produced higher-quality performance findings than the prior minimax-m2.1 primary, with fewer 503s under Ollama Turbo's load.
 
 **Sample finding:**
 
 ```text
-[Spark] O(n²) render loop
+[Pulse] O(n²) render loop
 components/Table.tsx:112 — sorting inside render()
 Memoize with useMemo keyed by sortKey.
 ```
@@ -77,9 +89,10 @@ Memoize with useMemo keyed by sortKey.
 - Missing test coverage on non-trivial branches added in the diff
 - Inconsistent error handling between two functions added in the same PR
 
-**Model:** deepseek-v4-flash with cross-provider fallback to qwen3-coder-next
+**Primary model:** `deepseek-v4-flash:cloud`<br/>
+**Cross-provider fallback:** `qwen3-coder-next:cloud`
 
-Weave's surface is broad and shallow — it needs speed and breadth more than depth. The shared model with Warden lets Sigilix amortize cost across two specialists.
+Weave's surface is broad and shallow — it needs speed and breadth more than depth. Sharing the model family with Warden lets Sigilix amortize warm-cache costs across two specialists.
 
 **Sample finding:**
 
@@ -88,6 +101,12 @@ Weave's surface is broad and shallow — it needs speed and breadth more than de
 checkout.ts:45 — early return bypasses tax calc
 when total < 0. Remove or handle as error path.
 ```
+
+## Retry + fallback policy
+
+Each specialist runs against its primary model with one retry on transient failure (503, 429, timeout). If retries are exhausted, the cross-provider fallback fires once. If the fallback also fails, that specialist's contribution is skipped — Core synthesizes from the remaining specialists and the verdict is posted with a `_3 of 4 specialists succeeded_` footnote.
+
+The cross-provider design — primary and fallback on different infrastructure — is deliberate. Same-family fallbacks fail together when the upstream provider has an outage, defeating the fallback's purpose.
 
 ## Why these four (and not more or fewer)?
 
@@ -99,21 +118,15 @@ The split was chosen empirically:
 
 The architecture supports adding specialists in the future. If a customer-driven category emerges (e.g., a domain-specific compliance specialist for financial code), it can plug into Core's synthesis without changing the existing four.
 
-## Disabling specialists
+## Tuning per-repo
 
-If a specialist isn't useful for your codebase — for example, you don't need Spark on a marketing site — disable it via `sigilix.yaml`:
+You can't disable individual specialists — keeping the ensemble whole is what makes the synthesis work. What you **can** do per-repo:
 
-```yaml
-specialists:
-  glyph: true
-  warden: true
-  spark: false
-  weave: true
-```
+- **Influence what each catches** via `rules.<role>` in `sigilix.json` ([Rules & Guidance](/configuration/rules-and-guidance)).
+- **Scope the review** via `pathFilters` so a specialist sees less ([Path Filters & Profile](/configuration/path-filters-and-profile)).
+- **Shift flag-worthiness** via `profile: "chill" | "assertive"`.
 
-See [Configuration](/configuration/sigilix-yaml) for the full schema.
-
-Note: Core (the synthesizer) is always on. It can't be disabled — it's how Sigilix produces a single coherent comment. If you want raw specialist output without synthesis, that's not currently exposed.
+Core (the synthesizer) is always on. It's how Sigilix produces a single coherent comment.
 
 ## Read next
 

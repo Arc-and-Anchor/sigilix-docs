@@ -83,9 +83,9 @@ The next PR opened on that repo will be reviewed.
 
 ## Per-repo configuration
 
-`sigilix.yaml` lives at the root of each repo. Different repos can have different configurations — disable Spark on a marketing site, enable strict thresholds on a payment service, etc.
+`sigilix.json` lives at the root of each repo. Different repos can have different configurations — narrower `pathFilters` on a marketing site, stricter `rules.security` on a payment service, etc.
 
-There's no org-level config. If you want shared rules across repos, copy them via a tool like [git-template-monitor](https://github.com/git-template-monitor) (or just commit the same `sigilix.yaml` to each repo).
+There's no org-level config. If you want shared rules across repos, commit the same `sigilix.json` to each repo (or generate it from a shared template).
 
 ## Webhook delivery
 
