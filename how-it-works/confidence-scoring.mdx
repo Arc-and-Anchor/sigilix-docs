@@ -54,7 +54,7 @@ To prevent comment dilution, Core caps the number of score-1 (nit-level) finding
 - The top 5 score-1 findings (by alphabetical headline) are aggregated into a single "Advisory nits" line in the synthesizer summary
 - The remaining score-1 findings are recorded in telemetry but not surfaced
 
-You can change the cap via [`sigilix.yaml`](/configuration/sigilix-yaml).
+The cap is not user-configurable today. If your repo regularly produces 20+ nit-level findings and you want them all surfaced, switch [`profile`](/configuration/path-filters-and-profile) to `assertive` so they upgrade to higher scores before the cap applies.
 
 ## Severity vs. score
 
@@ -71,19 +71,15 @@ The verdict (Approve vs. Request changes) is decided as:
 - Any Critical → **Request changes**
 - Otherwise → **Approve**
 
-## Tuning thresholds
+## Tuning the floor
 
-You can tune what counts as Critical / Warning / Info via `sigilix.yaml`:
+Thresholds aren't user-configurable today — the score → severity mapping above is fixed. What you **can** tune via [`sigilix.json`](/configuration/configuration-reference):
 
-```yaml
-thresholds:
-  critical_min_score: 5  # default — only top-tier blocks
-  warning_min_score: 4
-  info_min_score: 2
-  score1_cap: 5          # how many score-1 nits to aggregate
-```
+- **`profile`** — `"chill"` (default, only flag must-fix issues) vs `"assertive"` (include nits + style). This shifts what each specialist flags in the first place.
+- **`rules.<role>`** — Per-specialist prompt addendum. Use this to influence what each specialist *chooses* to flag.
+- **`deterministicChecks`** — Regex rules whose severity you set explicitly. Bypasses the LLM scoring entirely; rules emit at the severity you declare.
 
-See the [`sigilix.yaml` reference](/configuration/sigilix-yaml) for the full schema.
+The combination of those three is the actual lever for "how strict is this repo's review."
 
 ## Telemetry
 
@@ -100,8 +96,8 @@ Telemetry is internal — used for monitoring and prompt-engineering. Customer-v
 ## Read next
 
 <CardGroup cols={2}>
-  <Card title="sigilix.yaml" icon="gear" href="/configuration/sigilix-yaml">
-    Tune thresholds, disable specialists, configure ignore patterns.
+  <Card title="sigilix.json" icon="gear" href="/configuration/configuration-reference">
+    Per-role rules, path filters, deterministic checks, and per-subsystem opt-outs.
   </Card>
   <Card title="Common Errors" icon="triangle-exclamation" href="/troubleshooting/common-errors">
     What to do when reviews don't appear, or appear with footnotes.

@@ -1,0 +1,101 @@
+---
+title: "Review Provenance & Stale Markers"
+description: "Every Sigilix review carries a manifest of which specialists, models, and evidence channels produced it. Reviews on stale SHAs are marked, never silently re-used (ARC-184)."
+---
+
+A review is only as trustworthy as you can verify the inputs that produced it. **Review provenance** (ARC-184) is the manifest that ships with every Sigilix review, recording what ran and against what.
+
+## Why this matters
+
+Two scenarios make provenance load-bearing:
+
+1. **"Was this review against my latest push?"** — A reviewer reads a Sigilix comment, accepts the verdict, and merges. If the review was actually against an old SHA, the verdict applies to old code. The stale-marker system catches this.
+2. **"Which model produced this finding?"** — When a critical finding is unexpected, the human reviewer needs to know what produced it. The provenance manifest names each specialist's actual primary or fallback model used on this run.
+
+## The manifest
+
+Every review comment includes a hidden manifest at the bottom:
+
+```html
+<!-- sigilix-meta: {
+  "headSha": "abc1234567890",
+  "specialists": {
+    "logic":       { "model": "deepseek-v4-pro:cloud", "outcome": "ok",   "ms": 21300 },
+    "security":    { "model": "qwen3-coder-next:cloud", "outcome": "fallback", "ms": 28100 },
+    "performance": { "model": "glm-5.1:cloud",         "outcome": "ok",   "ms": 19800 },
+    "tests":       { "model": "deepseek-v4-flash:cloud", "outcome": "ok", "ms": 16400 }
+  },
+  "synthesizer": { "model": "kimi-k2.6:cloud", "outcome": "ok", "ms": 9800 },
+  "evidence":    { "sarif": 3, "depVulns": 1, "secrets": 0 },
+  "deterministicChecks": 2,
+  "incremental": true,
+  "schema": 1
+} -->
+```
+
+The block is invisible in GitHub's rendered view but readable in the raw comment source. The `sigilix-meta` marker lets tooling parse it programmatically.
+
+## Outcomes per specialist
+
+| `outcome` | Meaning |
+|---|---|
+| `ok` | Primary model succeeded on first attempt |
+| `retry` | Primary model needed a retry (transient 503/429/timeout) but ultimately produced findings |
+| `fallback` | Primary failed; cross-provider fallback succeeded |
+| `skipped` | Both primary and fallback failed; this specialist contributed no findings |
+| `gated` | Router decided this specialist shouldn't fire on this PR (e.g., docs-only) |
+
+A review with one `skipped` is posted with the `_3 of 4 specialists succeeded_` footnote in the visible body. A review with a `fallback` is posted normally — the fallback is supposed to handle these cases silently.
+
+## Stale-marker detection
+
+When a `pull_request.synchronize` event arrives (a new commit pushed), the new review's pipeline reads the most recent prior review's `sigilix-meta` block and compares the manifest's `headSha` against the current head.
+
+If they differ — i.e., the prior review was against an older SHA — Sigilix updates the prior comment with a **stale marker**:
+
+```
+> _⚠️ This review was on abc1234. The current head is def5678. See the [new review](...) for the latest findings._
+```
+
+The original review content is preserved (so historical context isn't lost) but the marker tells readers not to take the old verdict at face value.
+
+This matters because stale reviews accumulate in long PR threads. Without the marker, a reviewer scanning the conversation might read an old "Approved" and miss that the latest push regressed.
+
+## Provenance for findings, not just reviews
+
+Each individual finding also carries provenance metadata:
+
+- Which specialist produced it (`logic` / `security` / `performance` / `tests`)
+- Whether it was sourced from an evidence channel (SARIF, depVulns, secrets, deterministicChecks)
+- Whether it was the result of agreement (multiple specialists flagged the same `path:line`)
+
+In the rendered review, this is the `[Glyph]` / `[Warden]` / `[Pulse]` / `[Weave]` prefix on each inline finding, plus an evidence badge (`[Trivy via SARIF]`, `[Secret scanner]`, etc.) when the finding came from an external channel.
+
+## Tooling integration
+
+The `sigilix-meta` manifest is intended to be parsed by tooling. Two known integrations:
+
+- **GitHub Actions consumers** that aggregate Sigilix manifests across PRs for trend analysis.
+- **Internal dashboards** that surface "which specialists fell back this week" for capacity planning.
+
+Schema version is bumped (the `schema: 1` field) when the manifest changes in a breaking way. Forward-compatible additions don't bump it.
+
+## What the manifest does **not** include
+
+- Customer code or diff content (privacy)
+- Specialist prompts (those are Sigilix's IP)
+- API keys or internal-service identifiers
+- Per-finding internal scores (only severities and counts)
+
+The manifest is meant to be auditable, not exhaustive. If you need deeper provenance for a compliance audit, contact support — Sigilix retains review-level telemetry that can be exported.
+
+## Read next
+
+<CardGroup cols={2}>
+  <Card title="SARIF Evidence" icon="file-shield" href="/evidence-and-provenance/sarif-evidence">
+    Push external scanner output into Sigilix reviews.
+  </Card>
+  <Card title="Review Lifecycle" icon="repeat" href="/how-it-works/review-lifecycle">
+    Where the manifest is built in the pipeline.
+  </Card>
+</CardGroup>

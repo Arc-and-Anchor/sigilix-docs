@@ -1,0 +1,162 @@
+---
+title: "Slash Commands"
+description: "/sigilix review, improve, describe, and help — what each command does, when to use it, and how to override prompts and models per-repo via sigilix.json."
+---
+
+Sigilix listens for `@sigilix` mentions and `/sigilix <command>` strings on PR comments. Each command runs a focused pipeline that's narrower than a full review. This page documents the commands plus the `commands` block in `sigilix.json` (ARC-185) that lets you tune them per-repo.
+
+## The commands
+
+| Command | What it does | When to use |
+|---|---|---|
+| `/sigilix review` | Re-runs the full specialist ensemble | After a rebase, or when you want a fresh review independent of webhook timing |
+| `/sigilix improve` | Posts apply-able suggested-change comments for the latest diff | When you want concrete patches, not just commentary |
+| `/sigilix describe [pr\|internal\|external]` | Drafts a PR description, internal changelog, or external changelog | Before merge, when filling in the PR body or release notes |
+| `/sigilix help` | Inline list of available commands | When you forget the syntax |
+
+You can also write `@sigilix <free text question>` for a conversational reply that scopes context to the PR.
+
+### `/sigilix review`
+
+Re-runs the four specialists + Core synthesizer on the current head SHA. Useful when:
+
+- You just rebased and want a fresh review instead of waiting on the webhook.
+- The previous review was on a stale SHA (rare, but happens during force-push storms).
+- You want to test a `sigilix.json` change without pushing a new commit.
+
+The output is a normal review comment — same shape as the automatic ones.
+
+### `/sigilix improve`
+
+Runs a smaller pipeline focused on **producible patches**. The output is a comment containing GitHub's native `suggested-change` blocks, which let reviewers click "Commit suggestion" to apply them directly.
+
+Use `improve` when you want fixes you can apply, not just findings to read.
+
+### `/sigilix describe [mode]`
+
+Drafts text for the human-authored parts of a PR. Three modes:
+
+| Mode | Output | Where to paste it |
+|---|---|---|
+| `pr` (default) | A PR description draft with Summary + Testing sections | The PR body |
+| `internal` | Internal-audience changelog entry | Your team's release notes / Linear |
+| `external` | User-facing changelog entry — no internal jargon | Your public changelog |
+
+```
+/sigilix describe pr
+/sigilix describe internal
+/sigilix describe external
+```
+
+The draft is posted as a comment between visible markers (`<!-- sigilix:describe:pr:start -->` … `<!-- sigilix:describe:pr:end -->`) so you can copy the section between them.
+
+`/sigilix describe apply` (auto-write the description in place) is a planned follow-up.
+
+### `/sigilix help`
+
+Posts an inline list of commands and their usage. No model call, no rate-limit cost — useful for fast self-service.
+
+## Configuring commands via `sigilix.json`
+
+The `commands` block lets you tune prompts and models per-command, per-repo. Both fields are optional.
+
+```json
+{
+  "commands": {
+    "review": {
+      "model": "kimi-k2.6:cloud"
+    },
+    "improve": {
+      "prompt": "Always include the import statement in suggested patches when the patch references a new symbol."
+    },
+    "describe": {
+      "prompt": "Lead external changelogs with the user-facing impact, not the implementation. Skip internal ticket numbers.",
+      "model": "glm-5.1:cloud"
+    }
+  }
+}
+```
+
+### `prompt` — addendum
+
+Appended to the command's system prompt. Don't rewrite the prompt; **add** to it.
+
+```json
+{
+  "commands": {
+    "describe": {
+      "prompt": "Always start with 'You can now...' for external changelogs."
+    }
+  }
+}
+```
+
+### `model` — override
+
+Override the default model for this command. The allowlist:
+
+- `glm-5.1:cloud`
+- `kimi-k2.6:cloud`
+- `qwen3-coder:480b-cloud`
+- `deepseek-v4-pro:cloud`
+
+Unknown model names fall back to the command's default with a single warning logged in telemetry. The review proceeds — the validation is fail-open.
+
+<Note>
+  The command-override allowlist is intentionally a different set of model identifiers from the specialist fallbacks (which use `kimi-k2.5:cloud` and `qwen3-coder-next:cloud`). The specialist ensemble is internally tuned for cross-provider resilience and uses specific versions for that purpose; command overrides expose a broader, more current selection because commands run independently of the ensemble's cross-provider failover logic.
+</Note>
+
+### What you can't override
+
+| Knob | Why not |
+|---|---|
+| Individual specialist models for `review` | Specialists are tuned together; per-repo overrides risk de-tuning the ensemble. Use [`guidance`](/configuration/rules-and-guidance) to influence behavior instead. |
+| The synthesizer model | Same — the synthesizer is fixed to keep cross-PR comparability. |
+| Per-command rate limits | Plan-tier defaults apply. Bursts beyond your tier queue or 429. |
+
+## Defaults
+
+Without a `commands` block, each command uses Sigilix's vetted defaults:
+
+| Command | Default model |
+|---|---|
+| `review` | The full specialist + synthesizer ensemble (see [Specialists](/how-it-works/specialists)) |
+| `improve` | `glm-5.1:cloud` |
+| `describe` | `glm-5.1:cloud` |
+| Mention reply (`@sigilix ...`) | `glm-5.1:cloud` |
+
+## Disabling a command
+
+`describe` ships with an explicit on/off (ARC-191) since some teams keep PR descriptions strictly human-authored:
+
+```json
+{
+  "describe": { "enabled": false }
+}
+```
+
+(Note: that's the top-level `describe` key, not nested under `commands`. The two coexist — `describe.enabled` is the kill switch; `commands.describe` is the tuning block.)
+
+Other commands don't have an explicit kill switch — if you want Sigilix to ignore mentions entirely, that's an operator-side setting, not a per-repo one.
+
+## Telemetry
+
+Every command invocation records:
+
+- Command + mode (e.g., `describe:external`)
+- Whether overrides were applied (`prompt-override`, `model-override`)
+- Whether the override was valid (e.g., model on allowlist)
+- Duration, finding count (for `review` / `improve`), and output length
+
+Useful for spotting commands that produce empty output or low-yield runs.
+
+## Read next
+
+<CardGroup cols={2}>
+  <Card title="Rules & Guidance" icon="message-quote" href="/configuration/rules-and-guidance">
+    Tune the prompts via guidance — usually a lighter touch than per-command overrides.
+  </Card>
+  <Card title="Opt-outs" icon="toggle-off" href="/configuration/opt-outs">
+    Disable subsystems including `describe`.
+  </Card>
+</CardGroup>

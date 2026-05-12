@@ -1,0 +1,165 @@
+---
+title: "Path Filters & Profile"
+description: "Scope reviews to the files that matter with `pathFilters`, and tune flag-worthiness with `profile`. Both shipped in sigilix.json v2 (ARC-176)."
+---
+
+`pathFilters` and `profile` are the two `sigilix.json` v2 fields. They control **scope** (which files are reviewed) and **tone** (how aggressively findings flag).
+
+## pathFilters
+
+A list of glob patterns that drop files from the review **before** specialist fan-out. Filtered files are invisible to specialists — they don't appear in the diff Sigilix sends to models, they don't count toward the diff-size budget, and if every changed file is filtered, Sigilix short-circuits the review with no comment.
+
+### Syntax
+
+```json
+{
+  "pathFilters": [
+    "dist/**",
+    "**/*.generated.ts",
+    "vendor/**",
+    "!vendor/critical-shim.ts"
+  ]
+}
+```
+
+Semantics:
+
+- **Plain pattern** excludes (`"dist/**"`).
+- **`!` prefix** re-includes — useful when a broad exclude is correct except for one or two files.
+- **`**`** crosses directory boundaries. `**/*.lock` matches `package-lock.json`, `pnpm/pnpm-lock.yaml`, etc.
+- **`*`** matches one path segment. `src/*.ts` matches `src/foo.ts` but not `src/sub/foo.ts`.
+- **Later patterns win.** If a file matches both an exclude and an include, the last matching pattern decides.
+
+Globbing matches the path relative to the repo root, with forward slashes (Windows-style backslashes are not used). Case-sensitive on all platforms.
+
+### What it doesn't do
+
+- It does **not** skip the file's existence — Sigilix still fetches the diff. The skip happens before tokenization, not before HTTP.
+- It does **not** disable specialists. To disable a subsystem, use the [opt-outs](/configuration/opt-outs) section.
+- It does **not** suppress findings already produced by deterministic checks. Those run on added diff lines first; `pathFilters` runs before the LLM layer.
+
+### Common patterns
+
+<Tabs>
+  <Tab title="Web app">
+    ```json
+    {
+      "pathFilters": [
+        "**/*.lock",
+        "**/*.min.js",
+        "**/*.min.css",
+        "dist/**",
+        "build/**",
+        ".next/**",
+        "node_modules/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "public/**"
+      ]
+    }
+    ```
+
+    Defaults already cover lockfiles and `node_modules`; the rest are app-specific.
+  </Tab>
+  <Tab title="Monorepo">
+    ```json
+    {
+      "pathFilters": [
+        "**/dist/**",
+        "**/build/**",
+        "**/.turbo/**",
+        "**/coverage/**",
+        "**/*.lock",
+        "packages/legacy/**",
+        "!packages/legacy/security-critical.ts"
+      ]
+    }
+    ```
+
+    Note the `!` re-include — the legacy package is otherwise excluded, but one security-sensitive file inside it should still get reviewed.
+  </Tab>
+  <Tab title="Rust">
+    ```json
+    {
+      "pathFilters": [
+        "target/**",
+        "**/*.lock",
+        "**/Cargo.lock"
+      ]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Defaults
+
+Even without `pathFilters`, Sigilix already skips:
+
+- `node_modules/**`
+- Common build outputs (`dist/**`, `build/**`)
+- Standard lockfiles (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `Cargo.lock`)
+- `**/__snapshots__/**`
+
+You only need `pathFilters` for repo-specific patterns.
+
+## profile
+
+`profile` is the **review tone** dial. Default is `chill`.
+
+| Profile | Behavior |
+|---|---|
+| `chill` | Only flag must-fix issues (correctness, security, performance regressions). Skip nits, style, taste. |
+| `assertive` | Include nits and style. Useful for high-bar codebases or onboarding-stage repos. |
+
+```json
+{ "profile": "chill" }
+```
+
+```json
+{ "profile": "assertive" }
+```
+
+### What changes between the two
+
+Internally, `profile` prepends a one-line directive to each specialist's initial message. The directive nudges the model's flag-worthiness floor — the model still weighs context but the threshold for surfacing a finding shifts.
+
+A finding that would post under `assertive` but not `chill` looks like:
+
+- "This function name is OK but `fetchOrders` would be clearer than `getOrdersData`"
+- "Consider using `??` instead of `||` here"
+- "The `if (x === true)` could be `if (x)`"
+
+Under `chill`, none of those surface. Under `assertive`, all three do.
+
+### When to pick `assertive`
+
+- New codebase still establishing conventions
+- Pre-1.0 product where every small improvement compounds
+- Codebases used as references / examples for other teams
+
+### When to stay on `chill`
+
+- Mature codebase with established conventions — extra nits are noise
+- High-PR-volume repos where reviewer fatigue is the binding constraint
+- Anywhere a nit-flood would block merge — the Request-changes verdict cutoff isn't configurable today, so `chill` is the right floor for repos where you don't want nits to ever influence the verdict
+
+## How they interact
+
+Both fields run on every review, in this order:
+
+1. **`pathFilters`** drops files. If 0 files survive → review skipped entirely.
+2. **`deterministicChecks`** runs on the added diff lines of the surviving files (no regex on filtered files).
+3. **Per-role specialists** fire on what remains, with `profile` shifting their flag-worthiness floor and the deterministic findings already in their context as authoritative facts.
+
+This means `pathFilters` is your scope dial and `profile` is your sensitivity dial. They're orthogonal.
+
+## Read next
+
+<CardGroup cols={2}>
+  <Card title="Configuration reference" icon="gear" href="/configuration/configuration-reference">
+    Full `sigilix.json` schema.
+  </Card>
+  <Card title="Opt-outs" icon="toggle-off" href="/configuration/opt-outs">
+    Disable subsystems per-repo.
+  </Card>
+</CardGroup>

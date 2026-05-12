@@ -80,18 +80,6 @@ For programmatic monitoring, a `review.completed` webhook is available on Pro+ t
 
 See [Webhooks](/api/webhooks) for setup.
 
-## Tuning (advanced)
-
-If you want to lower the rate limit on a specific repo (e.g., for a low-traffic archive), set it in `sigilix.yaml`:
-
-```yaml
-rate_limit:
-  window_hours: 5
-  max_reviews: 2
-```
-
-You can lower below your tier's cap, never raise above it.
-
 ## When to upgrade
 
 Some signals that suggest you've outgrown Free:
@@ -106,8 +94,8 @@ If you're hitting Max's limits regularly, [contact us](mailto:support@arcanchor.
 ## Read next
 
 <CardGroup cols={2}>
-  <Card title="sigilix.yaml" icon="gear" href="/configuration/sigilix-yaml">
-    Configure rate limits per repo.
+  <Card title="sigilix.json" icon="gear" href="/configuration/configuration-reference">
+    Full configuration schema.
   </Card>
   <Card title="Pricing" icon="tag" href="https://sigilix.ai/signup">
     Compare tiers and pick a plan.

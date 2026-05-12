@@ -1,0 +1,278 @@
+---
+title: "sigilix.json"
+description: "Per-repo configuration reference. Drop a sigilix.json at the repo root to inject guidance, scope reviews, encode deterministic rules, and toggle subsystems."
+---
+
+Sigilix reads `sigilix.json` from the **PR head SHA** on every review. The file is optional — missing means defaults apply, malformed JSON means defaults apply plus a single warning posted on the PR. The file does **not** need to be committed to your default branch to take effect; whatever exists at the head SHA wins.
+
+<Note>
+  Older versions of these docs documented a `sigilix.yaml` schema with `thresholds`, `specialists.<name>`, and `review.comment_style` keys. None of that is real — the actual file is JSON, and the schema below is the only one Sigilix has ever read in production.
+</Note>
+
+## Where it lives
+
+```text
+your-repo/
+├── sigilix.json   ← here, at the repo root
+├── src/
+└── ...
+```
+
+The file is read via GitHub's Contents API at the PR's head SHA, so:
+
+- Edits in the PR itself apply to the same review (useful when iterating on the config).
+- Edits on `main` don't take effect on open PRs until they're synced.
+- A missing file is the most common case and is fine — Sigilix runs with defaults.
+
+## Schema overview
+
+The schema has grown in three additive versions. Older configs keep working; new fields are opt-in.
+
+| Version | Added | Tracking |
+|---|---|---|
+| v1 | `guidance`, `rules.<role>` | ARC-174 |
+| v2 | `pathFilters`, `profile` | ARC-176 |
+| v3 | `deterministicChecks` | ARC-193 |
+| v3+ | Per-subsystem opt-outs (commands, depVulns, astRules, sarif, reviewMemory, describe) | ARC-181, ARC-185, ARC-186, ARC-188, ARC-189, ARC-191 |
+
+The `<role>` token in `rules` is always one of `logic`, `security`, `performance`, `tests`. These are the internal specialist role names; their public-facing brand counterparts are Glyph, Warden, Pulse, and Weave respectively.
+
+## Minimal example
+
+```json
+{
+  "guidance": "This repo is a TypeScript Cloudflare Worker. Reject any new class declarations — we use plain functions and module-scoped state."
+}
+```
+
+A single `guidance` string is the smallest useful config. It's prepended to every specialist and synthesizer prompt for this repo.
+
+## Realistic example
+
+```json
+{
+  "guidance": "This repo is a TypeScript Cloudflare Worker. State lives in KV + DOs.",
+  "profile": "chill",
+  "pathFilters": [
+    "dist/**",
+    "**/*.generated.ts",
+    "vendor/**",
+    "!vendor/critical-shim.ts"
+  ],
+  "rules": {
+    "security": "All routes that mutate state must call requireAuth() before any side effect.",
+    "tests": "vitest is the only test runner. Jest patterns (e.g., jest.mock) are out of scope."
+  },
+  "deterministicChecks": [
+    {
+      "id": "no-console-log",
+      "pattern": "^\\+.*console\\.log\\(",
+      "severity": "warning",
+      "message": "Stray console.log left in committed code."
+    }
+  ],
+  "depVulns": { "enabled": true },
+  "describe": { "enabled": true }
+}
+```
+
+## Full schema
+
+<CodeGroup>
+
+```json sigilix.json
+{
+  "guidance": "string — prepended to every specialist + synthesizer prompt",
+  "rules": {
+    "logic":       "appended only to the logic specialist's prompt",
+    "security":    "appended only to the security specialist's prompt",
+    "performance": "appended only to the performance specialist's prompt",
+    "tests":       "appended only to the tests specialist's prompt"
+  },
+  "pathFilters": [
+    "dist/**",
+    "**/*.generated.*",
+    "!critical/keep-this.generated.ts"
+  ],
+  "profile": "chill",
+  "deterministicChecks": [
+    {
+      "id": "kebab-case-id",
+      "pattern": "regex matched against added diff lines",
+      "severity": "info | warning | critical",
+      "message": "what the finding says",
+      "flags": "i"
+    }
+  ],
+  "commands": {
+    "review":   { "prompt": "addendum", "model": "kimi-k2.6:cloud" },
+    "improve":  { "prompt": "addendum" },
+    "describe": { "prompt": "addendum", "model": "glm-5.1:cloud" }
+  },
+  "depVulns":      { "enabled": true },
+  "astRules":      { "enabled": true, "rules": ["no-eval-call"] },
+  "sarif":         { "enabled": true },
+  "reviewMemory":  { "enabled": true },
+  "describe":      { "enabled": true },
+  "sensitivity":   { "level": "standard" }
+}
+```
+
+</CodeGroup>
+
+## Field reference
+
+### `guidance` (v1, string)
+
+Repo-wide context prepended to every specialist's prompt and the synthesizer's prompt. Keep it specific and load-bearing — vague guidance dilutes findings, sharp guidance focuses them.
+
+Good guidance describes:
+- The stack ("TypeScript Cloudflare Worker", "Rust embedded firmware", "Next.js app router")
+- Hard rules ("Domain code in `src/domain/` may not import from `src/infra/`")
+- Conventions a reviewer would otherwise miss ("Test files mirror source — `foo.ts` ↔ `foo.test.ts`")
+
+Bad guidance is generic ("Be careful about security") — the models already know that.
+
+### `rules.<role>` (v1, string)
+
+Per-specialist prompt addendum. Each `<role>` is one of `logic`, `security`, `performance`, `tests`. Use this when a rule only matters to one specialist:
+
+```json
+{
+  "rules": {
+    "security": "All POST/PUT/DELETE routes must call requireCsrf() middleware.",
+    "performance": "Avoid synchronous filesystem calls inside request handlers."
+  }
+}
+```
+
+Rules are additive to Sigilix's built-in checks — they don't replace them.
+
+### `pathFilters` (v2, string[])
+
+Globs that drop files from review **before** specialist fan-out. Saves token spend on generated content and triggers the "no specialists" short-circuit when only filtered paths changed.
+
+Semantics:
+
+- Plain pattern excludes (`"dist/**"`).
+- `!pattern` re-includes — later patterns win, so order matters.
+- Globstar (`**`) crosses directories. Single `*` matches one segment.
+
+```json
+{
+  "pathFilters": [
+    "dist/**",
+    "build/**",
+    "**/*.lock",
+    "**/*.snap",
+    "!critical/important.snap"
+  ]
+}
+```
+
+### `profile` (v2, "chill" | "assertive")
+
+Review tone. Default is `chill`.
+
+| Profile | Behavior |
+|---|---|
+| `chill` | Only flag must-fix issues. Skip nits, style, taste. |
+| `assertive` | Include nits and style. Useful for high-bar codebases. |
+
+This maps to a one-line prefix on each specialist's initial message; the model still weighs context but the flag-worthiness floor shifts.
+
+### `deterministicChecks` (v3, array)
+
+JavaScript-flavored regex rules run against **added diff lines** before the LLM specialists fire. Matches surface as structured findings injected into the specialist prompts as authoritative facts.
+
+Each rule:
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `id` | string | yes | Kebab-case unique identifier |
+| `pattern` | string | yes | JavaScript regex source (no surrounding slashes) |
+| `severity` | `"info" \| "warning" \| "critical"` | yes | Maps to score 2 / 4 / 5 |
+| `message` | string | yes | What the finding says |
+| `flags` | string | no | Regex flags. `i` for case-insensitive. `g` is implied — don't pass it. |
+
+```json
+{
+  "deterministicChecks": [
+    {
+      "id": "no-todo-in-prod",
+      "pattern": "^\\+.*(TODO|FIXME|XXX)\\b",
+      "severity": "warning",
+      "message": "TODO/FIXME left in committed code."
+    },
+    {
+      "id": "no-aws-keys",
+      "pattern": "AKIA[0-9A-Z]{16}",
+      "severity": "critical",
+      "message": "Possible AWS access key leak."
+    }
+  ]
+}
+```
+
+See [Deterministic Checks](/how-it-works/deterministic-checks) for the conceptual layer and [Writing deterministic checks](/configuration/deterministic-checks-config) for the practical guide.
+
+### `commands` (ARC-185, object)
+
+Per-command prompt addenda and model overrides. Each key is a Sigilix slash command (`review`, `improve`, `describe`); values can carry `prompt` (appended to the command's system prompt) and `model` (override the default model).
+
+```json
+{
+  "commands": {
+    "review":   { "model": "kimi-k2.6:cloud" },
+    "describe": { "prompt": "Always start changelogs with the user-facing impact, never the implementation." }
+  }
+}
+```
+
+Valid model names are the cloud-tagged models on Sigilix's allowlist: `glm-5.1:cloud`, `kimi-k2.6:cloud`, `qwen3-coder:480b-cloud`, `deepseek-v4-pro:cloud`. Unrecognized models fall back to the command's default with a warning.
+
+### Subsystem opt-outs
+
+Each subsystem ships **enabled** by default and can be turned off per-repo:
+
+| Key | Subsystem | Disable with |
+|---|---|---|
+| `depVulns` | Dependency vulnerability scan ([ARC-186](/evidence-and-provenance/dependency-vulnerabilities)) | `{ "enabled": false }` |
+| `astRules` | AST rule-pack scanner ([How It Works](/how-it-works/deterministic-checks)) | `{ "enabled": false }` |
+| `sarif` | SARIF evidence channel ([ARC-188](/evidence-and-provenance/sarif-evidence)) | `{ "enabled": false }` |
+| `reviewMemory` | Cross-PR review memory ([How It Works](/how-it-works/review-memory)) | `{ "enabled": false }` |
+| `describe` | `/sigilix describe` command | `{ "enabled": false }` |
+
+See [Opt-outs](/configuration/opt-outs) for the consolidated reference.
+
+### `sensitivity` (ARC-183, object)
+
+Repository sensitivity controls. The denylist gate is operator-side (set by Sigilix administrators) and not user-configurable; this field's role is to declare a level so future per-tier features know what to apply. Today: `{ "level": "standard" }` is the only published value.
+
+## Validation
+
+Sigilix validates `sigilix.json` on every review. Fail-open semantics:
+
+- **Missing file** → defaults, no warning.
+- **Malformed JSON** → defaults + warning posted as a single sticky comment ([see config-error comment](/troubleshooting/common-errors)).
+- **Unknown top-level key** → ignored, no warning (preserves forward compatibility — older Sigilix versions won't break on newer schemas).
+- **Type mismatch on a known key** → that key dropped, warning logged in telemetry, review proceeds with defaults for that key.
+
+The fail-open policy is deliberate: never break a review because a config field changed shape.
+
+## Read next
+
+<CardGroup cols={2}>
+  <Card title="Rules & Guidance" icon="message-quote" href="/configuration/rules-and-guidance">
+    Best practices for writing `guidance` and per-role `rules`.
+  </Card>
+  <Card title="Path Filters & Profile" icon="filter" href="/configuration/path-filters-and-profile">
+    Scope reviews with globs and tune flag-worthiness with `profile`.
+  </Card>
+  <Card title="Deterministic Checks" icon="microchip" href="/configuration/deterministic-checks-config">
+    Write regex rules that run before the LLMs.
+  </Card>
+  <Card title="Slash Commands" icon="terminal" href="/configuration/commands">
+    `/sigilix review`, `improve`, `describe` — prompt/model overrides per command.
+  </Card>
+</CardGroup>

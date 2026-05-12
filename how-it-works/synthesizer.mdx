@@ -13,7 +13,7 @@ Specialists submit findings in a structured shape:
 
 ```json
 {
-  "specialist": "warden",
+  "specialist": "security",
   "path": "src/api/checkout.ts",
   "line": 142,
   "category": "security",
@@ -23,6 +23,8 @@ Specialists submit findings in a structured shape:
   "confidence": 4
 }
 ```
+
+The `specialist` field is the **role** name (`logic`, `security`, `performance`, `tests`). The public-facing brand names — Glyph, Warden, Pulse, Weave — are rendered into the final review comment by the synthesizer.
 
 Each finding is scored 1-5 by the specialist for its own confidence. Findings missing required fields are dropped at this stage.
 
@@ -66,11 +68,11 @@ Core never posts a finding inline — only specialists do. Core's voice is the s
 
 ## Failure modes
 
-### Specialist 503s
+### Specialist 503s + per-attempt timeouts (Phase 4a.4)
 
-If one specialist's model returns 503 (overloaded), Sigilix's cross-provider fallback kicks in: a different model on a different provider attempts the same prompt. If that fails too, the specialist's findings are skipped — but Core still synthesizes from the remaining specialists.
+If one specialist's model returns 503 (overloaded) or exceeds its per-attempt timeout, Sigilix retries once on the primary, then fires the cross-provider fallback. Primary + fallback run on independent infrastructure so a same-family provider outage can't silence the same role twice.
 
-The verdict is still posted, marked with a footnote: `_3 of 4 specialists succeeded._`
+If all attempts for a specialist fail, the specialist's findings are skipped — but Core still synthesizes from the remaining specialists. The verdict is still posted with a footnote: `_3 of 4 specialists succeeded._`
 
 ### Stale-head guards
 

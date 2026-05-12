@@ -37,7 +37,7 @@ Every review Sigilix posts has the same shape. Once you know the shape, you can 
         <a href="#" className="sigilix-diff-link">View diff →</a>
       </Accordion>
 
-      <Accordion title="Spark · Performance · Warning">
+      <Accordion title="Pulse · Performance · Warning">
         Nested loop in `aggregateReports` scales with repo count. Consider indexing `createdAt` or paginating upstream.
 
         <a href="#" className="sigilix-diff-link">View diff →</a>
@@ -73,7 +73,7 @@ This is the only block worth reading if you're triaging fast. If Core says "0 fi
 
 Each finding is collapsed by default and lives on a specific line in the diff. Click to expand and read:
 
-- **Specialist tag** — Glyph, Warden, Spark, Weave (Core never posts inline findings — it only synthesizes)
+- **Specialist tag** — Glyph, Warden, Pulse, Weave (Core never posts inline findings — it only synthesizes)
 - **Category** — the area within that specialist's domain (e.g., Warden · Security)
 - **Severity** — Critical / Warning / Info
 - **Body** — what's wrong, why, and the minimal fix
@@ -93,7 +93,7 @@ A finding's severity can shift up or down during synthesis if multiple specialis
 
 When you push to a PR branch, Sigilix re-reviews on the new SHA. The new review:
 - Replaces the old review summary (one summary per SHA)
-- Re-runs all 5 agents on the new diff
+- Re-runs the deterministic-checks layer and the four specialists incrementally on the changed lines (carrying forward findings on unchanged lines per ARC-194)
 - May change the verdict if findings were resolved
 
 Old reviews on prior SHAs stay visible in the PR's review history — Sigilix doesn't delete them.
@@ -114,7 +114,7 @@ Mention replies are not full reviews — they're conversational. They don't chan
   <Card title="The Ensemble" icon="diagram-project" href="/how-it-works/the-ensemble">
     The architectural argument behind multi-specialist review.
   </Card>
-  <Card title="sigilix.yaml" icon="gear" href="/configuration/sigilix-yaml">
-    Tune severity thresholds, disable specialists, configure ignore patterns.
+  <Card title="sigilix.json" icon="gear" href="/configuration/configuration-reference">
+    Per-role rules, path filters, deterministic checks, and per-subsystem opt-outs.
   </Card>
 </CardGroup>
