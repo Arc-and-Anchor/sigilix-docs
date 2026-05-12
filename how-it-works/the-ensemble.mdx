@@ -33,10 +33,10 @@ flowchart TD
     pr([PR Comment])
 
     diff --> det
-    diff --> glyph
-    diff --> warden
-    diff --> pulse
-    diff --> weave
+    det --> glyph
+    det --> warden
+    det --> pulse
+    det --> weave
     det --> core
     glyph --> core
     warden --> core
@@ -59,7 +59,7 @@ flowchart TD
 Every review goes:
 
 1. **Deterministic checks run first** — secret scanning, AST rule packs, and any user-defined `deterministicChecks` regex rules run over the added diff lines. Their findings are injected into the specialist prompts as authoritative facts. See [Deterministic Checks](/how-it-works/deterministic-checks).
-2. **Specialists run in parallel** — Glyph, Warden, Pulse, and Weave receive the same diff with different prompts and different primary models. They can't see each other's findings. Each runs with a per-attempt timeout cap and a cross-provider fallback so a single provider outage never silences a specialist.
+2. **Specialists run in parallel** — Glyph, Warden, Pulse, and Weave receive the same diff plus the deterministic findings as authoritative facts in their context. Each specialist has a different prompt and a different primary model, and can't see the other specialists' findings. Each runs with a per-attempt timeout cap and a cross-provider fallback that protects against same-family provider outages.
 3. **Findings flow into Core** — the synthesizer sees all four streams plus the deterministic findings plus the diff itself.
 4. **Core deduplicates, calibrates, and renders** — overlapping findings collapse into one; severity shifts based on agreement; review memory adjusts category-level flag-worthiness; the final verdict is decided.
 5. **One comment is posted** — single GitHub review with the synthesizer summary at the top and inline findings below.

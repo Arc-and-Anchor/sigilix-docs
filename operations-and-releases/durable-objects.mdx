@@ -67,7 +67,7 @@ DO IDs are deterministic from `(installationId, owner, repo, prNumber)` so logs 
 
 ## Cost model
 
-DOs are billed per request and per GB-second of storage. For Sigilix the dominant cost is **requests**: each webhook is one request. Storage per PR is small (a manifest is ~1 KB; feedback signals are a few KB per PR).
+DOs are billed on three dimensions: per request, per GB-second of duration (wall-clock compute while active or non-hibernating), and per GB-month of stored data. For Sigilix the dominant cost is **requests**: each webhook is one request. Duration is small because the DO hibernates between webhooks. Storage per PR is tiny (a manifest is ~1 KB; feedback signals are a few KB per PR).
 
 Cost compared to the legacy KV path: roughly the same. KV reads/writes have similar economics. The win is correctness, not cost.
 

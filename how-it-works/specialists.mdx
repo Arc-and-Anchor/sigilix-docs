@@ -3,7 +3,7 @@ title: "Specialists"
 description: "Glyph, Warden, Pulse, Weave — what each specialist catches, sample findings, and model selection."
 ---
 
-Sigilix runs four parallel specialists per review. Each has a focused prompt, a tuned primary model, and a cross-provider fallback so a single provider outage never silences a specialist.
+Sigilix runs four parallel specialists per review. Each has a focused prompt, a tuned primary model, and a cross-provider fallback that makes a same-family provider outage unlikely to silence a specialist. A specialist can still be skipped if both primary and fallback fail — see the retry + fallback policy below.
 
 Internally each specialist has a **role** name (`logic`, `security`, `performance`, `tests`) that appears in `sigilix.json` under `rules.<role>`. The public-facing brand names (Glyph, Warden, Pulse, Weave) are the same specialists with the same prompts.
 

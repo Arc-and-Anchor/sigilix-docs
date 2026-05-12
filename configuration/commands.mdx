@@ -102,6 +102,10 @@ Override the default model for this command. The allowlist:
 
 Unknown model names fall back to the command's default with a single warning logged in telemetry. The review proceeds — the validation is fail-open.
 
+<Note>
+  The command-override allowlist is intentionally a different set of model identifiers from the specialist fallbacks (which use `kimi-k2.5:cloud` and `qwen3-coder-next:cloud`). The specialist ensemble is internally tuned for cross-provider resilience and uses specific versions for that purpose; command overrides expose a broader, more current selection because commands run independently of the ensemble's cross-provider failover logic.
+</Note>
+
 ### What you can't override
 
 | Knob | Why not |

@@ -141,15 +141,15 @@ Under `chill`, none of those surface. Under `assertive`, all three do.
 
 - Mature codebase with established conventions — extra nits are noise
 - High-PR-volume repos where reviewer fatigue is the binding constraint
-- Anywhere `block_merge_at` would otherwise become a problem (it's not configurable; defaults are sane)
+- Anywhere a nit-flood would block merge — the Request-changes verdict cutoff isn't configurable today, so `chill` is the right floor for repos where you don't want nits to ever influence the verdict
 
 ## How they interact
 
 Both fields run on every review, in this order:
 
 1. **`pathFilters`** drops files. If 0 files survive → review skipped entirely.
-2. **Per-role specialists** fire on what remains, with `profile` shifting their flag-worthiness floor.
-3. **`deterministicChecks`** runs on added diff lines (also after `pathFilters` — filtered files don't get regex'd either).
+2. **`deterministicChecks`** runs on the added diff lines of the surviving files (no regex on filtered files).
+3. **Per-role specialists** fire on what remains, with `profile` shifting their flag-worthiness floor and the deterministic findings already in their context as authoritative facts.
 
 This means `pathFilters` is your scope dial and `profile` is your sensitivity dial. They're orthogonal.
 

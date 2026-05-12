@@ -158,7 +158,7 @@ Sigilix posts the review via `POST /repos/:owner/:repo/pulls/:number/reviews` wi
 
 If the inline-anchor submission fails (422 — bad position), Sigilix falls back to an anchorless review with all findings rolled into the body. The verdict is still posted.
 
-The pr-review webhook ingest path runs through a Durable Object ([ARC-190](/operations-and-releases/durable-objects)) for per-PR serialization across regions, so the same PR can never have two concurrent in-flight reviews.
+When `PrReviewRunDO` is in `mode=post` ([ARC-190](/operations-and-releases/durable-objects)), the pr-review webhook ingest path is serialized through a Durable Object across regions, so the same PR cannot have two concurrent in-flight reviews. While the DO is still in `mode=off` (the current production state during staged rollout), per-PR dedupe falls back to the KV path's best-effort guard.
 
 ### 15. Telemetry + feedback signals
 
@@ -169,10 +169,10 @@ Two records land:
 
 ## Guarantees
 
-- **Idempotency.** Re-firing the same webhook never produces a duplicate review (Durable-Object serialization, ARC-190).
+- **Idempotency.** Re-firing the same webhook never produces a duplicate review (best-effort KV dedupe today; strict Durable-Object serialization in `mode=post`, ARC-190).
 - **Stale-safe.** A review is never posted on an outdated SHA.
 - **Verdict survival.** If GitHub rejects inline anchors, the verdict is still posted (anchorless fallback).
-- **Cross-provider resilience.** Per-attempt timeout caps plus cross-provider fallbacks ensure a same-family provider outage never silences a specialist (Phase 4a.4).
+- **Cross-provider resilience.** Per-attempt timeout caps plus cross-provider fallbacks reduce the risk that a same-family provider outage silences a specialist (Phase 4a.4). A specialist can still be skipped if both primary and fallback attempts fail, in which case the review is posted with a `_3 of 4 specialists succeeded_` footnote.
 - **Incremental on synchronize.** A push to an open PR re-reviews only what changed; carried-forward findings keep their original markers (ARC-194).
 - **No silent dropping.** Every finding either makes it into the review or is logged as suppressed in telemetry.
 
