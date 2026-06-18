@@ -1,9 +1,13 @@
 ---
-title: "Synthesizer (Core)"
-description: "Core's four-stage pipeline: collect → cross-reference → calibrate → render. How findings become one coherent review."
+title: "Synthesizer (Zeus)"
+description: "Zeus's four-stage pipeline: collect → cross-reference → calibrate → render. How four specialist streams become one coherent, believable review."
 ---
 
-Four parallel specialists produce a lot of overlap. Without a synthesizer, that overlap shows up as 40 redundant comments on the PR. **Core** is the synthesizer that turns four streams into one signal.
+Four parallel domain specialists produce a lot of overlap. Without a synthesizer, that overlap shows up as 40 redundant comments on the PR. **Zeus** is the synthesizer that turns four streams into one signal — and the place where the believability pipeline does most of its work.
+
+## Where Zeus sits in the believability pipeline
+
+Believability in Sigilix is architectural, not a prompt. A finding cannot post unless it earns its way through the [5-stage believability pipeline](/how-it-works/believability-pipeline): **evidence → provenance contracts → refute/execute → proof-tier receipts → memory**. Zeus is the stage where evidence is checked against provenance contracts, refuted-or-confirmed, and stamped with a [proof-tier receipt](/how-it-works/confidence-scoring) (VERIFIED / GROUNDED / MODEL) before anything reaches the PR. The four stages below are how Zeus does that.
 
 ## The four stages
 
@@ -20,17 +24,17 @@ Specialists submit findings in a structured shape:
   "severity": "critical",
   "headline": "missing CSRF verification on POST /checkout",
   "body": "...",
-  "confidence": 4
+  "citedCode": "app.post('/checkout', handler)"
 }
 ```
 
-The `specialist` field is the **role** name (`logic`, `security`, `performance`, `tests`). The public-facing brand names — Glyph, Warden, Pulse, Weave — are rendered into the final review comment by the synthesizer.
+The `specialist` field is the **role** name (`logic`, `security`, `performance`, `tests`). The public-facing brand names — Athena, Argus, Hermes, Themis — are rendered into the final review comment by Zeus.
 
-Each finding is scored 1-5 by the specialist for its own confidence. Findings missing required fields are dropped at this stage.
+Each finding must carry the evidence it stands on (the cited code it quotes). Findings missing required fields are dropped at this stage.
 
 ### 2. Cross-reference
 
-Core performs structural-provenance checks against the source code to suppress hallucinations:
+Zeus performs structural-provenance checks against the source code to suppress hallucinations. This is the **grounding gate**: a finding that cannot be anchored to cited code does not earn a GROUNDED receipt and is suppressed or demoted.
 
 - **Line-validity check.** Does the finding's `path:line` actually exist in the diff? Hallucinated line numbers are dropped.
 - **Symbol-resolution check.** Does the function/variable referenced in the finding actually exist in the file? Hallucinated identifiers are dropped.
@@ -40,7 +44,7 @@ Findings that pass all three checks proceed. Findings that fail are silently sup
 
 ### 3. Calibrate
 
-Core then performs deduplication and severity calibration:
+Zeus then performs deduplication and severity calibration:
 
 **Deduplication.** Overlapping findings (same `path:line` from multiple specialists) are merged into one. The merged finding's body draws from each specialist's contribution; the severity is the maximum of the inputs.
 
@@ -54,25 +58,27 @@ Core then performs deduplication and severity calibration:
 | Critical-tagged + structural check passed | Critical |
 | Critical-tagged + structural check skeptical | Warning (down-graded) |
 
-**Score-1 advisory cap.** If more than 5 score-1 (Info) findings exist, Core picks the top 5 and aggregates the rest into a single "advisory nits" line in the summary. This prevents review-comment dilution.
+**Advisory cap.** If a flood of low-severity (Info) findings exists, Zeus surfaces the top few inline and aggregates the rest into a single "advisory nits" line in the summary. This prevents review-comment dilution.
+
+**Proof-tier receipts.** Each surviving finding is stamped with a tier pill — **VERIFIED**, **GROUNDED**, or **MODEL** — recording how strongly it was witnessed. See [Confidence Scoring](/how-it-works/confidence-scoring).
 
 ### 4. Render
 
-Core writes the final comment. The shape:
+Zeus writes the final comment. The shape:
 
-1. **Synthesizer summary** — what was reviewed, how many findings survived, what verdict
-2. **Inline findings** — anchored to specific `path:line`, tagged by specialist + severity
-3. **Suggested patches** — included where Core's structural check confirms a clean fix is in scope
+1. **Zeus summary** — what was reviewed, how many findings survived, what verdict
+2. **Inline findings** — anchored to specific `path:line`, tagged by specialist + severity + proof-tier receipt
+3. **Suggested patches** — included where Zeus's structural check confirms a clean fix is in scope
 
-Core never posts a finding inline — only specialists do. Core's voice is the summary at the top.
+Sigilix is inline-first: anchorable findings post on the line they quote, not buried in a review body.
 
 ## Failure modes
 
-### Specialist 503s + per-attempt timeouts (Phase 4a.4)
+### Specialist provider failures
 
-If one specialist's model returns 503 (overloaded) or exceeds its per-attempt timeout, Sigilix retries once on the primary, then fires the cross-provider fallback. Primary + fallback run on independent infrastructure so a same-family provider outage can't silence the same role twice.
+If one specialist's model is overloaded (503) or exceeds its size-scaled budget, Sigilix retries once on the primary, then fires the cross-provider fallback. Primary + fallback run on independent infrastructure so a same-family provider outage can't silence the same role twice.
 
-If all attempts for a specialist fail, the specialist's findings are skipped — but Core still synthesizes from the remaining specialists. The verdict is still posted with a footnote: `_3 of 4 specialists succeeded._`
+If all attempts for a specialist fail, the specialist's findings are skipped — but Zeus still synthesizes from the remaining specialists. The verdict is still posted with a footnote: `_3 of 4 specialists succeeded._`
 
 ### Stale-head guards
 
@@ -91,17 +97,17 @@ This recovers verdicts that would otherwise be silently lost.
 
 ## Why this beats single-agent review
 
-A single-agent reviewer has no synthesis stage. It produces raw output and posts it. There's no deduplication, no cross-reference, no calibration. Every false positive ships. Every redundant comment ships. Every hallucinated line number ships.
+A single-agent reviewer has no synthesis stage. It produces raw output and posts it. There's no deduplication, no cross-reference, no calibration, no proof-tier receipt. Every false positive ships. Every redundant comment ships. Every hallucinated line number ships.
 
-Core is the difference. The four-stage pipeline is what makes Sigilix's reviews readable.
+Zeus is the difference. The four-stage pipeline is what makes Sigilix's reviews believable and readable.
 
 ## Read next
 
 <CardGroup cols={2}>
-  <Card title="Confidence Scoring" icon="chart-bar" href="/how-it-works/confidence-scoring">
-    The numeric details behind ranking and suppression.
+  <Card title="Believability Pipeline" icon="shield-check" href="/how-it-works/believability-pipeline">
+    The five gates a finding earns before it can post.
   </Card>
-  <Card title="Review Lifecycle" icon="repeat" href="/how-it-works/review-lifecycle">
-    Trigger conditions, pipeline stages, what happens on each push.
+  <Card title="Confidence Scoring" icon="chart-bar" href="/how-it-works/confidence-scoring">
+    Proof-tier receipts (VERIFIED / GROUNDED / MODEL) and the grounding gate.
   </Card>
 </CardGroup>

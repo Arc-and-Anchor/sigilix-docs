@@ -1,105 +1,88 @@
 ---
-title: "Confidence Scoring"
-description: "How Sigilix ranks, suppresses, and escalates findings."
+title: "Confidence & Proof Tiers"
+description: "How Sigilix decides whether a finding has earned the right to post — proof-tier receipts (VERIFIED / GROUNDED / MODEL) and the grounding gate, not a numeric score."
 ---
 
-Every Sigilix finding goes through three rounds of confidence scoring before it reaches a PR. This page explains the math.
+Sigilix does not rank findings on a numeric 1–5 confidence scale. A number is just the model's opinion about its own opinion. Instead, every posted finding carries a **proof-tier receipt** that records *how strongly it was witnessed* — and a finding that cannot be witnessed at all does not post.
 
-## Per-specialist confidence (1-5)
+The principle: **the model's job is interpretation; the deterministic layer is the witness.** A finding is only as believable as the evidence the deterministic layer can attach to it.
 
-Each specialist scores its own findings on a 1-5 scale:
+## Proof-tier receipts
 
-| Score | Meaning |
+Every finding that survives to the PR carries one of three tier pills:
+
+| Tier | What it means | How it's earned |
+|---|---|---|
+| **VERIFIED** | Checked by execution or backed by a signed receipt | A deterministic check ran (secret scan, AST rule, executed/refuted assertion) and the finding was confirmed against ground truth |
+| **GROUNDED** | Anchored to cited code / evidence in the diff | The finding quotes specific code that exists at the cited location; the grounding gate matched the quote to the source |
+| **MODEL** | Model judgment, no external witness | A specialist's reasoning the deterministic layer could not independently confirm — still useful, but explicitly labeled as opinion |
+
+The tier is a receipt, not a score. It tells the reader *why* they should believe a finding, not how confident the model claims to be. A VERIFIED secret leak and a MODEL-tier naming suggestion are both legitimate; the pill lets you triage at a glance.
+
+## The grounding gate
+
+Between a specialist producing a finding and that finding posting, Zeus runs the **grounding gate**: the finding must be anchored to the code it claims to be about.
+
+| Check | Outcome |
 |---|---|
-| 5 | Critical — broken correctness, security, or data integrity |
-| 4 | Important but not catastrophic |
-| 3 | Material maintainability concern |
-| 2 | Minor improvement (taste, naming, small refactor) |
-| 1 | Nit — surfaced for awareness |
+| Finding's `path:line` exists in the diff | Eligible to anchor |
+| Finding's `path:line` is hallucinated | Dropped |
+| Cited code quote matches the source (whitespace-normalized) | Earns **GROUNDED** |
+| Cited code quote paraphrases / doesn't match | Demoted to **MODEL** or dropped |
+| Claimed unsafe pattern actually present | Confirmed; eligible for **VERIFIED** if a check ran |
+| Claimed pattern absent | Suppressed before it reaches you |
 
-Scores 1-2 are advisory. Scores 3-5 may block the merge depending on category.
+The gate is what makes Sigilix's reviews trustworthy: a finding that survives it is one whose subject genuinely exists in your code. Findings the model invented — an "unused" function that is called, a "missing" guard that is present — are caught here and never posted.
 
-## Cross-reference adjustment
+<Note>
+Grounding is content-matched, not line-counted. Models routinely miscount line numbers but quote code verbatim, so the gate matches the quoted code against the source to anchor the finding precisely — including to deleted lines (`side: LEFT`) when the finding's subject is removed code.
+</Note>
 
-When Core synthesizes, each finding's confidence is adjusted by structural-provenance checks:
+## Agreement still escalates severity
 
-| Check | Adjustment |
+Multiple specialists flagging the same code is a strong signal, and it raises severity (independent of proof tier):
+
+| Inputs | Severity |
 |---|---|
-| Line valid in diff | No change |
-| Line invalid (hallucinated) | Drop entirely |
-| Symbol exists in file | No change |
-| Symbol doesn't exist | Drop entirely |
-| Pattern matches claimed unsafe code | No change |
-| Pattern doesn't match | Down-grade by 1 or drop |
+| 1 specialist, low confidence | Info |
+| 1 specialist, high confidence | Warning |
+| 2+ specialists agree | Warning or Critical (by category) |
+| Specialist + deterministic check confirms | Critical |
 
-A score-5 finding can become score-3 or be dropped if its structural provenance is weak.
+Severity (Info / Warning / Critical) is the categorical label the reader sees. The proof tier is the separate witness pill. A finding can be Critical-and-MODEL (high stakes, model-only evidence) or Info-and-VERIFIED (a confirmed nit) — the two axes are orthogonal.
 
-## Agreement-based escalation
+## The verdict
 
-Multiple specialists flagging the same code is a strong signal. Core escalates:
+The verdict follows from severity, with the grounding gate having already removed unwitnessed Critical claims:
 
-| Inputs | Resulting score |
-|---|---|
-| 1 specialist, score 3 | Score 3 (no change) |
-| 2 specialists agree, scores 3 + 3 | Score 4 |
-| 3 specialists agree | Score 5 |
-| 1 specialist score 4 + Core's structural check confirms | Score 5 |
-
-A finding posted at score 5 blocks the merge with a Critical badge. Score 4 is Warning. Score 3 is Info.
-
-## Score-1 advisory cap
-
-To prevent comment dilution, Core caps the number of score-1 (nit-level) findings posted inline:
-
-- The top 5 score-1 findings (by alphabetical headline) are aggregated into a single "Advisory nits" line in the synthesizer summary
-- The remaining score-1 findings are recorded in telemetry but not surfaced
-
-The cap is not user-configurable today. If your repo regularly produces 20+ nit-level findings and you want them all surfaced, switch [`profile`](/configuration/path-filters-and-profile) to `assertive` so they upgrade to higher scores before the cap applies.
-
-## Severity vs. score
-
-Severity is a categorical label shown to the reader. Score is an internal numeric used by Core. The mapping:
-
-- Score 5 → **Critical**
-- Score 4 → **Warning**
-- Score 3 → **Warning** (or down-graded to Info if cross-reference is weak)
-- Score 2 → **Info**
-- Score 1 → **Info** (aggregated into summary, not posted inline)
-
-The verdict (Approve vs. Request changes) is decided as:
-
-- Any Critical → **Request changes**
+- Any Critical that cleared the grounding gate → **Request changes**
 - Otherwise → **Approve**
 
-## Tuning the floor
+A Critical finding the gate could not ground is demoted or dropped before it can block a merge — so the verdict is never decided by a hallucination.
 
-Thresholds aren't user-configurable today — the score → severity mapping above is fixed. What you **can** tune via [`sigilix.json`](/configuration/configuration-reference):
+## Advisory cap
 
-- **`profile`** — `"chill"` (default, only flag must-fix issues) vs `"assertive"` (include nits + style). This shifts what each specialist flags in the first place.
-- **`rules.<role>`** — Per-specialist prompt addendum. Use this to influence what each specialist *chooses* to flag.
-- **`deterministicChecks`** — Regex rules whose severity you set explicitly. Bypasses the LLM scoring entirely; rules emit at the severity you declare.
+To prevent comment dilution, Zeus surfaces the top few low-severity (Info / nit) findings inline and aggregates the rest into a single "advisory nits" line in the summary. The remainder are recorded in telemetry, not posted. Switch [`profile`](/configuration/path-filters-and-profile) to `assertive` if you want low-severity findings surfaced more aggressively.
 
-The combination of those three is the actual lever for "how strict is this repo's review."
+## Tuning what posts
+
+The proof-tier and grounding logic is fixed — it's the believability guarantee, not a knob. What you **can** tune via [`sigilix.json`](/configuration/configuration-reference):
+
+- **`profile`** — `"chill"` (default, only must-fix) vs `"assertive"` (include nits + style). Shifts what each specialist flags in the first place.
+- **`rules.<role>`** — Per-specialist prompt addendum. Influences what each specialist *chooses* to flag.
+- **`deterministicChecks`** — Regex rules whose severity you set explicitly. These post at the severity you declare and earn a deterministic (VERIFIED-class) receipt — they bypass model judgment entirely.
 
 ## Telemetry
 
-Every finding's lifecycle is recorded in telemetry, including:
-
-- Original specialist score
-- Cross-reference adjustments (and reasons)
-- Agreement escalations
-- Final severity
-- Whether it was posted, suppressed, or aggregated
-
-Telemetry is internal — used for monitoring and prompt-engineering. Customer-visible analytics (per-repo finding counts, severity distribution over time) are part of the upcoming Pro/Max insights dashboard.
+Every finding's lifecycle is recorded: which proof tier it earned, whether the grounding gate matched / demoted / dropped it, any agreement escalation, final severity, and whether it was posted, suppressed, or aggregated. Telemetry is internal — used for monitoring and prompt-engineering.
 
 ## Read next
 
 <CardGroup cols={2}>
-  <Card title="sigilix.json" icon="gear" href="/configuration/configuration-reference">
-    Per-role rules, path filters, deterministic checks, and per-subsystem opt-outs.
+  <Card title="Believability Pipeline" icon="shield-check" href="/how-it-works/believability-pipeline">
+    The five gates a finding earns before it can post.
   </Card>
-  <Card title="Common Errors" icon="triangle-exclamation" href="/troubleshooting/common-errors">
-    What to do when reviews don't appear, or appear with footnotes.
+  <Card title="Synthesizer" icon="git-merge" href="/how-it-works/synthesizer">
+    How Zeus runs the grounding gate and stamps proof-tier receipts.
   </Card>
 </CardGroup>

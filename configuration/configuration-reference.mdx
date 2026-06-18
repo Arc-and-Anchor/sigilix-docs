@@ -35,7 +35,7 @@ The schema has grown in three additive versions. Older configs keep working; new
 | v3 | `deterministicChecks` | ARC-193 |
 | v3+ | Per-subsystem opt-outs (commands, depVulns, astRules, sarif, reviewMemory, describe) | ARC-181, ARC-185, ARC-186, ARC-188, ARC-189, ARC-191 |
 
-The `<role>` token in `rules` is always one of `logic`, `security`, `performance`, `tests`. These are the internal specialist role names; their public-facing brand counterparts are Glyph, Warden, Pulse, and Weave respectively.
+The `<role>` token in `rules` is always one of `logic`, `security`, `performance`, `tests`. These are the internal specialist role names; their public-facing brand counterparts are Athena (logic), Argus (security), Hermes (performance), and Themis (tests) respectively. A fifth specialist, the synthesizer **Zeus**, runs after the four domain specialists to unify their findings.
 
 ## Minimal example
 
@@ -105,9 +105,9 @@ A single `guidance` string is the smallest useful config. It's prepended to ever
     }
   ],
   "commands": {
-    "review":   { "prompt": "addendum", "model": "kimi-k2.6:cloud" },
+    "review":   { "prompt": "addendum", "model": "model-id-from-allowlist" },
     "improve":  { "prompt": "addendum" },
-    "describe": { "prompt": "addendum", "model": "glm-5.1:cloud" }
+    "describe": { "prompt": "addendum", "model": "model-id-from-allowlist" }
   },
   "depVulns":      { "enabled": true },
   "astRules":      { "enabled": true, "rules": ["no-eval-call"] },
@@ -223,13 +223,13 @@ Per-command prompt addenda and model overrides. Each key is a Sigilix slash comm
 ```json
 {
   "commands": {
-    "review":   { "model": "kimi-k2.6:cloud" },
+    "review":   { "model": "model-id-from-allowlist" },
     "describe": { "prompt": "Always start changelogs with the user-facing impact, never the implementation." }
   }
 }
 ```
 
-Valid model names are the cloud-tagged models on Sigilix's allowlist: `glm-5.1:cloud`, `kimi-k2.6:cloud`, `qwen3-coder:480b-cloud`, `deepseek-v4-pro:cloud`. Unrecognized models fall back to the command's default with a warning.
+Valid model names are the model identifiers on Sigilix's current allowlist. The allowlist tracks the providers and model versions in production and changes over time, so run `/sigilix help` or check the live command-override docs for the current set rather than pinning a model ID here. Unrecognized models fall back to the command's default with a warning.
 
 ### Subsystem opt-outs
 

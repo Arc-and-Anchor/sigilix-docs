@@ -31,18 +31,18 @@
       },
       {
         "label": "GitHub",
-        "href": "https://github.com/Arc-and-Anchor"
+        "href": "https://github.com/Sigilix"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Install on GitHub",
-      "href": "https://sigilix.ai/signup"
+      "label": "Join the private beta",
+      "href": "https://app.sigilix.ai"
     }
   },
   "footer": {
     "socials": {
-      "github": "https://github.com/Arc-and-Anchor"
+      "github": "https://github.com/Sigilix"
     }
   },
   "redirects": [
@@ -77,12 +77,22 @@
             "group": "How It Works",
             "pages": [
               "how-it-works/the-ensemble",
+              "how-it-works/the-dispatcher",
               "how-it-works/specialists",
               "how-it-works/synthesizer",
+              "how-it-works/believability-pipeline",
               "how-it-works/deterministic-checks",
-              "how-it-works/review-memory",
+              "how-it-works/confidence-scoring",
               "how-it-works/review-lifecycle",
-              "how-it-works/confidence-scoring"
+              "how-it-works/review-memory",
+              "how-it-works/conversational-learnings",
+              "how-it-works/earned-context"
+            ]
+          },
+          {
+            "group": "CLI & Chat",
+            "pages": [
+              "cli-and-chat/overview"
             ]
           },
           {

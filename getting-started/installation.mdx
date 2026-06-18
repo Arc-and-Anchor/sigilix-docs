@@ -3,7 +3,11 @@ title: "Installation"
 description: "GitHub App permissions, OAuth scopes, org-level vs. repo-level install, and the access boundary."
 ---
 
-Sigilix is distributed as a [GitHub App](https://docs.github.com/en/apps/using-github-apps/about-using-github-apps). This page details what permissions it requests, why, and how to scope its access.
+Sigilix is a hosted [GitHub App](https://docs.github.com/en/apps/using-github-apps/about-using-github-apps). This page details what permissions it requests, why, and how to scope its access.
+
+<Note>
+Sigilix is in **private beta**. [Join our private beta](https://app.sigilix.ai) to get your account provisioned before installing the App.
+</Note>
 
 ## Required permissions
 
@@ -44,9 +48,9 @@ Trade-offs:
 
 Choose this to opt-in repo by repo. You can add more later from the [GitHub App settings page](https://github.com/settings/installations).
 
-## OAuth scopes (for /signup)
+## OAuth scopes (sign-in)
 
-When you sign in at [sigilix.ai/signup](https://sigilix.ai/signup), the OAuth flow requests:
+When you sign in at [app.sigilix.ai](https://app.sigilix.ai), the OAuth flow requests:
 
 - `read:user` — fetch your GitHub username and email for the dashboard
 - `read:org` — list the organizations you can install the App into
@@ -67,7 +71,7 @@ What Sigilix doesn't do:
 - Share your code with other customers
 - Access secrets in your repository (we read source files, not GitHub Actions secrets or environment variables)
 
-For full data handling details, see [Data & Privacy in the Marketing Site Trust page](https://sigilix.ai/security) (coming soon — pre-revenue placeholder).
+For full data handling details, see the [Sigilix Trust page](https://sigilix.ai/security), or contact [support@sigilix.ai](mailto:support@sigilix.ai).
 
 ## Uninstalling
 

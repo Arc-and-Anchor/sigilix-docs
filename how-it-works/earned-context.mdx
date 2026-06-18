@@ -1,0 +1,92 @@
+---
+title: "Earned Context"
+description: "Every review deposits a reusable, verified understanding of your repo — index, code graph, trust ledger, review memory, evidence manifests. The CLI, Deep-Research Chat, and Triage all draw on it."
+---
+
+A reviewer that starts from zero every time is doing the same expensive work over and over. Sigilix doesn't. Each review leaves something behind — a verified layer of understanding about your repository — and the next review, the CLI, and the chat all build on it instead of rediscovering it.
+
+This is what makes Sigilix judge a diff in context. Before any specialist runs, Sigilix expands the change against the whole repo: who calls the function being modified, what depends on it, which symbols it touches. The diff is read against the repository, not through a keyhole.
+
+## Context before judgment
+
+```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'background': '#0B0C10',
+    'primaryColor': '#1A1D23',
+    'primaryTextColor': '#E2E8F0',
+    'primaryBorderColor': '#4A5568',
+    'lineColor': '#4A5568',
+    'fontFamily': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace'
+  }
+} }%%
+flowchart LR
+    diff([Diff])
+    expand["Expand context<br/>(graph · index · memory)"]
+    judge["Specialists<br/>judge in context"]
+
+    diff --> expand --> judge
+
+    classDef node fill:#1A1D23,stroke:#4A5568,color:#E2E8F0,stroke-width:1px
+    classDef output fill:#0B0C10,stroke:#4A5568,color:#E2E8F0,stroke-width:1px,stroke-dasharray: 4 4
+    class expand,judge node
+    class diff output
+```
+
+A finding like "this function no longer handles the null case" is only correct if you know every caller. A window of a few diff lines cannot tell you that. Sigilix pulls in callers, dependencies, and symbols from the code graph and index, and reconciles against review memory, so a specialist is reasoning about the real blast radius of a change — not just the lines that changed.
+
+## The layers a review deposits
+
+<CardGroup cols={2}>
+  <Card title="Index" icon="database">
+    A searchable map of the repository — files, symbols, and structure — so context can be retrieved without re-reading the whole tree each time.
+  </Card>
+  <Card title="Code graph" icon="diagram-project">
+    Callers, dependencies, and symbol relationships. This is how Sigilix finds the blast radius of a change and judges the diff against the whole repo.
+  </Card>
+  <Card title="Trust ledger" icon="scroll">
+    The record behind proof-tier receipts — what was verified, what was grounded, and how findings earned their tier over time.
+  </Card>
+  <Card title="Review memory" icon="brain">
+    What Sigilix has learned about this repo: taught rules (see <a href="/how-it-works/conversational-learnings">Conversational Learnings</a>) and the statistical accept/dismiss signal.
+  </Card>
+  <Card title="Evidence manifests" icon="file-lines">
+    The cited code, anchors, and checks that back each finding — the provenance that lets a claim be re-examined rather than re-derived.
+  </Card>
+</CardGroup>
+
+<Note>
+Each layer is <em>verified</em> understanding, not a cache of raw text. It is built by the same gates that decide what posts, so the context a later review inherits is context that already earned its place.
+</Note>
+
+## Who draws on it
+
+The earned-context layer is not just for the next PR review. It is the substrate the rest of the product reads from:
+
+<CardGroup cols={3}>
+  <Card title="The CLI" icon="terminal" href="/cli-and-chat/overview">
+    Review parity in the terminal, drawing on the same index, graph, and memory the hosted reviews built.
+  </Card>
+  <Card title="Deep-Research Chat" icon="comments" href="/cli-and-chat/overview">
+    Grounded answers about the repo and its review history, because the history is a retrievable layer.
+  </Card>
+  <Card title="Triage" icon="list-check" href="/how-it-works/the-dispatcher">
+    CI-failure and issue triage reason against the graph and memory to produce grounded root causes.
+  </Card>
+</CardGroup>
+
+## Why it compounds
+
+The first review on a repo pays to build the index and graph. Every review after that adds to the trust ledger, sharpens review memory, and accumulates evidence manifests. The understanding deepens with use — which is why a reviewer that remembers your repo gets more useful the longer it works on it, and why the same understanding can power the CLI and chat without rebuilding it from scratch.
+
+## Read next
+
+<CardGroup cols={2}>
+  <Card title="The Believability Pipeline" icon="shield-check" href="/how-it-works/believability-pipeline">
+    The gates that build the trust ledger and evidence manifests as findings earn their place.
+  </Card>
+  <Card title="CLI & Chat" icon="terminal" href="/cli-and-chat/overview">
+    How the terminal and Deep-Research Chat read from the earned-context layer.
+  </Card>
+</CardGroup>

@@ -1,21 +1,19 @@
 ---
 title: "Rate Limits"
-description: "How the 5-hour window works, burst behavior, monitoring usage, and what happens when you hit the cap."
+description: "How the rolling window works, burst behavior, monitoring usage, and what happens when you hit the cap."
 ---
 
-Sigilix limits review volume to keep shared infrastructure stable. This page covers the window, the per-tier caps, and what happens at the limit.
+Sigilix limits review volume to keep shared infrastructure stable. This page covers the window mechanics, burst behavior, and what happens at the limit.
 
-## The 5-hour window
+<Note>
+  Sigilix is in **private beta**. Rate limits are set per account during the beta rather than by a published Free/Pro/Max tier. The mechanics below (rolling window, coalescing, monitoring) are accurate; the exact number of reviews allowed for your account is provisioned when you're onboarded. If you need more throughput, [contact us](mailto:support@sigilix.ai).
+</Note>
 
-Sigilix uses a **rolling 5-hour window** keyed by GitHub installation:
+## The rolling window
 
-| Tier | Reviews per 5-hour window |
-|---|---|
-| Free | 3-4 |
-| Pro | 8-10 |
-| Max | 15-20 |
+Sigilix uses a **rolling window** keyed by GitHub installation. Your account is provisioned with a review allowance over that window during the private beta.
 
-The window is rolling, not fixed. At any moment, Sigilix counts how many reviews you've completed in the past 5 hours. As old reviews age out, fresh capacity is freed up.
+The window is rolling, not fixed. At any moment, Sigilix counts how many reviews you've completed in the trailing window. As old reviews age out, fresh capacity is freed up.
 
 ## What counts as a "review"
 
@@ -48,28 +46,23 @@ Old reviews on prior SHAs of the same PR remain visible — they don't disappear
 
 ### Headers
 
-Every Sigilix-posted review has an HTTP-style footer in its body:
+Every Sigilix-posted review has a footer in its body that reports your current usage against the window:
 
 ```
-_Sigilix · 2 of 4 reviews used in the past 5h · resets in 38m_
+_Sigilix · 2 of 4 reviews used in the current window · resets in 38m_
 ```
 
 Use this to gauge how close you are to the cap.
 
-### Dashboard
-
-The upcoming Pro/Max insights dashboard shows usage over time, with peak-window analysis to help you decide if the next tier is worth it.
-
 ### Webhook
 
-For programmatic monitoring, a `review.completed` webhook is available on Pro+ tiers. It includes:
+For programmatic monitoring, a `review.completed` webhook is available. It includes:
 
 ```json
 {
   "event": "review.completed",
   "pr": { "owner": "...", "repo": "...", "number": 42 },
   "rate_limit": {
-    "tier": "pro",
     "window_hours": 5,
     "max_reviews": 10,
     "used": 6,
@@ -80,16 +73,9 @@ For programmatic monitoring, a `review.completed` webhook is available on Pro+ t
 
 See [Webhooks](/api/webhooks) for setup.
 
-## When to upgrade
+## Hitting the limit regularly
 
-Some signals that suggest you've outgrown Free:
-- Reviews queuing during peak hours
-- Hitting the cap multiple days per week
-- Multi-repo install (Free is single-repo)
-
-Pro is sized for an active 3-10 person team. Max is sized for orgs with multiple parallel workstreams.
-
-If you're hitting Max's limits regularly, [contact us](mailto:support@arcanchor.com) — we have a custom-throughput tier for high-volume teams.
+If reviews queue during peak hours, or you're hitting the cap multiple days per week, your account allowance may need raising. During the private beta, throughput is provisioned per account — [contact us](mailto:support@sigilix.ai) and we'll adjust it.
 
 ## Read next
 
@@ -97,7 +83,7 @@ If you're hitting Max's limits regularly, [contact us](mailto:support@arcanchor.
   <Card title="sigilix.json" icon="gear" href="/configuration/configuration-reference">
     Full configuration schema.
   </Card>
-  <Card title="Pricing" icon="tag" href="https://sigilix.ai/signup">
-    Compare tiers and pick a plan.
+  <Card title="Join the private beta" icon="tag" href="https://sigilix.ai">
+    Pricing (per-seat + usage, BYO models) is handled per account during the beta.
   </Card>
 </CardGroup>
