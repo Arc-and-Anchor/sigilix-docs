@@ -5,7 +5,7 @@ description: "The pre-LLM signal layer — regex rules, AST scanners, and secret
 
 LLM specialists are good at reasoning over code but expensive and probabilistic. Some categories of finding — banned APIs, stray secrets, dead-simple regressions — don't need reasoning. They need a regex or an AST visitor.
 
-Sigilix has a **deterministic checks layer** that runs *before* the four-specialist ensemble. Matches surface as authoritative findings that the synthesizer treats as ground truth, not as another opinion to weigh.
+Sigilix has a **deterministic checks layer** that runs *before* the four domain specialists. Matches surface as authoritative findings that Zeus (the synthesizer) treats as ground truth, not as another opinion to weigh.
 
 ## Three subsystems, one philosophy
 
@@ -36,20 +36,20 @@ flowchart LR
     ast["AST<br/>rule packs"]
     det["deterministic<br/>Checks"]
     ensemble["Specialist<br/>ensemble"]
-    core["Core<br/>Synthesizer"]
+    zeus["Zeus<br/>Synthesizer"]
 
-    diff --> sec --> core
-    diff --> ast --> core
-    diff --> det --> core
-    diff --> ensemble --> core
+    diff --> sec --> zeus
+    diff --> ast --> zeus
+    diff --> det --> zeus
+    diff --> ensemble --> zeus
 
     classDef pre fill:#1A1D23,stroke:#4A5568,color:#E2E8F0,stroke-width:1px
     classDef llm fill:#1A1D23,stroke:#4A5568,color:#E2E8F0,stroke-width:1px,stroke-dasharray: 4 4
-    classDef core fill:#C6234A,stroke:#C6234A,color:#FFFFFF,stroke-width:2px
+    classDef zeusStyle fill:#C6234A,stroke:#C6234A,color:#FFFFFF,stroke-width:2px
 
     class sec,ast,det pre
     class ensemble llm
-    class core core
+    class zeus zeusStyle
 ```
 
 ## Why deterministic signal matters
@@ -68,7 +68,7 @@ A finding like "regex `AKIA[0-9A-Z]{16}` matched line 142 of `config.ts`" has no
 
 ### 3. They run before the LLM, not alongside
 
-Because the layer runs first, its findings are **injected into the specialist prompts as facts**. When Warden gets the prompt, it already knows "the secret scanner flagged an AKIA key on line 142." Warden doesn't have to rediscover the secret; it can focus on the surrounding code path (how does the key get used? is it logged anywhere?).
+Because the layer runs first, its findings are **injected into the specialist prompts as facts**. When Argus gets the prompt, it already knows "the secret scanner flagged an AKIA key on line 142." Argus doesn't have to rediscover the secret; it can focus on the surrounding code path (how does the key get used? is it logged anywhere?).
 
 This converts the LLM's job from "find things" into "reason about things that were found." That's a much shorter prompt and a higher-yield one.
 
@@ -115,7 +115,7 @@ The synthesizer treats `deterministicChecks` findings the same as built-in scann
 
 ## How the synthesizer uses these findings
 
-When Core synthesizes:
+When Zeus synthesizes:
 
 1. Deterministic findings are emitted directly into the review at their declared severity. They're not subject to the "cross-reference adjustment" step that LLM findings go through, because there's nothing to cross-reference.
 2. LLM findings that overlap a deterministic finding's `path:line` are merged — the deterministic finding becomes the spine of the merged comment, with LLM reasoning added as context.

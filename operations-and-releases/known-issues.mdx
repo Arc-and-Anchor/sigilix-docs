@@ -13,7 +13,7 @@ This page documents production issues that have surfaced in Sigilix's own operat
 
 **Mitigation in Sigilix.** The CI workflow wraps `wrangler deploy` in a 5-attempt retry loop with exponential backoff. Each attempt waits 5, 15, 45, and 135 seconds respectively before the next try. Empirically, ~98% of `10023` failures resolve by attempt 2; the loop has never exhausted all 5 attempts.
 
-The retry is in `.github/workflows/deploy.yml` (visible in the Arc-and-Anchor org's Sigilix repo).
+The retry is in `.github/workflows/deploy.yml` (visible in the [Sigilix org](https://github.com/Sigilix) repo).
 
 **What to do if you see it.** Nothing — the retry handles it. The deploy will succeed and the build will turn green. If a deploy fails on all 5 attempts, that's a real Cloudflare-side incident; check [Cloudflare's status page](https://www.cloudflarestatus.com/).
 
@@ -53,18 +53,13 @@ The retry is in `.github/workflows/deploy.yml` (visible in the Arc-and-Anchor or
 
 **Symptom.** A Sigilix review posts with `_3 of 4 specialists succeeded_` even though only one model provider is down. The expectation: cross-provider fallbacks should cover this.
 
-**Root cause.** This was the Phase 4a.1/4a.2 issue. Early fallbacks were configured **same-family** (e.g., DeepSeek fallback was another DeepSeek model). When DeepSeek's upstream provider had an incident, the primary AND the fallback failed together — defeating the fallback's purpose.
+**Root cause.** Early fallbacks were configured **same-family** — a specialist's primary and its fallback ran on the same provider's infrastructure. When that provider had an incident, the primary AND the fallback failed together, defeating the fallback's purpose.
 
-**Mitigation in Sigilix.** Phase 4a fixed this. Every specialist now has a cross-provider fallback on independent infrastructure:
+**Mitigation in Sigilix.** This is fixed. Every domain specialist — **Athena** (`logic`), **Argus** (`security`), **Hermes** (`performance`), **Themis** (`tests`) — now has a **cross-provider fallback on independent infrastructure**. Each specialist runs a model tuned to its role, and its fallback lives on a different provider, so a single provider outage can't silence a specialist.
 
-- `logic` Glyph: primary `deepseek-v4-pro:cloud` → fallback `kimi-k2.5:cloud` (Moonshot)
-- `security` Warden: primary `deepseek-v4-flash:cloud` → fallback `qwen3-coder-next:cloud` (Alibaba)
-- `performance` Pulse: primary `glm-5.1:cloud` (Z.ai) → fallback `kimi-k2.5:cloud` (Moonshot)
-- `tests` Weave: primary `deepseek-v4-flash:cloud` → fallback `qwen3-coder-next:cloud` (Alibaba)
+When one provider goes down, the affected specialists fail over to their cross-provider fallbacks and the review still completes with all four domain specialists. The security specialist (Argus) in particular never silently skips: it fails over rather than dropping out.
 
-When DeepSeek goes down, Glyph and Warden + Weave hit their cross-provider fallbacks; the review still completes with 4 of 4. Same logic for Z.ai and Moonshot incidents.
-
-**What to do if you see it.** Two healthy independent providers being down simultaneously is rare. If it happens, check the [provider-side status pages](https://status.cloudflare.com/) and Sigilix's status feed. A `3 of 4` review still has a verdict; merge it with awareness that one specialist's perspective is missing.
+**What to do if you see it.** Two independent providers being down simultaneously is rare. If it happens, check the [provider-side status pages](https://status.cloudflare.com/) and Sigilix's status feed. A `3 of 4` review still has a verdict; merge it with awareness that one specialist's perspective is missing.
 
 ## Read next
 

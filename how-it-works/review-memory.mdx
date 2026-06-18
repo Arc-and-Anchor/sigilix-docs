@@ -1,110 +1,115 @@
 ---
 title: "Review Memory"
-description: "Cross-PR learning from feedback signals. How Sigilix calibrates future reviews based on which findings your team accepted versus dismissed (ARC-189)."
+description: "How Sigilix remembers your team's guidance — Conversational Learnings you teach in plain language, plus a secondary statistical accept/dismiss corpus."
 ---
 
-A single-pass reviewer makes the same mistakes on every PR. If your team consistently dismisses "consider adding a docstring" findings, that finding shows up again next week, and the week after. The reviewer never learns.
+A single-pass reviewer makes the same mistakes on every PR. Tell it once that your codebase uses integer cents and it forgets by the next review. Sigilix's review memory is built so guidance you give *once* shapes every review afterward — and so you can see exactly when a learned rule was applied.
 
-**Review Memory** (ARC-189) is Sigilix's cross-PR learning layer. It records which findings the team **acted on** and which they **dismissed**, and uses that signal to calibrate future reviews on this repo.
+There are two layers. The headline is **Conversational Learnings**: rules you teach in plain language. Underneath sits a quieter **statistical accept/dismiss corpus** that nudges category-level flag-worthiness from how your team engages with findings.
 
-## What's a feedback signal?
+## Conversational Learnings
 
-Sigilix watches PR activity post-review for these signals:
+Reply to a Sigilix finding the way you'd reply to a human reviewer:
+
+> We use integer cents here, not floats — this is intentional.
+
+Sigilix records that as a durable rule for this repo, applies it judiciously in later reviews, and **attributes it inline** when it does. The next time a finding would touch the same ground, you see why it was shaped:
+
+> _Applied because of a learned rule: "we use integer cents here."_
+
+A **"Learned something new"** footer confirms capture at the time you teach it.
+
+### Teaching and forgetting
+
+Two explicit commands, plus implicit capture from natural replies:
+
+| Action | How |
+|---|---|
+| Teach a rule explicitly | `@sigilix remember we use integer cents, never floats, for money` |
+| Forget a rule | `@sigilix forget <the rule>` |
+| Teach implicitly | Reply to a finding in plain language ("this is intentional, we always do X") — Sigilix extracts the rule |
+
+Learnings are captured across review surfaces — replying on a finding thread, an `@sigilix` comment, or a `remember` command all feed the same store.
+
+### How a learning shapes a review
+
+A learning is **guidance the reviewer reasons with**, not a hard mute. When a later review encounters relevant code:
+
+- Sigilix injects the learned rules into the specialists' context before they run.
+- A finding that contradicts a learning is reconsidered — often suppressed, sometimes re-framed — rather than re-posted blindly.
+- When a learning changes the outcome, the inline attribution makes it visible, so the memory is never a silent black box.
+
+### What is protected from learnings
+
+Learnings make reviews quieter where you've earned it, but they do not let the repo silence its own safety net. Critical and security-class findings are carved out: a learning cannot suppress a genuine Critical or a security finding. The reviewer still surfaces those regardless of how much guidance has accumulated.
+
+### Privacy and scope
+
+- Learnings are **scoped per repo**. They are not shared across customers or repos.
+- You teach team-level rules ("we use integer cents"), not models of individual reviewers.
+- Forgetting a rule with `@sigilix forget` removes it from the active set.
+
+<Note>
+Conversational Learnings is the per-customer flywheel: every correction you give compounds into a reviewer that fits your codebase. See [Conversational Learnings](/how-it-works/conversational-learnings) for the full lifecycle, and [Commands](/configuration/commands) for `remember` / `forget`.
+</Note>
+
+## Statistical accept/dismiss corpus (secondary)
+
+Beneath the explicit Learnings layer, Sigilix also watches how your team engages with findings and uses that aggregate signal to calibrate category-level flag-worthiness. This is the older mechanism — useful, but it operates on patterns, not on rules you can state.
+
+### What's a feedback signal?
 
 | Signal | Interpretation |
 |---|---|
-| Finding's suggested patch was committed (via "Commit suggestion" button) | Strong accept |
-| Reviewer replied to the finding's thread with "Thanks, fixed" / "Good catch" | Accept |
-| Reviewer replied with "Not applicable" / "False positive" / 👎 reaction | Dismiss |
+| Finding's suggested patch was committed | Strong accept |
+| Reply like "Thanks, fixed" / "Good catch" | Accept |
+| Reply like "Not applicable" / "False positive" / 👎 reaction | Dismiss |
 | PR merged with the finding's underlying code unchanged | Soft dismiss |
-| Reviewer added the bot to the resolution chain (resolved their thread) | Soft accept |
+| Reviewer resolved the finding's thread | Soft accept |
 
-These are noisy signals on a per-finding basis. The memory aggregates them across **many PRs** to identify patterns — categories the team consistently dismisses, categories they consistently act on.
+These are noisy per-finding. The corpus aggregates them across **many PRs** to find category-level patterns — categories the team consistently dismisses, categories they consistently act on.
 
-## How the memory shapes future reviews
+### How the corpus shapes future reviews
 
-The memory does **not** silence findings outright. It nudges Sigilix's flag-worthiness floor per category, per repo:
+It does **not** silence findings outright. It nudges the flag-worthiness floor per category, per repo:
 
 ```
-Category that gets dismissed 8/10 times on this repo
-  → flag-worthiness floor raises (only stronger versions surface)
+Category dismissed 8/10 times on this repo
+  → floor raises (only stronger versions surface)
 
-Category that gets acted on 8/10 times on this repo
-  → floor stays low (any signal in that category surfaces aggressively)
+Category acted on 8/10 times on this repo
+  → floor stays low (any signal surfaces aggressively)
 ```
 
-The memory is **scoped per repo + per category**, never per file or per user. It doesn't try to model individual reviewer preferences — it models team-level patterns.
+The corpus is **scoped per repo + per category**, never per file or per user. Sigilix stores aggregate counts, **not** the underlying findings or the code they referred to.
 
-## What the memory remembers
-
-A small, structured record per category:
-
-```text
-repo: acme/site
-category: style-naming
-acted-on: 4
-dismissed: 22
-ratio: 0.15  →  raise floor by 1 score
-```
-
-The actual record is more nuanced (recency-weighted, with confidence intervals) but the shape is the same. Sigilix stores aggregate counts, **not** the underlying findings or the code they referred to. There's nothing about your specific code retained.
-
-## What it does not do
+### Carve-outs (same as Learnings)
 
 | Concern | Reality |
 |---|---|
-| "Will this learn my team's biases?" | It learns category-level accept/dismiss patterns, not opinions about specific code. |
-| "Will it stop catching real bugs?" | The floor adjustment is bounded. A `critical` security finding always surfaces regardless of memory state. |
-| "Will it remember a specific bug?" | No. The memory stores aggregate signals, not findings. |
-| "Can I see what's in the memory?" | A read-only inspection view ships on the upcoming Pro/Max dashboard. |
-| "Can I reset it?" | Yes — `{ "reviewMemory": { "enabled": false } }` for a review, then re-enable. The data isn't deleted but is ignored. A hard reset is a support request. |
-
-## When you want it on
-
-For most repos, leave it enabled. The dismiss-then-resurface loop on style/taste findings is the single biggest source of reviewer fatigue on first-generation AI review tools.
-
-Cases where on is clearly right:
-- Established codebase with a consistent review culture
-- Active team that engages with findings (accepts, replies, dismisses)
-- Codebases where review fatigue is a documented complaint
-
-## When to disable
-
-Disable via `{ "reviewMemory": { "enabled": false } }` if any of these apply:
-
-- **Bot-driven approvals.** If most PRs are auto-merged without human engagement, the memory is being fed near-empty signals and will calibrate poorly.
-- **Brand-new repo.** With few reviews on record, the memory's adjustments are noisy. Wait a few weeks then enable.
-- **Compliance contexts.** Some teams need every category of finding flagged at the configured severity regardless of historical patterns. Leave the memory off; rely on the synthesizer + `profile` instead.
-- **Audit mode.** When you specifically want the unadjusted ensemble (e.g., for a baseline comparison or a one-time security review), disable temporarily.
+| "Will it stop catching real bugs?" | The floor adjustment is bounded. A Critical or security finding always surfaces regardless of corpus state. |
+| "Will it remember a specific bug?" | No. The corpus stores aggregate signals, not findings. |
+| "Can I reset it?" | Set `{ "reviewMemory": { "enabled": false } }` to ignore the corpus for a review, then re-enable. A hard reset is a support request. |
 
 ## Interaction with other features
 
 | Feature | How they relate |
 |---|---|
-| `profile: assertive` | Lowers the flag-worthiness floor globally. Review memory still applies *on top* — categories the team consistently dismisses still get a relative raise. |
-| `deterministicChecks` | Unaffected. Memory only adjusts LLM-specialist findings, not regex matches. |
-| Secret scanning, AST rules | Unaffected. Same as deterministic — perfect-provenance findings are never down-weighted by memory. |
-| `rules.<role>` | Unaffected. If you've told a specialist to flag X, memory doesn't override that. |
+| Conversational Learnings | The headline layer. Explicit, repo-scoped, attributed inline. Takes precedence as stated guidance. |
+| `profile: assertive` | Lowers the flag-worthiness floor globally. The statistical corpus still applies on top. |
+| `deterministicChecks` | Unaffected. Memory only adjusts LLM-specialist findings, never regex matches. |
+| Secret scanning, AST rules | Unaffected. Perfect-provenance findings are never down-weighted by memory. |
+| `rules.<role>` | Unaffected. Explicit rules you set are honored. |
 
-The general rule: **memory adjusts LLM judgment calls, never deterministic findings or explicit rules.**
-
-## Telemetry
-
-Every review records:
-
-- Which categories had memory-driven adjustments applied
-- The current accept/dismiss ratios per category (recency-weighted)
-- The size of the adjustment (delta in flag-worthiness floor)
-
-Used internally for monitoring; the eventual user-facing surface is the upcoming Pro/Max dashboard.
+The general rule: **memory adjusts LLM judgment calls, never deterministic findings or explicit safety carve-outs.**
 
 ## Read next
 
 <CardGroup cols={2}>
-  <Card title="Opt-outs" icon="toggle-off" href="/configuration/opt-outs">
-    Disable review memory and other subsystems.
+  <Card title="Conversational Learnings" icon="comment-dots" href="/how-it-works/conversational-learnings">
+    Teach a rule in plain language; see it applied and attributed inline.
   </Card>
   <Card title="Confidence Scoring" icon="chart-bar" href="/how-it-works/confidence-scoring">
-    How scores become severities at the finding level.
+    Proof-tier receipts and the grounding gate that govern what posts.
   </Card>
 </CardGroup>

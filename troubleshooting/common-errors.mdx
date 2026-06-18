@@ -27,7 +27,7 @@ If the PR only touches files matching your `sigilix.json` `pathFilters`, Sigilix
 
 ### 5. Did you hit the rate limit?
 
-If your tier's rate limit is exhausted, Sigilix posts a small "rate limit reached" comment instead of a full review. Check your usage at the dashboard or in any recent review's footer.
+If your account's rate limit is exhausted, Sigilix posts a small "rate limit reached" comment instead of a full review. Check your usage at the dashboard or in any recent review's footer.
 
 ### 6. Is the diff too large?
 
@@ -35,14 +35,14 @@ Sigilix has a 5MB diff cap. PRs with diffs larger than that get a "diff too larg
 
 ## "Review posted but a specialist is missing"
 
-If a Sigilix review's footer says `_3 of 4 specialists succeeded._`, one specialist failed. This usually means:
+If a Sigilix review's footer says `_3 of 4 specialists succeeded._`, one of the four domain specialists — Athena (logic), Argus (security), Hermes (performance), or Themis (tests) — failed. This usually means:
 
 - The specialist's primary model returned a 5xx (overloaded) and the cross-provider fallback also failed
-- The specialist hit its per-call timeout (60s default)
+- The specialist ran out of its review budget. The budget is size-scaled — small diffs finish quickly, large diffs are allowed to run up to the platform's wall-clock ceiling — so a specialist running long usually means an unusually large or dense diff, not a fixed per-call cap
 
-The review still posts with the available specialists. Sigilix doesn't retry the missing specialist on the same SHA — push a new commit to trigger a fresh review.
+The review still posts with the available specialists; Zeus synthesizes whatever returned. Sigilix doesn't retry the missing specialist on the same SHA — push a new commit to trigger a fresh review.
 
-If a specific specialist is consistently failing, [contact us](mailto:support@arcanchor.com) — there may be a regional outage at the model provider.
+If a specific specialist is consistently failing, [contact us](mailto:support@sigilix.ai) — there may be an outage at the model provider.
 
 ## "Inline anchors are missing — everything is in the body"
 
@@ -54,7 +54,7 @@ The verdict is still posted; the findings are rolled into the review body as mar
 _Inline anchoring unavailable for this review; findings grouped above._
 ```
 
-This is rare — Sigilix's pre-validation should catch bad positions before submission. If you see it consistently on a particular repo, [contact us](mailto:support@arcanchor.com).
+This is rare — Sigilix's pre-validation should catch bad positions before submission. If you see it consistently on a particular repo, [contact us](mailto:support@sigilix.ai).
 
 ## "Sigilix re-reviews on every push but my PR has hundreds of pushes"
 
@@ -66,7 +66,7 @@ If you push a single commit slowly (one every minute), you'll burn budget faster
 
 This is a webhook-signature mismatch. Sigilix verifies the `X-Hub-Signature-256` header on every incoming GitHub webhook against `GITHUB_WEBHOOK_SECRET`.
 
-If you've rotated the GitHub App's webhook secret, you need to update the secret on the Sigilix deployment side. Reach out to [support@arcanchor.com](mailto:support@arcanchor.com) and we'll re-sync.
+If you've rotated the GitHub App's webhook secret, you need to update the secret on the Sigilix deployment side. Reach out to [support@sigilix.ai](mailto:support@sigilix.ai) and we'll re-sync.
 
 ## "Sigilix is reviewing but my `rules.<role>` aren't firing"
 
@@ -81,7 +81,7 @@ See [Rules & Guidance](/configuration/rules-and-guidance) for writing effective 
 
 ## Still stuck?
 
-Email us at [support@arcanchor.com](mailto:support@arcanchor.com) with:
+Email us at [support@sigilix.ai](mailto:support@sigilix.ai) with:
 - Your GitHub org name
 - The PR URL where the issue occurred
 - The expected behavior vs. observed

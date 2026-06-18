@@ -1,20 +1,22 @@
 ---
 title: "Specialists"
-description: "Glyph, Warden, Pulse, Weave — what each specialist catches, sample findings, and model selection."
+description: "Athena, Argus, Hermes, Themis — what each domain specialist catches, sample findings, and how models are selected."
 ---
 
-Sigilix runs four parallel specialists per review. Each has a focused prompt, a tuned primary model, and a cross-provider fallback that makes a same-family provider outage unlikely to silence a specialist. A specialist can still be skipped if both primary and fallback fail — see the retry + fallback policy below.
+Sigilix runs **five** specialists per review: four domain specialists in parallel — **Athena**, **Argus**, **Hermes**, **Themis** — unified by **Zeus**, the synthesizer that runs after them. Each domain specialist has a focused prompt, a model tuned to its role, and a cross-provider fallback that makes a same-family provider outage unlikely to silence a specialist. A specialist can still be skipped if both primary and fallback fail — see the retry + fallback policy below.
 
-Internally each specialist has a **role** name (`logic`, `security`, `performance`, `tests`) that appears in `sigilix.json` under `rules.<role>`. The public-facing brand names (Glyph, Warden, Pulse, Weave) are the same specialists with the same prompts.
+Internally each specialist has a **role** name (`logic`, `security`, `performance`, `tests`) that appears in `sigilix.json` under `rules.<role>`. The public-facing brand names (Athena, Argus, Hermes, Themis) are the same specialists with the same prompts.
 
 | Brand | Role | Domain |
 |---|---|---|
-| Glyph | `logic` | Architecture, layering, dead code |
-| Warden | `security` | Auth, input validation, secret leakage |
-| Pulse | `performance` | N+1, hot paths, big-O regressions |
-| Weave | `tests` | Naming, semantics, test coverage |
+| Athena | `logic` | Architecture, layering, dead code |
+| Argus | `security` | Auth, input validation, secret leakage |
+| Hermes | `performance` | N+1, hot paths, big-O regressions |
+| Themis | `tests` | Naming, semantics, test coverage |
 
-## Glyph · Architecture
+Zeus is covered on its own page — see [Synthesizer](/how-it-works/synthesizer). This page is the four domain specialists.
+
+## Athena · Architecture
 
 **What it catches:**
 - Circular dependencies between modules
@@ -22,21 +24,18 @@ Internally each specialist has a **role** name (`logic`, `security`, `performanc
 - Interface drift between code and its tests/types
 - Module cohesion issues
 
-**Primary model:** `deepseek-v4-pro:cloud`<br/>
-**Cross-provider fallback:** `kimi-k2.5:cloud`
-
-deepseek-v4-pro is Sigilix's logic-heavy workhorse. Its proof-style chain-of-thought reasoning is well-suited for Glyph's architectural arguments — tracing imports across files, evaluating layered architecture rules, and judging cohesion. When DeepSeek's provider returns 503 (which is correlated across DeepSeek models), Sigilix falls back to kimi-k2.5 on Moonshot — different provider, uncorrelated outage profile.
+**Model selection:** Athena runs a reasoning-heavy model — its proof-style chain-of-thought reasoning is well-suited for architectural arguments: tracing imports across files, evaluating layered architecture rules, and judging cohesion. When its primary provider is unavailable, Sigilix falls back to a model on a different provider with an uncorrelated outage profile, so a single provider incident can't silence the logic role.
 
 **Sample finding:**
 
 ```text
-[Glyph] Boundary violation detected
+[Athena] Boundary violation detected
 domain/invoice.ts imports infra/stripe.ts
 Rule: Domain may not depend on Infrastructure.
 Suggested fix: Introduce `PaymentGateway` port in domain/.
 ```
 
-## Warden · Security
+## Argus · Security
 
 **What it catches:**
 - Unsanitized inputs (SQL injection, XSS, SSRF, formula injection)
@@ -45,20 +44,17 @@ Suggested fix: Introduce `PaymentGateway` port in domain/.
 - Insecure regex patterns prone to ReDoS
 - OWASP Top-10 patterns
 
-**Primary model:** `deepseek-v4-flash:cloud`<br/>
-**Cross-provider fallback:** `qwen3-coder-next:cloud`
-
-Warden uses a faster model than Glyph because security findings are higher-volume per PR and need turnaround. The cross-provider fallback ensures that if one provider is down, Warden still produces a verdict — security checks should never silently skip.
+**Model selection:** Argus runs a faster, higher-volume model than Athena because security findings are higher-volume per PR and need turnaround. The cross-provider fallback ensures that if one provider is down, Argus still produces a verdict — security checks should never silently skip.
 
 **Sample finding:**
 
 ```text
-[Warden] Critical: Potential SSRF
+[Argus] Critical: Potential SSRF
 utils/fetcher.ts:71 — user-supplied URL passed to fetch()
 without an allowlist. Validate against approvedHosts[].
 ```
 
-## Pulse · Performance
+## Hermes · Performance
 
 **What it catches:**
 - N+1 query patterns in ORM-heavy code
@@ -67,20 +63,17 @@ without an allowlist. Validate against approvedHosts[].
 - Unbounded recursion or iteration
 - Big-O regressions vs. the previous implementation
 
-**Primary model:** `glm-5.1:cloud`<br/>
-**Cross-provider fallback:** `kimi-k2.5:cloud`
-
-glm-5.1 was promoted from fallback to primary in Phase 4a.1 after shadow telemetry showed it produced higher-quality performance findings than the prior minimax-m2.1 primary, with fewer 503s under Ollama Turbo's load.
+**Model selection:** Hermes runs a model tuned for cost-effective, high-throughput pattern-spotting, with a cross-provider fallback. The exact model choice is tuned over time from shadow telemetry — Sigilix keeps the primary that produces the highest-quality performance findings at the lowest latency, without changing this page each time.
 
 **Sample finding:**
 
 ```text
-[Pulse] O(n²) render loop
+[Hermes] O(n²) render loop
 components/Table.tsx:112 — sorting inside render()
 Memoize with useMemo keyed by sortKey.
 ```
 
-## Weave · Semantics
+## Themis · Semantics
 
 **What it catches:**
 - Dead code reachable only by impossible conditions
@@ -89,34 +82,31 @@ Memoize with useMemo keyed by sortKey.
 - Missing test coverage on non-trivial branches added in the diff
 - Inconsistent error handling between two functions added in the same PR
 
-**Primary model:** `deepseek-v4-flash:cloud`<br/>
-**Cross-provider fallback:** `qwen3-coder-next:cloud`
-
-Weave's surface is broad and shallow — it needs speed and breadth more than depth. Sharing the model family with Warden lets Sigilix amortize warm-cache costs across two specialists.
+**Model selection:** Themis's surface is broad and shallow — it needs speed and breadth more than depth, so it runs a fast, high-coverage model with a cross-provider fallback. It often shares a model family with Argus, which lets Sigilix amortize warm-cache costs across two specialists.
 
 **Sample finding:**
 
 ```text
-[Weave] Unreachable branch
+[Themis] Unreachable branch
 checkout.ts:45 — early return bypasses tax calc
 when total < 0. Remove or handle as error path.
 ```
 
 ## Retry + fallback policy
 
-Each specialist runs against its primary model with one retry on transient failure (503, 429, timeout). If retries are exhausted, the cross-provider fallback fires once. If the fallback also fails, that specialist's contribution is skipped — Core synthesizes from the remaining specialists and the verdict is posted with a `_3 of 4 specialists succeeded_` footnote.
+Each specialist runs against its primary model with one retry on transient failure (503, 429, timeout). If retries are exhausted, the cross-provider fallback fires once. If the fallback also fails, that specialist's contribution is skipped — Zeus synthesizes from the remaining specialists and the verdict is posted with a `_3 of 4 specialists succeeded_` footnote.
 
 The cross-provider design — primary and fallback on different infrastructure — is deliberate. Same-family fallbacks fail together when the upstream provider has an outage, defeating the fallback's purpose.
 
-## Why these four (and not more or fewer)?
+## Why these four domain specialists (and not more or fewer)?
 
 The split was chosen empirically:
 
 - **Architecture, security, performance, semantics** are the four most-cited categories in code review failure-mode taxonomies.
-- Adding a fifth specialist (e.g., a "documentation" specialist) didn't materially improve catches — Weave already covers naming and stale comments.
-- Reducing to three specialists (e.g., merging architecture and semantics) left blind spots in cross-module reasoning.
+- Adding a fifth domain specialist (e.g., a "documentation" specialist) didn't materially improve catches — Themis already covers naming and stale comments.
+- Reducing to three domain specialists (e.g., merging architecture and semantics) left blind spots in cross-module reasoning.
 
-The architecture supports adding specialists in the future. If a customer-driven category emerges (e.g., a domain-specific compliance specialist for financial code), it can plug into Core's synthesis without changing the existing four.
+The architecture supports adding domain specialists in the future. If a customer-driven category emerges (e.g., a domain-specific compliance specialist for financial code), it can plug into Zeus's synthesis without changing the existing four.
 
 ## Tuning per-repo
 
@@ -126,15 +116,15 @@ You can't disable individual specialists — keeping the ensemble whole is what 
 - **Scope the review** via `pathFilters` so a specialist sees less ([Path Filters & Profile](/configuration/path-filters-and-profile)).
 - **Shift flag-worthiness** via `profile: "chill" | "assertive"`.
 
-Core (the synthesizer) is always on. It's how Sigilix produces a single coherent comment.
+Zeus (the synthesizer) is always on. It's how Sigilix produces a single coherent comment.
 
 ## Read next
 
 <CardGroup cols={2}>
   <Card title="Synthesizer" icon="git-merge" href="/how-it-works/synthesizer">
-    How Core deduplicates, calibrates, and posts the final review.
+    How Zeus deduplicates, calibrates, and posts the final review.
   </Card>
   <Card title="Confidence Scoring" icon="chart-bar" href="/how-it-works/confidence-scoring">
-    How findings are ranked, suppressed, and escalated.
+    Proof-tier receipts and the grounding gate that govern what posts.
   </Card>
 </CardGroup>

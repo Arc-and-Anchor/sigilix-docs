@@ -30,15 +30,15 @@ Returns a paginated list of past reviews on a PR.
   "reviews": [
     {
       "id": "rev_2y8tA9...",
-      "owner": "Arc-and-Anchor",
+      "owner": "Sigilix",
       "repo": "sigilix",
       "pr_number": 42,
       "head_sha": "a1b2c3d4",
       "verdict": "request_changes",
       "synthesized_at": "2026-05-05T03:14:00Z",
-      "specialists_succeeded": ["glyph", "warden", "spark", "weave"],
+      "specialists_succeeded": ["logic", "security", "performance", "tests"],
       "findings_count": 4,
-      "summary": "Core synthesized 4 findings across 3 specialists..."
+      "summary": "Zeus synthesized 4 findings across the domain specialists..."
     }
   ],
   "next_cursor": null
@@ -56,7 +56,7 @@ Returns the full review including all findings.
 ```json
 {
   "id": "rev_2y8tA9...",
-  "owner": "Arc-and-Anchor",
+  "owner": "Sigilix",
   "repo": "sigilix",
   "pr_number": 42,
   "head_sha": "a1b2c3d4",
@@ -65,7 +65,7 @@ Returns the full review including all findings.
   "findings": [
     {
       "id": "fnd_4c2bX1...",
-      "specialist": "warden",
+      "specialist": "security",
       "category": "security",
       "severity": "critical",
       "path": "src/api/checkout.ts",

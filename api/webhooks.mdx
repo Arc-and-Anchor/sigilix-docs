@@ -43,15 +43,14 @@ Set `Content-Type: application/json` and HMAC-sign with `X-Sigilix-Signature: sh
   "event": "review.completed",
   "data": {
     "review_id": "rev_2y8tA9...",
-    "owner": "Arc-and-Anchor",
+    "owner": "Sigilix",
     "repo": "sigilix",
     "pr_number": 42,
     "head_sha": "a1b2c3d4",
     "verdict": "request_changes",
     "findings_count": 4,
-    "specialists_succeeded": ["glyph", "warden", "spark", "weave"],
+    "specialists_succeeded": ["logic", "security", "performance", "tests"],
     "rate_limit": {
-      "tier": "pro",
       "used": 6,
       "max_reviews": 10,
       "resets_at": "2026-05-05T08:14:00Z"
@@ -72,7 +71,7 @@ Findings are batched into a single `finding.created` event per review (not one e
     "findings": [
       {
         "id": "fnd_4c2bX1...",
-        "specialist": "warden",
+        "specialist": "security",
         "category": "security",
         "severity": "critical",
         "path": "src/api/checkout.ts",
@@ -90,12 +89,12 @@ Findings are batched into a single `finding.created` event per review (not one e
 {
   "event": "review.failed",
   "data": {
-    "owner": "Arc-and-Anchor",
+    "owner": "Sigilix",
     "repo": "sigilix",
     "pr_number": 42,
     "head_sha": "a1b2c3d4",
     "reason": "quorum_failure",
-    "specialists_failed": ["warden", "spark"]
+    "specialists_failed": ["security", "performance"]
   }
 }
 ```

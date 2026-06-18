@@ -44,9 +44,9 @@ The DO carries a `mode` per repo that controls how its decisions interact with t
 | `shadow` | The DO drives decisions and records them, but the legacy KV path **also** runs in parallel. Outputs are compared; discrepancies are logged. Used to gain confidence before full cutover. |
 | `post` | The DO is the source of truth. Legacy KV path is bypassed. Production mode. |
 
-As of writing, the production deployment has `PrReviewRunDO` registered with `mode=off` — the DO is live and recording, but doesn't yet drive review behavior. Shadow rollout on Sigilix's own repo is planned for ~2026-05-14; full `post` cutover ~2026-05-21; legacy KV path removal ~2026-06-21.
+`PrReviewRunDO` rolled out through these stages in order: `off` (live and recording, but not driving review behavior) → `shadow` (driving decisions in parallel with the legacy KV path, with outputs compared) → `post` (the DO is the source of truth, legacy KV path bypassed). The legacy KV dedupe path is retired once `post` has soaked.
 
-This staged rollout is deliberate. A bug in the DO that silently drops reviews would be terrible; running shadow alongside the legacy path catches mismatches before cutover.
+This staged rollout was deliberate. A bug in the DO that silently drops reviews would be terrible; running shadow alongside the legacy path catches mismatches before cutover.
 
 ## The `handlePrOverview` race (ARC-231)
 

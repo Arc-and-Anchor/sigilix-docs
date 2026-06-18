@@ -14,11 +14,11 @@ Sigilix listens for `@sigilix` mentions and `/sigilix <command>` strings on PR c
 | `/sigilix describe [pr\|internal\|external]` | Drafts a PR description, internal changelog, or external changelog | Before merge, when filling in the PR body or release notes |
 | `/sigilix help` | Inline list of available commands | When you forget the syntax |
 
-You can also write `@sigilix <free text question>` for a conversational reply that scopes context to the PR.
+You can also write `@sigilix <free text question>` for a conversational reply that scopes context to the PR, and `@sigilix remember …` / `@sigilix forget …` to teach or retract a repo rule (see [Conversational Learnings](#conversational-learnings)).
 
 ### `/sigilix review`
 
-Re-runs the four specialists + Core synthesizer on the current head SHA. Useful when:
+Re-runs the four domain specialists (Athena, Argus, Hermes, Themis) unified by the Zeus synthesizer on the current head SHA. Useful when:
 
 - You just rebased and want a fresh review instead of waiting on the webhook.
 - The previous review was on a stale SHA (rare, but happens during force-push storms).
@@ -56,6 +56,36 @@ The draft is posted as a comment between visible markers (`<!-- sigilix:describe
 
 Posts an inline list of commands and their usage. No model call, no rate-limit cost — useful for fast self-service.
 
+## Mentions and Q&A
+
+Beyond the slash commands, Sigilix listens for plain `@sigilix` mentions on a PR or comment thread:
+
+- `@sigilix <question>` — a grounded, conversational reply scoped to the PR. Sigilix answers against the diff, the cited code, and the repo's earned context (code graph, index, review history) rather than guessing from the question text alone.
+- `@sigilix remember …` / `@sigilix forget …` — teach or retract a repo rule. See below.
+
+Mentions run a lighter pipeline than a full review and are not subject to the review rate limit.
+
+## Conversational Learnings
+
+You can teach Sigilix a rule in plain language and it will apply that rule judiciously in later reviews — and attribute it inline when it does ("applied because of a learned rule"). This is the headline mechanism for shaping reviews over time; it complements the longer-form, repo-wide `guidance` and per-role `rules` in [`sigilix.json`](/configuration/rules-and-guidance).
+
+Two ways to capture a learning:
+
+| Form | Example | Effect |
+|---|---|---|
+| Reply to a finding | Reply to a Sigilix comment: "We use integer cents here, not floats — this is intentional." | Sigilix records the rule and stops re-flagging the pattern it was wrong about. |
+| Explicit command | `@sigilix remember we always import from the package root, never deep paths` | Sigilix records the stated rule. |
+
+To retract a rule:
+
+```
+@sigilix forget the integer-cents rule
+```
+
+When a learning is captured, Sigilix confirms with a **"Learned something new"** footer on its reply so you know the rule was stored. In subsequent reviews, when a learning changes the outcome, the affected finding (or the decision to suppress one) carries an inline attribution noting which learned rule applied — so the memory is auditable, never silent.
+
+Conversational Learnings is per-repo and accrues across PRs. For the full model — capture, injection, judicious application, and the carve-outs that protect Critical/security findings from being learned away — see [Conversational Learnings](/how-it-works/conversational-learnings).
+
 ## Configuring commands via `sigilix.json`
 
 The `commands` block lets you tune prompts and models per-command, per-repo. Both fields are optional.
@@ -64,14 +94,14 @@ The `commands` block lets you tune prompts and models per-command, per-repo. Bot
 {
   "commands": {
     "review": {
-      "model": "kimi-k2.6:cloud"
+      "model": "model-id-from-allowlist"
     },
     "improve": {
       "prompt": "Always include the import statement in suggested patches when the patch references a new symbol."
     },
     "describe": {
       "prompt": "Lead external changelogs with the user-facing impact, not the implementation. Skip internal ticket numbers.",
-      "model": "glm-5.1:cloud"
+      "model": "model-id-from-allowlist"
     }
   }
 }
@@ -93,17 +123,12 @@ Appended to the command's system prompt. Don't rewrite the prompt; **add** to it
 
 ### `model` — override
 
-Override the default model for this command. The allowlist:
-
-- `glm-5.1:cloud`
-- `kimi-k2.6:cloud`
-- `qwen3-coder:480b-cloud`
-- `deepseek-v4-pro:cloud`
+Override the default model for this command, using a model identifier from Sigilix's current allowlist. The allowlist tracks the providers and model versions in production and changes over time, so don't pin a specific model ID here from memory — check the live allowlist (or run `/sigilix help`) for the current set.
 
 Unknown model names fall back to the command's default with a single warning logged in telemetry. The review proceeds — the validation is fail-open.
 
 <Note>
-  The command-override allowlist is intentionally a different set of model identifiers from the specialist fallbacks (which use `kimi-k2.5:cloud` and `qwen3-coder-next:cloud`). The specialist ensemble is internally tuned for cross-provider resilience and uses specific versions for that purpose; command overrides expose a broader, more current selection because commands run independently of the ensemble's cross-provider failover logic.
+  The command-override allowlist is intentionally a different set of model identifiers from the specialist fallbacks. The specialist ensemble is internally tuned for cross-provider resilience and pins specific model versions for that purpose; command overrides expose a broader, more current selection because commands run independently of the ensemble's cross-provider failover logic.
 </Note>
 
 ### What you can't override
@@ -112,7 +137,7 @@ Unknown model names fall back to the command's default with a single warning log
 |---|---|
 | Individual specialist models for `review` | Specialists are tuned together; per-repo overrides risk de-tuning the ensemble. Use [`guidance`](/configuration/rules-and-guidance) to influence behavior instead. |
 | The synthesizer model | Same — the synthesizer is fixed to keep cross-PR comparability. |
-| Per-command rate limits | Plan-tier defaults apply. Bursts beyond your tier queue or 429. |
+| Per-command rate limits | Account-level limits apply during the private beta. Bursts beyond your limit queue or 429. See [Rate Limits](/configuration/rate-limits). |
 
 ## Defaults
 
@@ -121,9 +146,9 @@ Without a `commands` block, each command uses Sigilix's vetted defaults:
 | Command | Default model |
 |---|---|
 | `review` | The full specialist + synthesizer ensemble (see [Specialists](/how-it-works/specialists)) |
-| `improve` | `glm-5.1:cloud` |
-| `describe` | `glm-5.1:cloud` |
-| Mention reply (`@sigilix ...`) | `glm-5.1:cloud` |
+| `improve` | A vetted default model from the current allowlist |
+| `describe` | A vetted default model from the current allowlist |
+| Mention reply (`@sigilix ...`) | A vetted default model from the current allowlist |
 
 ## Disabling a command
 
@@ -153,6 +178,9 @@ Useful for spotting commands that produce empty output or low-yield runs.
 ## Read next
 
 <CardGroup cols={2}>
+  <Card title="Conversational Learnings" icon="brain" href="/how-it-works/conversational-learnings">
+    How `@sigilix remember/forget` and finding-replies shape future reviews.
+  </Card>
   <Card title="Rules & Guidance" icon="message-quote" href="/configuration/rules-and-guidance">
     Tune the prompts via guidance — usually a lighter touch than per-command overrides.
   </Card>

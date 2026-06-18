@@ -1,0 +1,64 @@
+---
+title: "Conversational Learnings"
+description: "Teach Sigilix a rule in plain language — reply to a finding with 'we use integer cents here' — and it records the rule, applies it judiciously in later reviews, and attributes it inline when it does."
+---
+
+A reviewer who keeps flagging the same non-issue is a reviewer your team learns to ignore. The fix is not a config file nobody updates; it is the ability to tell the reviewer, in the moment, what your codebase actually does — and have it remember.
+
+Sigilix learns from conversation. When a finding is wrong for a reason specific to your repo, you reply in plain language. Sigilix records the rule, applies it judiciously in future reviews, and — crucially — tells you when a later review was shaped by something it learned. Learnings are per-repo and per-customer; what one team teaches stays with that team.
+
+## Teach a rule in three ways
+
+<Steps>
+  <Step title="Reply to a finding">
+    The most natural path. A finding fires, you disagree, and you say why: <em>"we use integer cents here, this isn't a float-rounding bug."</em> Sigilix turns that reply into a rule scoped to this repo.
+  </Step>
+  <Step title="@sigilix remember …">
+    State a rule directly, without waiting for a finding to react to:
+    <br />
+    <code>@sigilix remember we use integer cents for all money values</code>
+  </Step>
+  <Step title="@sigilix forget …">
+    Retire a rule that no longer applies:
+    <br />
+    <code>@sigilix forget the integer-cents rule</code>
+  </Step>
+</Steps>
+
+<Note>
+When Sigilix captures a new rule, it confirms with a <strong>"Learned something new"</strong> footer on its reply, so you know the lesson landed and did not vanish into the thread.
+</Note>
+
+## Applied judiciously, and attributed inline
+
+A learned rule is not a hard mute. Sigilix reasons about whether the rule applies to the specific code in front of it, rather than blanket-suppressing a whole category. When a later review is shaped by a learning, the finding (or its absence) is attributed inline — you will see a note that it was **applied because of a learned rule**. The attribution matters: it keeps the system honest and lets you see exactly which lesson changed the outcome.
+
+<CardGroup cols={2}>
+  <Card title="Judicious application" icon="scale-balanced">
+    A rule narrows judgment where it is relevant; it does not silence an entire severity or category. Safety-critical and security findings remain protected.
+  </Card>
+  <Card title="Inline attribution" icon="quote-left">
+    When a learning changes a review, Sigilix says so on the spot — "applied because of a learned rule" — so the influence of memory is visible, not hidden.
+  </Card>
+</CardGroup>
+
+## Where Learnings sit in the pipeline
+
+Conversational Learnings is the memory gate of the [believability pipeline](/how-it-works/believability-pipeline). After a candidate finding has cleared evidence, provenance, refutation, and received its proof-tier receipt, it is weighed against what Sigilix has learned about this repo. A finding that contradicts a learned rule can be down-weighted or suppressed before it ever reaches the PR.
+
+Learnings is also a layer of [earned context](/how-it-works/earned-context): every rule you teach becomes reusable understanding that later reviews — and the CLI and Deep-Research Chat — can draw on.
+
+<Note>
+Learnings is the headline mechanism of review memory. A secondary, statistical signal also exists — Sigilix tracks accept-and-dismiss patterns across findings — but the plain-language rules you teach are the primary, explicit way to shape how Sigilix reviews your code.
+</Note>
+
+## Read next
+
+<CardGroup cols={2}>
+  <Card title="Commands" icon="terminal" href="/configuration/commands">
+    The full command reference, including <code>@sigilix remember</code> and <code>@sigilix forget</code>.
+  </Card>
+  <Card title="Earned Context" icon="layer-group" href="/how-it-works/earned-context">
+    How learned rules join the reusable context layer the whole product draws on.
+  </Card>
+</CardGroup>
