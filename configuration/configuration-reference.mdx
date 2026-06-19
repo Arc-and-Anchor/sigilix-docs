@@ -1,19 +1,31 @@
 ---
-title: "sigilix.json"
-description: "Per-repo configuration reference. Drop a sigilix.json at the repo root to inject guidance, scope reviews, encode deterministic rules, and toggle subsystems."
+title: "Configuration file"
+description: "Per-repo configuration reference. Drop a sigilix.json or sigilix.yaml at the repo root to inject guidance, scope reviews, encode deterministic rules, and toggle subsystems."
 ---
 
-Sigilix reads `sigilix.json` from the **PR head SHA** on every review. The file is optional — missing means defaults apply, malformed JSON means defaults apply plus a single warning posted on the PR. The file does **not** need to be committed to your default branch to take effect; whatever exists at the head SHA wins.
+Sigilix reads its config from the **PR head SHA** on every review. The file is optional — missing means defaults apply, a malformed file means defaults apply plus a single warning posted on the PR. The file does **not** need to be committed to your default branch to take effect; whatever exists at the head SHA wins.
+
+## JSON or YAML — your choice
+
+Sigilix accepts the same configuration as either JSON or YAML. The runner looks for these filenames at the repo root, in order, and uses the first one it finds:
+
+| Filename | Format |
+|---|---|
+| `sigilix.json` | JSON |
+| `sigilix.yaml` | YAML |
+| `sigilix.yml`  | YAML |
+
+The **schema is identical** across formats — every field documented below works the same whether you write it as JSON or YAML. Pick whichever your repo already uses. Examples on this page are shown in JSON; the [YAML example](#yaml-example) below is the same config in YAML.
 
 <Note>
-  Older versions of these docs documented a `sigilix.yaml` schema with `thresholds`, `specialists.<name>`, and `review.comment_style` keys. None of that is real — the actual file is JSON, and the schema below is the only one Sigilix has ever read in production.
+  Older versions of these docs documented a `sigilix.yaml` schema with `thresholds`, `specialists.<name>`, and `review.comment_style` keys. Those **keys** were never real — the schema below is the only one Sigilix reads in production. YAML *as a format* is fully supported, though: `sigilix.yaml` / `sigilix.yml` carry the exact same schema as `sigilix.json`.
 </Note>
 
 ## Where it lives
 
 ```text
 your-repo/
-├── sigilix.json   ← here, at the repo root
+├── sigilix.json   ← here, at the repo root (or sigilix.yaml / sigilix.yml)
 ├── src/
 └── ...
 ```
@@ -33,7 +45,7 @@ The schema has grown in three additive versions. Older configs keep working; new
 | v1 | `guidance`, `rules.<role>` | ARC-174 |
 | v2 | `pathFilters`, `profile` | ARC-176 |
 | v3 | `deterministicChecks` | ARC-193 |
-| v3+ | Per-subsystem opt-outs (commands, depVulns, astRules, sarif, reviewMemory, describe) | ARC-181, ARC-185, ARC-186, ARC-188, ARC-189, ARC-191 |
+| v3+ | Per-subsystem opt-outs (commands, depVulnScan, astRules, sarifEvidence, reviewMemory, describe) | ARC-181, ARC-185, ARC-186, ARC-188, ARC-189, ARC-191 |
 
 The `<role>` token in `rules` is always one of `logic`, `security`, `performance`, `tests`. These are the internal specialist role names; their public-facing brand counterparts are Metis (logic), Argus (security), Iris (performance), and Eunomia (tests) respectively. A fifth specialist, the synthesizer **Harmonia**, runs after the four domain specialists to unify their findings.
 
@@ -71,9 +83,35 @@ A single `guidance` string is the smallest useful config. It's prepended to ever
       "message": "Stray console.log left in committed code."
     }
   ],
-  "depVulns": { "enabled": true },
+  "depVulnScan": { "enabled": true },
   "describe": { "enabled": true }
 }
+```
+
+## YAML example
+
+The exact same config as the realistic example above, written as `sigilix.yaml` instead. Same schema, same behavior — just YAML syntax:
+
+```yaml sigilix.yaml
+guidance: This repo is a TypeScript Cloudflare Worker. State lives in KV + DOs.
+profile: chill
+pathFilters:
+  - dist/**
+  - "**/*.generated.ts"
+  - vendor/**
+  - "!vendor/critical-shim.ts"
+rules:
+  security: All routes that mutate state must call requireAuth() before any side effect.
+  tests: vitest is the only test runner. Jest patterns (e.g., jest.mock) are out of scope.
+deterministicChecks:
+  - id: no-console-log
+    pattern: '^\+.*console\.log\('
+    severity: warning
+    message: Stray console.log left in committed code.
+depVulnScan:
+  enabled: true
+describe:
+  enabled: true
 ```
 
 ## Full schema
@@ -105,17 +143,61 @@ A single `guidance` string is the smallest useful config. It's prepended to ever
     }
   ],
   "commands": {
-    "review":   { "prompt": "addendum", "model": "model-id-from-allowlist" },
-    "improve":  { "prompt": "addendum" },
-    "describe": { "prompt": "addendum", "model": "model-id-from-allowlist" }
+    "review":   { "prompt": { "addendum": "appended to the review system prompt" }, "model": { "primary": "model-id-from-allowlist" } },
+    "improve":  { "prompt": { "addendum": "appended to the improve system prompt" } },
+    "describe": { "prompt": { "addendum": "appended to the describe system prompt" }, "model": { "primary": "model-id-from-allowlist" } }
   },
-  "depVulns":      { "enabled": true },
-  "astRules":      { "enabled": true, "rules": ["no-eval-call"] },
-  "sarif":         { "enabled": true },
+  "depVulnScan":   { "enabled": true },
+  "astRules":      { "enabled": true, "severityThreshold": "warning", "disabledRules": ["no-eval-call"], "autoInline": false },
+  "sarifEvidence": { "enabled": true, "path": ".sigilix/trivy.sarif.json", "severityThreshold": "warning" },
   "reviewMemory":  { "enabled": true },
-  "describe":      { "enabled": true },
-  "sensitivity":   { "level": "standard" }
+  "describe":      { "enabled": true }
 }
+```
+
+```yaml sigilix.yaml
+guidance: string — prepended to every specialist + synthesizer prompt
+rules:
+  logic: appended only to the logic specialist's prompt
+  security: appended only to the security specialist's prompt
+  performance: appended only to the performance specialist's prompt
+  tests: appended only to the tests specialist's prompt
+pathFilters:
+  - dist/**
+  - "**/*.generated.*"
+  - "!critical/keep-this.generated.ts"
+profile: chill
+deterministicChecks:
+  - id: kebab-case-id
+    pattern: regex matched against added diff lines
+    severity: warning # info | warning | critical
+    message: what the finding says
+    flags: i
+commands:
+  review:
+    prompt:
+      addendum: appended to the review system prompt
+    model:
+      primary: model-id-from-allowlist
+  describe:
+    prompt:
+      addendum: appended to the describe system prompt
+depVulnScan:
+  enabled: true
+astRules:
+  enabled: true
+  severityThreshold: warning
+  disabledRules:
+    - no-eval-call
+  autoInline: false
+sarifEvidence:
+  enabled: true
+  path: .sigilix/trivy.sarif.json
+  severityThreshold: warning
+reviewMemory:
+  enabled: true
+describe:
+  enabled: true
 ```
 
 </CodeGroup>
@@ -218,18 +300,18 @@ See [Deterministic Checks](/how-it-works/deterministic-checks) for the conceptua
 
 ### `commands` (ARC-185, object)
 
-Per-command prompt addenda and model overrides. Each key is a Sigilix slash command (`review`, `improve`, `describe`); values can carry `prompt` (appended to the command's system prompt) and `model` (override the default model).
+Per-command prompt addenda and model overrides. Each key is a Sigilix slash command (`review`, `improve`, `describe`). Each value can carry `prompt.addendum` (a string appended to the command's system prompt) and `model.primary` / `model.fallbacks` (override the default model + retry chain).
 
 ```json
 {
   "commands": {
-    "review":   { "model": "model-id-from-allowlist" },
-    "describe": { "prompt": "Always start changelogs with the user-facing impact, never the implementation." }
+    "review":   { "model": { "primary": "model-id-from-allowlist", "fallbacks": ["fallback-model-id"] } },
+    "describe": { "prompt": { "addendum": "Always start changelogs with the user-facing impact, never the implementation." } }
   }
 }
 ```
 
-Valid model names are the model identifiers on Sigilix's current allowlist. The allowlist tracks the providers and model versions in production and changes over time, so run `/sigilix help` or check the live command-override docs for the current set rather than pinning a model ID here. Unrecognized models fall back to the command's default with a warning.
+`model.primary` and each `model.fallbacks` entry must be a model identifier on Sigilix's current allowlist. The allowlist tracks the providers and model versions in production and changes over time, so run `/sigilix help` or check the live command-override docs for the current set rather than pinning a model ID here. An unknown model name is a parse error; `addendum` is capped at 4000 code points.
 
 ### Subsystem opt-outs
 
@@ -237,24 +319,20 @@ Each subsystem ships **enabled** by default and can be turned off per-repo:
 
 | Key | Subsystem | Disable with |
 |---|---|---|
-| `depVulns` | Dependency vulnerability scan ([ARC-186](/evidence-and-provenance/dependency-vulnerabilities)) | `{ "enabled": false }` |
+| `depVulnScan` | Dependency vulnerability scan ([ARC-186](/evidence-and-provenance/dependency-vulnerabilities)) | `{ "enabled": false }` |
 | `astRules` | AST rule-pack scanner ([How It Works](/how-it-works/deterministic-checks)) | `{ "enabled": false }` |
-| `sarif` | SARIF evidence channel ([ARC-188](/evidence-and-provenance/sarif-evidence)) | `{ "enabled": false }` |
+| `sarifEvidence` | SARIF evidence channel ([ARC-188](/evidence-and-provenance/sarif-evidence)) | `{ "enabled": false }` |
 | `reviewMemory` | Cross-PR review memory ([How It Works](/how-it-works/review-memory)) | `{ "enabled": false }` |
 | `describe` | `/sigilix describe` command | `{ "enabled": false }` |
 
 See [Opt-outs](/configuration/opt-outs) for the consolidated reference.
 
-### `sensitivity` (ARC-183, object)
-
-Repository sensitivity controls. The denylist gate is operator-side (set by Sigilix administrators) and not user-configurable; this field's role is to declare a level so future per-tier features know what to apply. Today: `{ "level": "standard" }` is the only published value.
-
 ## Validation
 
-Sigilix validates `sigilix.json` on every review. Fail-open semantics:
+Sigilix validates the config on every review. Fail-open semantics:
 
 - **Missing file** → defaults, no warning.
-- **Malformed JSON** → defaults + warning posted as a single sticky comment ([see config-error comment](/troubleshooting/common-errors)).
+- **Malformed JSON or YAML** → defaults + warning posted as a single sticky comment ([see config-error comment](/troubleshooting/common-errors)).
 - **Unknown top-level key** → ignored, no warning (preserves forward compatibility — older Sigilix versions won't break on newer schemas).
 - **Type mismatch on a known key** → that key dropped, warning logged in telemetry, review proceeds with defaults for that key.
 
