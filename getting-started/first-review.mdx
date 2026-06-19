@@ -1,6 +1,6 @@
 ---
 title: "Anatomy of a Review"
-description: "What every Sigilix review contains — Zeus summary, inline findings, severity badges, proof-tier pills, suggested patches — and how to read it."
+description: "What every Sigilix review contains — Harmonia summary, inline findings, severity badges, proof-tier pills, suggested patches — and how to read it."
 ---
 
 Every review Sigilix posts has the same shape. Once you know the shape, you can scan a review in 10 seconds.
@@ -27,7 +27,7 @@ Every review Sigilix posts has the same shape. Once you know the shape, you can 
     </div>
 
     <Note className="sigilix-synth-note">
-      **Sigilix Summary** — Zeus synthesized 4 findings across 3 specialists. 1 requires action before merge.
+      **Sigilix Summary** — Harmonia synthesized 4 findings across 3 specialists. 1 requires action before merge.
     </Note>
 
     <AccordionGroup>
@@ -37,13 +37,13 @@ Every review Sigilix posts has the same shape. Once you know the shape, you can 
         <a href="#" className="sigilix-diff-link">View diff →</a>
       </Accordion>
 
-      <Accordion title="Hermes · Performance · Warning · GROUNDED">
+      <Accordion title="Iris · Performance · Warning · GROUNDED">
         Nested loop in `aggregateReports` scales with repo count. Consider indexing `createdAt` or paginating upstream.
 
         <a href="#" className="sigilix-diff-link">View diff →</a>
       </Accordion>
 
-      <Accordion title="Themis · Tests · Info · GROUNDED">
+      <Accordion title="Eunomia · Tests · Info · GROUNDED">
         The new branch in `chargeCustomer` has no test covering the partial-refund path. Add a case before merge.
 
         <a href="#" className="sigilix-diff-link">View diff →</a>
@@ -60,20 +60,20 @@ Top-right of every review:
 
 The verdict updates on every push (`pull_request.synchronize`). If you fix the blocking findings and push, the next Sigilix review will flip to Approved.
 
-## The Zeus summary
+## The Harmonia summary
 
-The first paragraph is from **Zeus** (the synthesizer). It tells you:
+The first paragraph is from **Harmonia** (the synthesizer). It tells you:
 - How many findings survived deduplication
 - How many specialists contributed
 - How many require action before merge
 
-This is the only block worth reading if you're triaging fast. If Zeus says "0 findings," skim and move on. If Zeus says "1 critical," that's your thing.
+This is the only block worth reading if you're triaging fast. If Harmonia says "0 findings," skim and move on. If Harmonia says "1 critical," that's your thing.
 
 ## The inline findings
 
 Each finding is collapsed by default and lives on a specific line in the diff. Click to expand and read:
 
-- **Specialist tag** — Athena, Argus, Hermes, Themis (Zeus never posts inline findings — it only synthesizes)
+- **Specialist tag** — Metis, Argus, Iris, Eunomia (Harmonia never posts inline findings — it only synthesizes)
 - **Category** — the area within that specialist's domain (e.g., Argus · Security)
 - **Severity** — Critical / Warning / Info
 - **Proof-tier pill** — VERIFIED (checked by execution or a signed receipt), GROUNDED (anchored to cited code), or MODEL (model judgment). See the [believability pipeline](/how-it-works/believability-pipeline).
@@ -82,13 +82,13 @@ Each finding is collapsed by default and lives on a specific line in the diff. C
 
 ## Severity calibration
 
-Sigilix uses three severity levels. Calibration is done by Zeus during synthesis:
+Sigilix uses three severity levels. Calibration is done by Harmonia during synthesis:
 
 - **Critical** — broken correctness, security exposure, or data integrity risk. Should block the merge.
 - **Warning** — important but not catastrophic. Logic bug in a cold path, missing error handling on a non-fatal boundary, performance regression.
 - **Info** — nit-level. Naming, dead code, doc gaps. Surfaced for awareness but never blocks.
 
-A finding's severity can shift up or down during synthesis if multiple specialists flag the same code (escalation) or if Zeus judges the finding a false positive (suppression).
+A finding's severity can shift up or down during synthesis if multiple specialists flag the same code (escalation) or if Harmonia judges the finding a false positive (suppression).
 
 ## Re-reviews on push
 

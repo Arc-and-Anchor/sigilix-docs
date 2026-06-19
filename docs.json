@@ -3,13 +3,13 @@
   "theme": "mint",
   "name": "Sigilix",
   "colors": {
-    "primary": "#C6234A",
-    "light": "#D13D62",
-    "dark": "#0B0C10"
+    "primary": "#f1140d",
+    "light": "#ff6a60",
+    "dark": "#f1140d"
   },
   "background": {
     "color": {
-      "dark": "#0B0C10",
+      "dark": "#09090b",
       "light": "#FAFAF7"
     }
   },
@@ -62,7 +62,8 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Documentation",
+        "tab": "Platform",
+        "icon": "layer-group",
         "groups": [
           {
             "group": "Getting Started",
@@ -90,21 +91,12 @@
             ]
           },
           {
-            "group": "CLI & Chat",
+            "group": "Triage",
             "pages": [
-              "cli-and-chat/overview"
-            ]
-          },
-          {
-            "group": "Configuration",
-            "pages": [
-              "configuration/configuration-reference",
-              "configuration/rules-and-guidance",
-              "configuration/path-filters-and-profile",
-              "configuration/deterministic-checks-config",
-              "configuration/commands",
-              "configuration/opt-outs",
-              "configuration/rate-limits"
+              "triage/overview",
+              "triage/issue-triage",
+              "triage/ci-failure-triage",
+              "triage/how-triage-works"
             ]
           },
           {
@@ -122,6 +114,57 @@
               "integrations/github",
               "integrations/gitlab",
               "integrations/bitbucket"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "CLI & Deep Research",
+        "icon": "terminal",
+        "groups": [
+          {
+            "group": "CLI & Deep Research",
+            "pages": [
+              "cli-and-chat/overview",
+              "cli-and-chat/cli",
+              "cli-and-chat/deep-research",
+              "cli-and-chat/bring-your-own-models",
+              "cli-and-chat/commands"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Slack Assistant",
+        "icon": "slack",
+        "groups": [
+          {
+            "group": "Slack Assistant",
+            "pages": [
+              "slack-assistant/overview",
+              "slack-assistant/capabilities",
+              "slack-assistant/how-it-answers",
+              "slack-assistant/commands",
+              "slack-assistant/permissions-and-security"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Configuration",
+        "icon": "sliders",
+        "groups": [
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/configuration-reference",
+              "configuration/rules-and-guidance",
+              "configuration/path-filters-and-profile",
+              "configuration/deterministic-checks-config",
+              "configuration/commands",
+              "configuration/opt-outs",
+              "configuration/rate-limits",
+              "configuration/models-and-usage"
             ]
           },
           {
@@ -143,6 +186,7 @@
       },
       {
         "tab": "API Reference",
+        "icon": "code",
         "groups": [
           {
             "group": "API",

@@ -1,0 +1,150 @@
+---
+title: "Issue Triage"
+description: "Linear and Jira issue triage — natively in both. Sigilix reads the issue and the code, then rewrites the title, sets priority and severity by blast radius, estimates effort, suggests an owner, root-causes in file:line terms, links related work, catches duplicates, and flags what's missing — posted as one grounded comment."
+---
+
+# Issue Triage
+
+A bug report arrives as "checkout is broken sometimes." A human triager has to turn that into something a team can act on: a precise title, a priority that reflects how much damage it can do, an estimate, an owner, and ideally a first guess at the cause. Doing that well means reading the code — not just the ticket.
+
+Sigilix triages **Linear and Jira issues natively in both**. It reads the issue *and* the code the issue is about, then posts one structured, grounded comment that does the triager's first pass for you. Every part of that comment cites the code Sigilix read, so it's something you can trust, edit, or accept — not a paraphrase of the ticket text.
+
+<Note>
+Issue triage draws on the [earned-context layer](/how-it-works/earned-context) — the index, code graph, review memory, and evidence manifests your reviews already built. That's how it can reason about the function a ticket names without re-reading the whole repo.
+</Note>
+
+## What a triaged issue gets
+
+<CardGroup cols={2}>
+  <Card title="A precise, searchable title" icon="pen">
+    A vague title is rewritten into a specific one that names the surface and the symptom — so it's findable later and immediately legible in a backlog.
+  </Card>
+  <Card title="Priority & severity by blast radius" icon="gauge-high">
+    Set by weighing the blast radius traced from the code — an auth, billing, or data-loss surface is not a cosmetic bug, and the priority reflects that.
+  </Card>
+  <Card title="An effort estimate" icon="ruler">
+    Estimated from the surface area the fix touches: how many files, how many call paths, how many tests are implicated.
+  </Card>
+  <Card title="A likely owner" icon="user">
+    Suggested from code ownership and git history on the implicated code — who wrote it, who last touched it, who owns the path.
+  </Card>
+  <Card title="A file:line root cause" icon="crosshairs">
+    A grounded root-cause hypothesis stated in file:line terms, citing the code that supports it.
+  </Card>
+  <Card title="Linked related work" icon="link">
+    The PRs that introduced or touched the code, the ADRs that set the pattern, and prior issues on the same surface.
+  </Card>
+  <Card title="Duplicate detection" icon="copy">
+    If an existing issue already covers this surface, Sigilix flags it as a likely duplicate instead of opening a parallel track.
+  </Card>
+  <Card title="Missing-information prompts" icon="circle-question">
+    What the ticket lacks — no repro, no expected behavior, no acceptance criteria — surfaced as drafted questions that unblock the work.
+  </Card>
+</CardGroup>
+
+## How each field is grounded
+
+The point of issue triage is that nothing is asserted on vibes. Each field traces back to something Sigilix actually read.
+
+<AccordionGroup>
+  <Accordion title="Title rewrite — from symptom to surface">
+    Sigilix maps the ticket's symptom onto the code it implicates, then rewrites the title to name both the affected surface and the observable failure. "Checkout is broken sometimes" becomes something like "Intermittent 500 on POST /checkout when cart contains a zero-quantity line item" — a title another engineer can search for and reason about without opening the issue.
+  </Accordion>
+  <Accordion title="Priority & severity — weighed against the code's blast radius">
+    Severity is driven by *what the code does*, not how the reporter felt. Sigilix uses the [code graph](/how-it-works/earned-context) to trace what the implicated code touches: an authentication check, a billing path, or a data-mutation surface carries far more weight than a layout glitch. A bug on a money-moving or data-loss path is escalated; a cosmetic one is not. The priority is the conclusion of that blast-radius read.
+  </Accordion>
+  <Accordion title="Effort estimate — from the surface area of the fix">
+    Sigilix estimates effort from the footprint a fix would have: the number of files in scope, the call paths that would need to change, and the tests that cover (or fail to cover) the behavior. A one-line guard on a leaf function is not the same as a change that ripples through a dozen callers, and the estimate reflects that difference.
+  </Accordion>
+  <Accordion title="Owner suggestion — from ownership and git history">
+    The likely owner is inferred from code ownership signals and git history on the implicated paths — who authored the code, who last modified it, and who owns that area of the tree. It's a suggestion grounded in provenance, not a round-robin assignment.
+  </Accordion>
+  <Accordion title="Root cause — stated in file:line terms">
+    Where the evidence supports it, Sigilix proposes a root cause anchored to specific lines and cites the code behind it. This is a hypothesis, clearly framed as one — but a grounded hypothesis pointed at real code, the same grounding discipline the [believability pipeline](/how-it-works/believability-pipeline) applies to review findings.
+  </Accordion>
+  <Accordion title="Related work — PRs, ADRs, and prior issues">
+    Sigilix links the change history of the implicated code: the PRs that introduced or last touched it, the ADRs that established the pattern it follows, and earlier issues filed against the same surface. This turns a fresh ticket into one that arrives with its own context.
+  </Accordion>
+  <Accordion title="Duplicate detection — same surface, existing track">
+    Because Sigilix reasons about the *surface* an issue touches rather than only its words, it can recognize when a new issue lands on the same code as an open one and flag the likely duplicate — even when the two tickets are phrased completely differently.
+  </Accordion>
+  <Accordion title="Missing information — drafted, not just demanded">
+    When a ticket can't be acted on — no reproduction steps, no expected behavior, no acceptance criteria — Sigilix names exactly what's missing and **drafts the questions** that would unblock it, so the reporter can answer rather than guess what's wanted.
+  </Accordion>
+</AccordionGroup>
+
+## Before and after
+
+A typical incoming issue:
+
+```text
+Title: bug in checkout
+Description:
+sometimes payment fails. customer complained. pls fix
+```
+
+After Sigilix triages it, one structured comment is posted on the issue:
+
+```markdown
+## Sigilix triage
+
+**Suggested title:** Intermittent payment failure on POST /checkout when
+`applyDiscount` returns a negative subtotal
+
+**Priority:** Urgent · **Severity:** High
+Reasoning: traced to `src/api/checkout.ts` → `chargeCustomer()`, which calls
+the payment provider. Blast radius includes the billing path (money movement),
+so this is escalated above a cosmetic bug.
+
+**Estimated effort:** Small–Medium
+Fix is likely contained to `applyDiscount()` (1 file) but is exercised by
+3 call paths and 2 tests that would need updating.
+
+**Likely owner:** @maria — authored `applyDiscount()` (#612) and owns
+`src/billing/**` per CODEOWNERS.
+
+**Probable root cause:**
+`src/billing/discount.ts:48` — `applyDiscount` does not clamp the result at
+zero, so a coupon larger than the cart total yields a negative subtotal that
+the provider rejects.
+\```ts
+return subtotal - couponValue; // can go negative
+\```
+
+**Related work:**
+- #612 introduced `applyDiscount` (the implicated function)
+- ADR-0007 — "Money is integer cents; never negative"
+- #588 — prior issue on coupon stacking (same surface)
+
+**Missing to confirm:**
+1. Which coupon code reproduces this?
+2. What is the expected behavior when a coupon exceeds the cart total —
+   floor at zero, or reject the coupon?
+```
+
+Everything in that comment points at code or history Sigilix read. You can edit it, accept its field values into Linear/Jira, or push back in the thread.
+
+## Native in Linear and Jira
+
+Issue triage runs natively in both Linear and Jira. The event that triggers it — an issue created or updated — flows through the same [dispatcher](/how-it-works/the-dispatcher) that routes PR events, and the result is written back as a comment in the tool where your team already works. The structured fields (title, priority, severity, estimate, labels, assignee) are surfaced so they can be applied to the issue, not just described in prose.
+
+## You stay in control
+
+The triage comment is a proposal, not an action taken behind your back. Sigilix posts one grounded comment; your team reviews it, edits what it got wrong, and accepts what it got right. As you accept or dismiss its suggestions, that signal feeds [review memory](/how-it-works/review-memory) — the same way review dismissals do — so triage gets sharper on your repo over time.
+
+## Read next
+
+<CardGroup cols={2}>
+  <Card title="How triage works" icon="diagram-project" href="/triage/how-triage-works">
+    The architecture behind the comment: how Sigilix reads the issue and the code together.
+  </Card>
+  <Card title="CI-failure triage" icon="circle-exclamation" href="/triage/ci-failure-triage">
+    The other triage path — turning a red build into a grounded root cause.
+  </Card>
+  <Card title="Earned Context" icon="database" href="/how-it-works/earned-context">
+    The index, graph, and memory issue triage reasons against.
+  </Card>
+  <Card title="The Dispatcher" icon="diagram-project" href="/how-it-works/the-dispatcher">
+    How issue events get routed to the triage pipeline.
+  </Card>
+</CardGroup>

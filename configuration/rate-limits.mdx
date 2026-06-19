@@ -13,7 +13,11 @@ Sigilix limits review volume to keep shared infrastructure stable. This page cov
 
 Sigilix uses a **rolling window** keyed by GitHub installation. Your account is provisioned with a review allowance over that window during the private beta.
 
-The window is rolling, not fixed. At any moment, Sigilix counts how many reviews you've completed in the trailing window. As old reviews age out, fresh capacity is freed up.
+The window is rolling, not fixed. At any moment, Sigilix counts how many reviews you've completed in the trailing window. As old reviews age out, fresh capacity is freed up. **Usage windows reset on a 5-day cadence** — not weekly.
+
+<Note>
+  Because Sigilix runs on cheap, reliable open and frontier models rather than a single expensive first-party API, included usage is far more generous than a comparable OpenAI- or Claude-based plan. See [Models & Usage](/configuration/models-and-usage) for the model roster, picking your own model, and the economics behind the larger windows.
+</Note>
 
 ## What counts as a "review"
 
