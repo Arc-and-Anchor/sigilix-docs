@@ -81,13 +81,13 @@ Sigilix's scan and Dependabot/Snyk overlap. The right way to think about them:
 
 Both are useful. Sigilix's value-add is **timing** — the CVE shows up in the review you're already reading, not in a separate alert backlog.
 
-If you find the overlap noisy, disable Sigilix's scan: `{ "depVulns": { "enabled": false } }`. Dependabot keeps running and you'll still get its alerts.
+If you find the overlap noisy, disable Sigilix's scan: `{ "depVulnScan": { "enabled": false } }`. Dependabot keeps running and you'll still get its alerts.
 
 ## Disabling
 
 ```json
 {
-  "depVulns": { "enabled": false }
+  "depVulnScan": { "enabled": false }
 }
 ```
 

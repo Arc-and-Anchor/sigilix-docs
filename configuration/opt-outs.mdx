@@ -3,15 +3,15 @@ title: "Opt-outs"
 description: "Consolidated reference for disabling Sigilix subsystems per-repo. Every subsystem ships enabled by default; each has its own `{ enabled: false }` switch in sigilix.json."
 ---
 
-Sigilix's subsystems are **opt-out**, not opt-in: install the app, get every feature. Each subsystem has its own `{ enabled: false }` switch in `sigilix.json` for repos where the default doesn't fit.
+Sigilix's subsystems are **opt-out**, not opt-in: install the app, get every feature. Each subsystem has its own `{ enabled: false }` switch in your config file (`sigilix.json` or `sigilix.yaml` — same schema) for repos where the default doesn't fit.
 
 ## The switches
 
 | Key | Subsystem | Default | Disable with |
 |---|---|---|---|
-| `depVulns` | Dependency vulnerability scan | enabled | `{ "depVulns": { "enabled": false } }` |
+| `depVulnScan` | Dependency vulnerability scan | enabled | `{ "depVulnScan": { "enabled": false } }` |
 | `astRules` | AST rule-pack scanner (JS/TS) | enabled | `{ "astRules": { "enabled": false } }` |
-| `sarif` | SARIF evidence channel (Trivy + generic) | enabled | `{ "sarif": { "enabled": false } }` |
+| `sarifEvidence` | SARIF evidence channel (Trivy + generic) | enabled | `{ "sarifEvidence": { "enabled": false } }` |
 | `reviewMemory` | Cross-PR review memory | enabled | `{ "reviewMemory": { "enabled": false } }` |
 | `describe` | `/sigilix describe` slash command | enabled | `{ "describe": { "enabled": false } }` |
 
@@ -20,14 +20,14 @@ All of these are at the **top level** of `sigilix.json`, not nested under `comma
 ```json
 {
   "guidance": "TypeScript Cloudflare Worker.",
-  "depVulns":     { "enabled": false },
+  "depVulnScan":     { "enabled": false },
   "reviewMemory": { "enabled": false }
 }
 ```
 
 ## When to disable each
 
-### `depVulns` — dependency vulnerability scan (ARC-186)
+### `depVulnScan` — dependency vulnerability scan (ARC-186)
 
 Sigilix scans npm dependencies against a bundled vulnerability database on every review. Disable if:
 
@@ -44,7 +44,7 @@ A pre-LLM AST scanner for JS/TS that catches a small list of common patterns (e.
 - You're not using JS/TS (the scanner is a no-op anyway, but disabling skips the parse).
 - You've moved equivalent checks into your own ESLint config and don't want overlap in the review comment.
 
-### `sarif` — SARIF evidence channel (ARC-188)
+### `sarifEvidence` — SARIF evidence channel (ARC-188)
 
 Sigilix accepts Trivy and generic SARIF v2.1.0 reports uploaded as PR artifacts and injects high-severity findings into the synthesizer as evidence. Disable if:
 
@@ -83,9 +83,9 @@ For teams that want the LLM ensemble only — no scanners, no memory, no describ
 
 ```json
 {
-  "depVulns":     { "enabled": false },
+  "depVulnScan":     { "enabled": false },
   "astRules":     { "enabled": false },
-  "sarif":        { "enabled": false },
+  "sarifEvidence":        { "enabled": false },
   "reviewMemory": { "enabled": false },
   "describe":     { "enabled": false }
 }
