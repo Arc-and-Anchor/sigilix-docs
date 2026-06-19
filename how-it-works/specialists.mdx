@@ -1,22 +1,22 @@
 ---
 title: "Specialists"
-description: "Athena, Argus, Hermes, Themis — what each domain specialist catches, sample findings, and how models are selected."
+description: "Metis, Argus, Iris, Eunomia — what each domain specialist catches, sample findings, and how models are selected."
 ---
 
-Sigilix runs **five** specialists per review: four domain specialists in parallel — **Athena**, **Argus**, **Hermes**, **Themis** — unified by **Zeus**, the synthesizer that runs after them. Each domain specialist has a focused prompt, a model tuned to its role, and a cross-provider fallback that makes a same-family provider outage unlikely to silence a specialist. A specialist can still be skipped if both primary and fallback fail — see the retry + fallback policy below.
+Sigilix runs **five** specialists per review: four domain specialists in parallel — **Metis**, **Argus**, **Iris**, **Eunomia** — unified by **Harmonia**, the synthesizer that runs after them. Each domain specialist has a focused prompt, a model tuned to its role, and a cross-provider fallback that makes a same-family provider outage unlikely to silence a specialist. A specialist can still be skipped if both primary and fallback fail — see the retry + fallback policy below.
 
-Internally each specialist has a **role** name (`logic`, `security`, `performance`, `tests`) that appears in `sigilix.json` under `rules.<role>`. The public-facing brand names (Athena, Argus, Hermes, Themis) are the same specialists with the same prompts.
+Internally each specialist has a **role** name (`logic`, `security`, `performance`, `tests`) that appears in `sigilix.json` under `rules.<role>`. The public-facing brand names (Metis, Argus, Iris, Eunomia) are the same specialists with the same prompts.
 
 | Brand | Role | Domain |
 |---|---|---|
-| Athena | `logic` | Architecture, layering, dead code |
+| Metis | `logic` | Architecture, layering, dead code |
 | Argus | `security` | Auth, input validation, secret leakage |
-| Hermes | `performance` | N+1, hot paths, big-O regressions |
-| Themis | `tests` | Naming, semantics, test coverage |
+| Iris | `performance` | N+1, hot paths, big-O regressions |
+| Eunomia | `tests` | Naming, semantics, test coverage |
 
-Zeus is covered on its own page — see [Synthesizer](/how-it-works/synthesizer). This page is the four domain specialists.
+Harmonia is covered on its own page — see [Synthesizer](/how-it-works/synthesizer). This page is the four domain specialists.
 
-## Athena · Architecture
+## Metis · Architecture
 
 **What it catches:**
 - Circular dependencies between modules
@@ -24,12 +24,12 @@ Zeus is covered on its own page — see [Synthesizer](/how-it-works/synthesizer)
 - Interface drift between code and its tests/types
 - Module cohesion issues
 
-**Model selection:** Athena runs a reasoning-heavy model — its proof-style chain-of-thought reasoning is well-suited for architectural arguments: tracing imports across files, evaluating layered architecture rules, and judging cohesion. When its primary provider is unavailable, Sigilix falls back to a model on a different provider with an uncorrelated outage profile, so a single provider incident can't silence the logic role.
+**Model selection:** Metis runs a reasoning-heavy model — its proof-style chain-of-thought reasoning is well-suited for architectural arguments: tracing imports across files, evaluating layered architecture rules, and judging cohesion. When its primary provider is unavailable, Sigilix falls back to a model on a different provider with an uncorrelated outage profile, so a single provider incident can't silence the logic role.
 
 **Sample finding:**
 
 ```text
-[Athena] Boundary violation detected
+[Metis] Boundary violation detected
 domain/invoice.ts imports infra/stripe.ts
 Rule: Domain may not depend on Infrastructure.
 Suggested fix: Introduce `PaymentGateway` port in domain/.
@@ -44,7 +44,7 @@ Suggested fix: Introduce `PaymentGateway` port in domain/.
 - Insecure regex patterns prone to ReDoS
 - OWASP Top-10 patterns
 
-**Model selection:** Argus runs a faster, higher-volume model than Athena because security findings are higher-volume per PR and need turnaround. The cross-provider fallback ensures that if one provider is down, Argus still produces a verdict — security checks should never silently skip.
+**Model selection:** Argus runs a faster, higher-volume model than Metis because security findings are higher-volume per PR and need turnaround. The cross-provider fallback ensures that if one provider is down, Argus still produces a verdict — security checks should never silently skip.
 
 **Sample finding:**
 
@@ -54,7 +54,7 @@ utils/fetcher.ts:71 — user-supplied URL passed to fetch()
 without an allowlist. Validate against approvedHosts[].
 ```
 
-## Hermes · Performance
+## Iris · Performance
 
 **What it catches:**
 - N+1 query patterns in ORM-heavy code
@@ -63,17 +63,17 @@ without an allowlist. Validate against approvedHosts[].
 - Unbounded recursion or iteration
 - Big-O regressions vs. the previous implementation
 
-**Model selection:** Hermes runs a model tuned for cost-effective, high-throughput pattern-spotting, with a cross-provider fallback. The exact model choice is tuned over time from shadow telemetry — Sigilix keeps the primary that produces the highest-quality performance findings at the lowest latency, without changing this page each time.
+**Model selection:** Iris runs a model tuned for cost-effective, high-throughput pattern-spotting, with a cross-provider fallback. The exact model choice is tuned over time from shadow telemetry — Sigilix keeps the primary that produces the highest-quality performance findings at the lowest latency, without changing this page each time.
 
 **Sample finding:**
 
 ```text
-[Hermes] O(n²) render loop
+[Iris] O(n²) render loop
 components/Table.tsx:112 — sorting inside render()
 Memoize with useMemo keyed by sortKey.
 ```
 
-## Themis · Semantics
+## Eunomia · Semantics
 
 **What it catches:**
 - Dead code reachable only by impossible conditions
@@ -82,19 +82,19 @@ Memoize with useMemo keyed by sortKey.
 - Missing test coverage on non-trivial branches added in the diff
 - Inconsistent error handling between two functions added in the same PR
 
-**Model selection:** Themis's surface is broad and shallow — it needs speed and breadth more than depth, so it runs a fast, high-coverage model with a cross-provider fallback. It often shares a model family with Argus, which lets Sigilix amortize warm-cache costs across two specialists.
+**Model selection:** Eunomia's surface is broad and shallow — it needs speed and breadth more than depth, so it runs a fast, high-coverage model with a cross-provider fallback. It often shares a model family with Argus, which lets Sigilix amortize warm-cache costs across two specialists.
 
 **Sample finding:**
 
 ```text
-[Themis] Unreachable branch
+[Eunomia] Unreachable branch
 checkout.ts:45 — early return bypasses tax calc
 when total < 0. Remove or handle as error path.
 ```
 
 ## Retry + fallback policy
 
-Each specialist runs against its primary model with one retry on transient failure (503, 429, timeout). If retries are exhausted, the cross-provider fallback fires once. If the fallback also fails, that specialist's contribution is skipped — Zeus synthesizes from the remaining specialists and the verdict is posted with a `_3 of 4 specialists succeeded_` footnote.
+Each specialist runs against its primary model with one retry on transient failure (503, 429, timeout). If retries are exhausted, the cross-provider fallback fires once. If the fallback also fails, that specialist's contribution is skipped — Harmonia synthesizes from the remaining specialists and the verdict is posted with a `_3 of 4 specialists succeeded_` footnote.
 
 The cross-provider design — primary and fallback on different infrastructure — is deliberate. Same-family fallbacks fail together when the upstream provider has an outage, defeating the fallback's purpose.
 
@@ -103,10 +103,10 @@ The cross-provider design — primary and fallback on different infrastructure �
 The split was chosen empirically:
 
 - **Architecture, security, performance, semantics** are the four most-cited categories in code review failure-mode taxonomies.
-- Adding a fifth domain specialist (e.g., a "documentation" specialist) didn't materially improve catches — Themis already covers naming and stale comments.
+- Adding a fifth domain specialist (e.g., a "documentation" specialist) didn't materially improve catches — Eunomia already covers naming and stale comments.
 - Reducing to three domain specialists (e.g., merging architecture and semantics) left blind spots in cross-module reasoning.
 
-The architecture supports adding domain specialists in the future. If a customer-driven category emerges (e.g., a domain-specific compliance specialist for financial code), it can plug into Zeus's synthesis without changing the existing four.
+The architecture supports adding domain specialists in the future. If a customer-driven category emerges (e.g., a domain-specific compliance specialist for financial code), it can plug into Harmonia's synthesis without changing the existing four.
 
 ## Tuning per-repo
 
@@ -116,13 +116,13 @@ You can't disable individual specialists — keeping the ensemble whole is what 
 - **Scope the review** via `pathFilters` so a specialist sees less ([Path Filters & Profile](/configuration/path-filters-and-profile)).
 - **Shift flag-worthiness** via `profile: "chill" | "assertive"`.
 
-Zeus (the synthesizer) is always on. It's how Sigilix produces a single coherent comment.
+Harmonia (the synthesizer) is always on. It's how Sigilix produces a single coherent comment.
 
 ## Read next
 
 <CardGroup cols={2}>
   <Card title="Synthesizer" icon="git-merge" href="/how-it-works/synthesizer">
-    How Zeus deduplicates, calibrates, and posts the final review.
+    How Harmonia deduplicates, calibrates, and posts the final review.
   </Card>
   <Card title="Confidence Scoring" icon="chart-bar" href="/how-it-works/confidence-scoring">
     Proof-tier receipts and the grounding gate that govern what posts.

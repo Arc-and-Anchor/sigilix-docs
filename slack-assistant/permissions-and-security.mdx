@@ -1,0 +1,82 @@
+---
+title: "Permissions & Security"
+description: "@Sigilix in Slack only sees what your GitHub App scopes allow, is isolated per workspace as its own tenant, handles code ephemerally for the request, and runs under zero-retention agreements with model providers. The Slack app is installed per workspace."
+---
+
+# Permissions & Security
+
+@Sigilix in Slack is a new surface, not a new trust boundary. It is the same engine that reviews your pull requests, reachable from a thread — so it inherits the same security posture: it only sees what your GitHub App install allows, it is isolated per tenant, and code is handled ephemerally and never used to train models. This page describes how that holds for the Slack surface specifically.
+
+<Note>
+The Slack app is installed **per workspace**, and a workspace maps to a single Sigilix tenant. [Install or request access](https://app.sigilix.ai) during the private beta, and contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a> to enable it for a workspace.
+</Note>
+
+## Visibility is scoped by GitHub
+
+@Sigilix can only retrieve from, answer about, and act on what your **GitHub App install** grants. The GitHub App scope is the ceiling — Slack does not widen it.
+
+<CardGroup cols={2}>
+  <Card title="Only the repos you installed on" icon="github">
+    @Sigilix sees the repositories your GitHub App install covers — no more. A question about a repo outside the install simply has no context to retrieve, and @Sigilix says so rather than guessing.
+  </Card>
+  <Card title="Actions inherit the same grant" icon="key">
+    Opening a PR, filing an issue, or running a review all operate inside the permissions the install provides. @Sigilix can't act on a repo it can't see, and it can't escalate beyond the scopes you granted.
+  </Card>
+</CardGroup>
+
+Because the [earned-context layer](/how-it-works/earned-context) was built during reviews that ran under those same scopes, there is no separate, broader index for Slack to read from. The substrate and the surface share one permission boundary.
+
+## Isolated per workspace
+
+Each Slack workspace is its own **tenant**. Retrieval, review memory, the index, the code graph, and learned conventions are partitioned by tenant, and a request resolves to exactly one.
+
+<Steps>
+  <Step title="The event resolves to one workspace">
+    A Slack event carries its workspace. @Sigilix resolves it to a single tenant before any retrieval happens — see [How it answers](/slack-assistant/how-it-answers).
+  </Step>
+  <Step title="Retrieval is partitioned by tenant">
+    The index, code graph, and review memory @Sigilix reads are the ones belonging to that tenant. There is no shared pool that a query could reach across.
+  </Step>
+  <Step title="No cross-tenant context, ever">
+    A question in one workspace cannot retrieve another workspace's code, history, or learnings. Isolation is structural, not a filter applied after the fact.
+  </Step>
+</Steps>
+
+## Code is handled ephemerally
+
+When @Sigilix retrieves and reasons over code to answer a question or perform an action, that code is held **in memory for the duration of the request** and not persisted as a side effect of the conversation. The durable artifacts are the ones the product is built to keep — the earned-context layer that reviews deposit, and the review memory of past findings and learnings — all partitioned per tenant. A Slack thread does not create a new copy of your source somewhere.
+
+<CardGroup cols={2}>
+  <Card title="In memory, for the request" icon="bolt">
+    Source pulled to answer or act is used for that request and then released — not stashed in a side store keyed to the chat.
+  </Card>
+  <Card title="Durable context is the verified layer" icon="layer-group">
+    What persists is the index, code graph, trust ledger, and review memory — the same [earned context](/how-it-works/earned-context) reviews build, scoped to your tenant.
+  </Card>
+</CardGroup>
+
+## Zero retention with model providers
+
+Code sent to model providers to power an answer or action runs under **zero-retention** terms: providers do not retain it beyond serving the request, and **Sigilix does not fine-tune on customer repositories**. The same commitment that governs the hosted PR ensemble governs the Slack surface — using @Sigilix from a thread does not change where your code goes or how it's treated.
+
+<Note>
+This mirrors the posture stated for reviews: code is sent to model providers under their data-use commitments and discarded after the request, and we don't train on customer code. The Slack assistant is one more caller of that same engine.
+</Note>
+
+## What this means in practice
+
+- **You can't ask @Sigilix about a repo it isn't installed on.** Visibility tracks the GitHub App grant exactly.
+- **A workspace can't learn from another workspace.** Conventions, verdicts, and context never cross the tenant boundary.
+- **A Slack conversation doesn't create new copies of your code.** Code is ephemeral to the request; the durable layer is the verified context reviews already build.
+- **Your code isn't training data.** Zero-retention with providers; no fine-tuning on customer repos.
+
+## Read next
+
+<CardGroup cols={2}>
+  <Card title="How it answers" icon="diagram-project" href="/slack-assistant/how-it-answers">
+    The flow that resolves the workspace and scopes every retrieval.
+  </Card>
+  <Card title="Earned Context" icon="layer-group" href="/how-it-works/earned-context">
+    The durable, per-tenant layer @Sigilix reads from — built during reviews.
+  </Card>
+</CardGroup>

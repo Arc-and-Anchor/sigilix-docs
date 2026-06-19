@@ -7,7 +7,7 @@ description: "Sigilix is a hosted GitHub App that runs a five-specialist ensembl
 
 Sigilix is a hosted GitHub App for multi-agent AI code review — the mark of merge-ready code. Install it once, and a review fires automatically on every pull request. Believability here is architectural, not a prompt: a finding cannot post unless it earns its way through a sequence of gates.
 
-Every pull request is read in parallel by four domain specialists — **Athena** (logic and architecture), **Argus** (security), **Hermes** (performance), and **Themis** (tests) — and then unified by **Zeus**, the synthesizer that cross-checks their findings, deduplicates noise, calibrates severity, and posts a single coherent review.
+Every pull request is read in parallel by four domain specialists — **Metis** (logic and architecture), **Argus** (security), **Iris** (performance), and **Eunomia** (tests) — and then unified by **Harmonia**, the synthesizer that cross-checks their findings, deduplicates noise, calibrates severity, and posts a single coherent review.
 
 Before the LLM specialists fire, a deterministic layer scans the diff for secrets, dependency vulnerabilities, AST rule violations, and any regex rules you've defined in `sigilix.json`. Those findings are injected into the specialists as authoritative facts. And before any specialist judges a line, Sigilix expands context — pulling callers, dependencies, and symbols from the code graph, the repo index, and review memory — so the diff is judged against the whole repository, not a window.
 
@@ -37,21 +37,21 @@ Sigilix is in **private beta**. [Join our private beta →](https://app.sigilix.
 Sigilix doesn't run one generalist model. It runs four domain specialists in parallel, each focused on what it does best, unified by a fifth role — the synthesizer.
 
 <CardGroup cols={2}>
-  <Card title="Athena · Logic & Architecture">
+  <Card title="Metis · Logic & Architecture">
     Correctness, control flow, edge cases, architectural fit.
   </Card>
   <Card title="Argus · Security">
     Injection, authz gaps, secret exposure, unsafe patterns. Security never silently skips.
   </Card>
-  <Card title="Hermes · Performance">
+  <Card title="Iris · Performance">
     Hot paths, allocations, N+1s, algorithmic regressions.
   </Card>
-  <Card title="Themis · Tests">
+  <Card title="Eunomia · Tests">
     Coverage gaps, deleted assertions, weak or misleading test changes.
   </Card>
 </CardGroup>
 
-Each specialist runs a model tuned to its role — a reasoning-heavy model for logic, a faster high-volume model for security — behind a cross-provider fallback so one provider's outage can't silence a specialist. **Zeus** runs after the four, cross-checks their findings against each other, drops duplicates, calibrates severity, and writes the single review you actually read.
+Each specialist runs a model tuned to its role — a reasoning-heavy model for logic, a faster high-volume model for security — behind a cross-provider fallback so one provider's outage can't silence a specialist. **Harmonia** runs after the four, cross-checks their findings against each other, drops duplicates, calibrates severity, and writes the single review you actually read.
 
 ## Why findings are believable
 
@@ -98,8 +98,8 @@ Disagree with a finding? Reply in plain language — `@sigilix remember we use i
 
 When Sigilix reviews a PR, you get one review from `sigilix[bot]` containing:
 
-1. A **Zeus summary** — what changed, what concerns survived dedup, and whether the verdict is *Approved* or *Request changes*.
-2. **Inline findings** anchored to specific lines, tagged by specialist (Athena, Argus, Hermes, Themis) and severity (Critical / Warning / Info), each carrying its proof-tier pill.
+1. A **Harmonia summary** — what changed, what concerns survived dedup, and whether the verdict is *Approved* or *Request changes*.
+2. **Inline findings** anchored to specific lines, tagged by specialist (Metis, Argus, Iris, Eunomia) and severity (Critical / Warning / Info), each carrying its proof-tier pill.
 3. **Suggested patches** for findings where a clean fix is in scope.
 
 The review goes where developers already are — in the PR thread. Beyond the PR, the same engine powers the [Sigilix CLI and Deep-Research Chat](/cli-and-chat/overview), with BYO models (Codex CLI, Claude Code, or your own SDK/keys).
