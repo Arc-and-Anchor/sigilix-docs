@@ -1,0 +1,118 @@
+---
+title: "The Dispatcher"
+description: "One webhook, many pipelines. A single GitHub or Linear event is routed to the pipeline it deserves — so a cheap PR overview never waits behind the full five-specialist ensemble."
+---
+
+import { Callout, Cards, Steps } from 'nextra/components'
+import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
+
+# The Dispatcher
+
+Sigilix subscribes to one stream of events from your forge: a GitHub or Linear webhook fires, and a single endpoint receives it. What happens next is not one fixed behavior. The dispatcher reads the event, decides what kind of work it represents, and routes it to the pipeline built for that work.
+
+The motivation is simple: not every event deserves the full ensemble. Posting a fast description of what a PR changes is a different job than running four domain specialists plus a synthesizer over the diff. If both went through the same heavy path, the cheap passes would wait behind the expensive ones. The dispatcher keeps them separate.
+
+## One event in, the right pipeline out
+
+```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'background': '#0B0C10',
+    'primaryColor': '#1A1D23',
+    'primaryTextColor': '#E2E8F0',
+    'primaryBorderColor': '#4A5568',
+    'lineColor': '#4A5568',
+    'fontFamily': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace'
+  }
+} }%%
+flowchart TD
+    hook([Webhook])
+    disp{{Dispatcher}}
+    overview["PR overview<br/>(fast)"]
+    ensemble["Ensemble review<br/>(five specialists)"]
+    citriage["CI-failure triage"]
+    issue["Issue triage<br/>(Linear / Jira)"]
+    slash["describe / improve<br/>(slash commands)"]
+    qa["@mention Q&A"]
+
+    hook --> disp
+    disp --> overview
+    disp --> ensemble
+    disp --> citriage
+    disp --> issue
+    disp --> slash
+    disp --> qa
+
+    classDef node fill:#1A1D23,stroke:#4A5568,color:#E2E8F0,stroke-width:1px
+    classDef dispStyle fill:#f1140d,stroke:#f1140d,color:#FFFFFF,stroke-width:2px
+    classDef output fill:#0B0C10,stroke:#4A5568,color:#E2E8F0,stroke-width:1px,stroke-dasharray: 4 4
+
+    class overview,ensemble,citriage,issue,slash,qa node
+    class disp dispStyle
+    class hook output
+```
+
+## The pipelines
+
+<FeatureCards>
+<FeatureCard title="PR overview">
+    A fast pass that describes what the pull request changes. Cheap to run and useful immediately — it does not wait behind the full ensemble.
+</FeatureCard>
+<FeatureCard title="Ensemble review">
+    The full five-specialist pass: four domain specialists (Metis, Argus, Iris, Eunomia) unified by Harmonia, the synthesizer. This is the deep review.
+
+  See [Ensemble review](/how-it-works/the-ensemble).
+</FeatureCard>
+<FeatureCard title="CI-failure triage">
+    When a check fails, Sigilix reads the failure and posts a grounded, inline root-cause analysis instead of leaving you to scroll the raw log.
+</FeatureCard>
+<FeatureCard title="Issue triage">
+    Linear and Jira issues get rewritten titles, priority, estimate, labels, and assignee, plus a grounded root-cause comment and a link to the relevant PR.
+</FeatureCard>
+<FeatureCard title="describe / improve">
+    Slash commands route to targeted pipelines: <code>/sigilix describe</code> summarizes a change, <code>/sigilix improve</code> proposes refinements. See <a href="/configuration/commands">Commands</a>.
+</FeatureCard>
+<FeatureCard title="@mention Q&A">
+    Mention <code>@sigilix</code> with a question and the dispatcher routes it to a grounded Q&A pipeline that answers against the repo and review history.
+</FeatureCard>
+</FeatureCards>
+
+## Why route at all
+
+<Callout type="info">
+The point of the dispatcher is cost and latency isolation. The expensive work — the five-specialist ensemble running models tuned per role — is reserved for the events that need depth. Everything else takes a path sized to its job.
+</Callout>
+
+A single endpoint that always ran the full ensemble would be slow and wasteful. A PR that only needs a one-paragraph overview would pay the price of a deep security, logic, performance, and test review. A CI failure would be analyzed by four domain specialists when it only needs a grounded read of the failure log. By classifying the event first, the dispatcher matches effort to need:
+
+<Steps>
+
+### Receive
+
+A webhook arrives from GitHub or Linear — a PR opened, a check failed, a comment posted, an issue created.
+
+### Classify
+
+The dispatcher inspects the event and the comment body (for slash commands and mentions) to decide which pipeline it belongs to.
+
+### Route
+
+The event is handed to its pipeline. Fast pipelines return quickly; the ensemble runs its full pass independently.
+
+### Respond
+
+Each pipeline writes back to the place the developer already is — the PR thread, the check, or the issue.
+
+</Steps>
+
+## Read next
+
+<Cards>
+<Cards.Card title="Review Lifecycle" href="/how-it-works/review-lifecycle">
+    What happens inside the ensemble pipeline once the dispatcher hands it a PR.
+  </Cards.Card>
+<Cards.Card title="The Believability Pipeline" href="/how-it-works/believability-pipeline">
+    The five gates a finding must clear before it can post.
+  </Cards.Card>
+</Cards>

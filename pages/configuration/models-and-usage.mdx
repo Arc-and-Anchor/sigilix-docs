@@ -1,0 +1,83 @@
+---
+title: "Models & Usage"
+description: "Why Sigilix usage windows are far larger than a comparable OpenAI or Claude plan — the models we run, how to pick one, and the 5-day reset cadence."
+---
+
+import { Callout, Cards, Steps } from 'nextra/components'
+import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
+
+# Models & Usage
+
+Most AI-tooling plans meter you tightly because the model underneath is expensive. A plan built on a single first-party frontier API — a Claude Pro seat, say — burns through its allowance fast, because every token is billed at premium first-party rates.
+
+Sigilix is built differently. We run a roster of **cheap, highly reliable open and frontier models** — the kind that are now industry-standard and dependable for production code work — so our cost base per review is a fraction of a single-vendor stack. That difference is passed straight to you: **far more headroom for the same money.**
+
+<Callout type="info">
+The point isn't "cheap models, cheaper output." Every finding still clears the full [believability pipeline](/how-it-works/believability-pipeline) — evidence, provenance, refute/execute, proof-tier receipts. Lower cost buys you **more usage**, not lower standards.
+</Callout>
+
+## The models we run
+
+You can pick the model that fits your work and your usage. The roster includes industry-standard open and frontier models such as:
+
+<FeatureCards>
+<FeatureCard title="DeepSeek V4">
+    Strong reasoning for logic and architecture work.
+</FeatureCard>
+<FeatureCard title="Kimi K2.7">
+    High-quality, high-throughput code reasoning.
+</FeatureCard>
+<FeatureCard title="MiniMax M3">
+    Reliable general-purpose code understanding.
+</FeatureCard>
+<FeatureCard title="GLM 5.2">
+    Capable, cost-efficient coverage across roles.
+</FeatureCard>
+</FeatureCards>
+
+…and more are added as the open/frontier landscape moves. These models are reliable enough to stand behind a believability guarantee, and cheap enough that we can give you usage windows a single-vendor plan can't match.
+
+<Callout type="info">
+On the hosted PR ensemble, each specialist — **Metis** (logic), **Argus** (security), **Iris** (performance), **Eunomia** (tests), unified by **Harmonia** — runs the model tuned to its role, behind cross-provider fallback so one provider's outage can't silence a specialist. See [The Ensemble](/how-it-works/the-ensemble).
+</Callout>
+
+## Pick your own model
+
+You're not locked to one choice. Select the model that matches the work and the budget you want to spend, and change it as your needs change.
+
+On the **CLI and Deep-Research Chat**, you can also [bring your own model](/cli-and-chat/bring-your-own-models) — Codex CLI, Claude Code, or your own SDK and provider keys — and pay that provider directly. Your model still fetches Sigilix's verified [earned-context layer](/how-it-works/earned-context), so it inherits the precision without re-deriving your repo.
+
+## Generous usage windows
+
+Because the cost base is low, included usage is generous — meaningfully higher than a comparable OpenAI- or Claude-based plan for the same price.
+
+<Steps>
+
+### Per-seat base + metered usage
+
+Each tier is a per-seat base plus metered usage for review volume and agent tokens. No fixed PR windows — you pay for your team plus the work Sigilix actually does.
+
+### Pick the model that fits
+
+Run a cheaper model for routine volume, or a heavier one where it matters. The choice is yours, per your usage.
+
+### Windows reset every 5 days
+
+Usage windows reset on a **5-day** cadence — not weekly — so you spend less time waiting on a limit.
+
+</Steps>
+
+<Callout type="info">
+For tier pricing and what's included at each level, see the [pricing page](https://sigilix.ai/pricing).
+</Callout>
+
+## Read next
+
+<Cards>
+<Cards.Card title="Bring Your Own Models" href="/cli-and-chat/bring-your-own-models">
+    Use Codex CLI, Claude Code, or your own keys on the CLI and chat.
+  </Cards.Card>
+<Cards.Card title="Rate Limits" href="/configuration/rate-limits">
+    How limits are applied and what happens at the ceiling.
+  </Cards.Card>
+</Cards>
