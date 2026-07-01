@@ -1,0 +1,109 @@
+---
+title: "Opt-outs"
+description: "Consolidated reference for disabling Sigilix subsystems per-repo. Every subsystem ships enabled by default; each has its own `{ enabled: false }` switch in sigilix.json."
+---
+
+import { Cards } from 'nextra/components'
+
+# Opt-outs
+
+Sigilix's subsystems are **opt-out**, not opt-in: install the app, get every feature. Each subsystem has its own `{ enabled: false }` switch in your config file (`sigilix.json` or `sigilix.yaml` — same schema) for repos where the default doesn't fit.
+
+## The switches
+
+| Key | Subsystem | Default | Disable with |
+|---|---|---|---|
+| `depVulnScan` | Dependency vulnerability scan | enabled | `{ "depVulnScan": { "enabled": false } }` |
+| `astRules` | AST rule-pack scanner (JS/TS) | enabled | `{ "astRules": { "enabled": false } }` |
+| `sarifEvidence` | SARIF evidence channel (Trivy + generic) | enabled | `{ "sarifEvidence": { "enabled": false } }` |
+| `reviewMemory` | Cross-PR review memory | enabled | `{ "reviewMemory": { "enabled": false } }` |
+| `describe` | `/sigilix describe` slash command | enabled | `{ "describe": { "enabled": false } }` |
+
+All of these are at the **top level** of `sigilix.json`, not nested under `commands`.
+
+```json
+{
+  "guidance": "TypeScript Cloudflare Worker.",
+  "depVulnScan":     { "enabled": false },
+  "reviewMemory": { "enabled": false }
+}
+```
+
+## When to disable each
+
+### `depVulnScan` — dependency vulnerability scan (ARC-186)
+
+Sigilix scans npm dependencies against a bundled vulnerability database on every review. Disable if:
+
+- You already have Dependabot, Snyk, or another scanner producing duplicate alerts.
+- Your repo isn't npm-based (the scanner is npm-only today; non-npm repos see no findings anyway).
+- You explicitly don't want supply-chain commentary on PRs (rare).
+
+See [Dependency Vulnerabilities](/evidence-and-provenance/dependency-vulnerabilities) for what the scanner catches.
+
+### `astRules` — AST rule-pack scanner (ARC-181)
+
+A pre-LLM AST scanner for JS/TS that catches a small list of common patterns (e.g., `no-eval-call`). Disable if:
+
+- You're not using JS/TS (the scanner is a no-op anyway, but disabling skips the parse).
+- You've moved equivalent checks into your own ESLint config and don't want overlap in the review comment.
+
+### `sarifEvidence` — SARIF evidence channel (ARC-188)
+
+Sigilix accepts Trivy and generic SARIF v2.1.0 reports uploaded as PR artifacts and injects high-severity findings into the synthesizer as evidence. Disable if:
+
+- You don't produce SARIF artifacts in CI (the channel is a no-op but disabling silences any warnings).
+- You produce SARIF but don't want it in the Sigilix review (e.g., you already post it as its own GitHub Code Scanning comment).
+
+See [SARIF Evidence](/evidence-and-provenance/sarif-evidence) for the wire format.
+
+### `reviewMemory` — cross-PR review memory (ARC-189)
+
+Sigilix records which findings the team accepted versus dismissed across past PRs and uses that signal to calibrate future reviews on this repo (down-weight categories you consistently dismiss, up-weight categories you consistently act on). Disable if:
+
+- You have an unusual review pattern (e.g., bot-driven approvals) that would teach the memory wrong signals.
+- You explicitly want every review to be context-free.
+
+See [Review Memory](/how-it-works/review-memory) for the calibration model.
+
+### `describe` — `/sigilix describe` slash command (ARC-191)
+
+Sigilix can draft PR descriptions and changelog entries on demand. Disable if:
+
+- Your team strictly hand-writes PR descriptions and doesn't want even the option of drafting.
+- You've seen the drafts leak internal jargon you don't want in external changelogs (consider tuning [`commands.describe.prompt`](/configuration/commands) first).
+
+Disabling here only turns off the slash command. Automatic PR overviews (a separate feature) still fire on `pull_request.opened`.
+
+## Defaults are deliberately on
+
+Each subsystem was added because it earned its place — ARC-186 catches real CVEs the LLM specialists miss, ARC-189 reduces repeat false-positives, etc. The opt-out is for cases where the subsystem actively hurts (duplicate alerts, conflicting signals), not for cases where you simply haven't thought about it.
+
+If you're not sure whether to disable, leave it enabled and check the telemetry over a week.
+
+## A combined "minimal" config
+
+For teams that want the LLM ensemble only — no scanners, no memory, no describe:
+
+```json
+{
+  "depVulnScan":     { "enabled": false },
+  "astRules":     { "enabled": false },
+  "sarifEvidence":        { "enabled": false },
+  "reviewMemory": { "enabled": false },
+  "describe":     { "enabled": false }
+}
+```
+
+The LLM specialists + synthesizer still run; deterministic-checks you've written under `deterministicChecks` still run; `pathFilters`, `profile`, `guidance`, and `rules` still apply.
+
+## Read next
+
+<Cards>
+<Cards.Card title="Configuration reference" href="/configuration/configuration-reference">
+    Full `sigilix.json` schema.
+  </Cards.Card>
+<Cards.Card title="Evidence & Provenance" href="/evidence-and-provenance/secret-scanning">
+    What the scanners catch — useful context before deciding to disable.
+  </Cards.Card>
+</Cards>

@@ -1,0 +1,145 @@
+---
+title: "Deep-Research Chat"
+description: "A chat grounded in your repo and its review history. Ask why a finding fired, what a change affects, or how a subsystem fits together — answers are anchored in the index, code graph, and past reviews and their proof-tier receipts, not guessed."
+---
+
+import { Callout, Cards, Steps } from 'nextra/components'
+import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
+
+# Deep-Research Chat
+
+Deep-Research Chat is plain-language Q&A over your repository **and everything Sigilix has already learned about it**. Ask why a finding fired, what a change is likely to affect, or how a subsystem fits together — and get answers anchored in the index, the code graph, and past reviews and their receipts, rather than a confident guess from whatever happened to fit in a context window.
+
+The distinction is the substrate. A generic code chatbot reads what fits in its window. Deep-Research Chat reads from the [earned-context layer](/how-it-works/earned-context) — the same verified understanding of your repo that powers hosted reviews. The chat loop is not the product; the **verified context your model fetches** is.
+
+<Callout type="info">
+Deep-Research Chat is part of the **private beta**. Availability is per-account during the beta — [join the private beta](https://app.sigilix.ai) to get access, and contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a> if you are already in and want it enabled for your account.
+</Callout>
+
+## What you can ask
+
+Deep-Research Chat is built for the questions that need *grounding*, not generation — the ones where a wrong answer is worse than no answer.
+
+<FeatureCards>
+<FeatureCard title="Why did this finding fire?">
+    Retrieve a past finding, the specialist that raised it (Metis, Argus, Iris, or Eunomia), the code it cited, and its proof-tier receipt — and ask the chat to explain the reasoning behind it.
+</FeatureCard>
+<FeatureCard title="What does this change affect?">
+    Walk the code graph from the lines you touched to their callers, dependents, and the symbols downstream — so blast-radius answers reason about the real edges, not a guess.
+</FeatureCard>
+<FeatureCard title="How does this subsystem fit together?">
+    Ask for an architectural read of a module or flow, answered from the index and code graph rather than a partial file dump.
+</FeatureCard>
+<FeatureCard title="What has Sigilix learned here?">
+    Retrieve taught rules and past dismissals for an area of the repo — what the system already knows about how your team wants this code reviewed.
+</FeatureCard>
+</FeatureCards>
+
+## How grounding works
+
+Every answer is built from retrieved, verified context — not from the model's parametric memory of your codebase, which it does not have.
+
+<Steps>
+
+### Retrieve from earned context
+
+The chat resolves your question against the earned-context layer: the index for relevant files and symbols, the code graph for callers and dependencies, the trust ledger and review memory for past findings, receipts, and taught rules.
+
+### Anchor to real artifacts
+
+Retrieved facts come with provenance — the file and lines a symbol lives at, the PR a finding was raised on, the proof tier a receipt carries. The chat reasons over these anchors rather than improvising.
+
+### Answer from evidence
+
+The model composes an answer grounded in what it retrieved, citing the code and history it drew on — so you can follow the answer back to its source.
+
+### Stay honest about gaps
+
+When the earned-context layer does not contain what a question needs, that is a grounded "I don't have evidence for that" rather than a fabricated answer. Believability is the same value as on a PR: the chat would rather be silent than wrong.
+
+</Steps>
+
+## Retrieving findings and their receipts
+
+The chat can pull up a past finding and the **proof-tier receipt** it carried when it posted — the same trust ledger that backs the pills on a PR. This is what lets you interrogate the review history, not just the code:
+
+<FeatureCards>
+<FeatureCard title="VERIFIED">
+    The finding was checked by execution or backed by a signed receipt. The strongest tier.
+</FeatureCard>
+<FeatureCard title="GROUNDED">
+    The finding was anchored to cited code and concrete evidence in the diff or surrounding context.
+</FeatureCard>
+<FeatureCard title="MODEL">
+    The finding rested on model judgment — surfaced, but flagged as the lowest-evidence tier.
+</FeatureCard>
+</FeatureCards>
+
+Ask the chat *"why did Argus flag the session compare on PR #214, and what tier was it?"* and it can retrieve that finding, its cited code, and its receipt — and explain it — instead of re-deriving an opinion from scratch.
+
+## A grounded exchange
+
+```bash
+$ sigilix chat
+
+sigilix › why did the order-total finding fire on the refunds PR?
+
+  Retrieving from earned context…
+    ↳ finding f-3391 · Metis · GROUNDED · PR #198
+    ↳ cited: src/billing/refund.ts L54–61
+    ↳ code graph: refund.ts → ledger.applyDelta → money.fromCents
+
+  Metis raised it because `refund.ts` computed the credit in floating-
+  point dollars and passed it to `applyDelta`, which the ledger expects
+  in integer cents (see money.fromCents). The finding cited L54–61 and
+  was GROUNDED — anchored to that conversion, not inferred. A taught
+  rule on this repo ("we use integer cents") reinforced it.
+```
+
+<Callout type="info">
+Illustrative transcript. The shape is real — retrieval with provenance, a specialist and proof tier on the finding it recalls, and an answer that points back at cited code and history.
+</Callout>
+
+## Grounded vs. generic chat
+
+<details>
+<summary>It reads the whole repo, not a window</summary>
+
+Because answers are built from the index and code graph, the chat reasons about callers, dependencies, and symbols across the entire repository — the same context-before-judgment that powers reviews. It is not limited to the files you paste in.
+
+</details>
+  <details>
+<summary>It remembers what reviews found</summary>
+
+Past findings, their cited code, their proof-tier receipts, and the rules you've taught are all retrievable. The chat can tell you not just what the code does, but what Sigilix has already concluded about it — and why.
+
+</details>
+  <details>
+<summary>It declines rather than guesses</summary>
+
+A generic chatbot will always produce an answer. Deep-Research Chat is held to the same believability bar as a review: when the evidence isn't there, it says so instead of confabulating.
+
+</details>
+  <details>
+<summary>It uses the model you bring</summary>
+
+On paid tiers, the chat runs on the model you point it at — Codex CLI, Claude Code, or your own SDK and keys. Whatever model answers still fetches Sigilix's verified context, so it inherits the precision without re-deriving the repo. See <a href="/cli-and-chat/bring-your-own-models">Bring Your Own Models</a>.
+
+</details>
+
+## Read next
+
+<Cards>
+<Cards.Card title="Earned Context" href="/how-it-works/earned-context">
+    The reusable, verified layer the chat reads from — index, code graph, trust ledger, review memory, evidence manifests.
+  </Cards.Card>
+<Cards.Card title="The Believability Pipeline" href="/how-it-works/believability-pipeline">
+    Why a finding — and the chat that recalls it — earns trust: evidence, provenance, refute/execute, proof-tier receipts, memory.
+  </Cards.Card>
+<Cards.Card title="Sigilix CLI" href="/cli-and-chat/cli">
+    Review parity in the terminal, drawing on the same earned context.
+  </Cards.Card>
+<Cards.Card title="Bring Your Own Models" href="/cli-and-chat/bring-your-own-models">
+    Run the chat on Codex CLI, Claude Code, or your own keys.
+  </Cards.Card>
+</Cards>

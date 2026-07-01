@@ -1,0 +1,77 @@
+---
+title: "Known Issues"
+description: "Open operational issues, the workarounds Sigilix applies, and what to do if you hit them anyway."
+---
+
+import { Cards } from 'nextra/components'
+
+# Known Issues
+
+This page documents production issues that have surfaced in Sigilix's own operation. Each entry covers the symptom, the root cause, and how Sigilix mitigates it — plus what to do if you see the symptom in your own install.
+
+## Cloudflare API `code:10023` deploy flake
+
+**Symptom.** A Sigilix deploy fails with `error code: 10023` from the Cloudflare API. The error is transient — the same `wrangler deploy` succeeds on the next attempt — but a single CI failure shows up as a red build.
+
+**Root cause.** Cloudflare's deploy endpoint returns `10023` ("operation in progress") when an internal cache is warm but contended, or when concurrent deploys touch the same Worker. The condition is brief; Cloudflare's documented retry policy is "retry the request."
+
+**Mitigation in Sigilix.** The CI workflow wraps `wrangler deploy` in a 5-attempt retry loop with exponential backoff. Each attempt waits 5, 15, 45, and 135 seconds respectively before the next try. Empirically, ~98% of `10023` failures resolve by attempt 2; the loop has never exhausted all 5 attempts.
+
+The retry is in `.github/workflows/deploy.yml` (visible in the [Sigilix org](https://github.com/Sigilix) repo).
+
+**What to do if you see it.** Nothing — the retry handles it. The deploy will succeed and the build will turn green. If a deploy fails on all 5 attempts, that's a real Cloudflare-side incident; check [Cloudflare's status page](https://www.cloudflarestatus.com/).
+
+## Codebase indexer broken by `openclaw-worker` → `sigilix` rename
+
+**Symptom.** Reviews on a repo briefly returned with empty retrieval context — the synthesizer summary mentioned "codebase context unavailable for this review."
+
+**Root cause.** Sigilix's codebase indexer identifies the Worker by its name when subscribing to the indexer's update stream. When the Worker was renamed from `openclaw-worker` to `sigilix` (during the mid-Phase-4 rebrand), the indexer kept looking for the old name and stopped delivering updates. Reviews still completed, but without the per-PR retrieval context, the LLM specialists were running with thinner code awareness.
+
+**Mitigation in Sigilix.** Fixed in commit `1f661b5` by updating the indexer's subscriber identifier. The fix is in place; this entry exists for historical context in case anyone reading old reviews wonders why a comment from that window mentions missing retrieval.
+
+**What to do if you see it.** This shouldn't recur — the rename only happens once. If you see "codebase context unavailable" in a review today, that's a different problem; check support.
+
+## Duplicate `pr-overview` comments (ARC-231 Stage 1)
+
+**Symptom.** Two `<!-- openclaw:pr-overview -->` PR-overview comments posted to the same PR seconds apart, with slightly different summary content.
+
+**Root cause.** A time-of-check/time-of-use race in `handlePrOverview`. Two `pull_request` webhooks fired close in time (typically `opened` + `synchronize`); both reached the "no marker present" branch of `listIssueComments` before either had written its own marker, and both POSTed.
+
+**Mitigation in Sigilix.** Stage 1 fix landed in `arc-156`: after the Ollama call returns, re-scan the comments list. If a sibling worker posted the marker during the 10–30s model window, PATCH that comment instead of POSTing a new one. The rendered body is built **after** the re-scan so a late-discovered marker renders as a "— latest push" update, not a fresh first-run summary. Telemetry event `pr-overview-second-pass-dedupe-fired` fires on each catch so the team can measure real-world race frequency.
+
+**Residual race.** A small window remains between the post-Ollama re-scan and the create POST. The window is much smaller than the model window and is considered acceptable for Stage 1. Stage 2 — a full port of `handlePrOverview` to a Durable Object mirroring ARC-190's pattern — is tracked separately.
+
+**What to do if you see it.** If you spot duplicate `pr-overview` comments on a Sigilix-reviewed PR after the `arc-156` merge, file an issue with the PR URL and the comment timestamps. The telemetry event is logged but a real recurrence would mean the Stage 1 window was wider than expected.
+
+## SARIF reports with 10,000+ findings
+
+**Symptom.** A SARIF artifact uploaded from CI contains thousands of findings. Sigilix's review shows the first 100 with a footnote about the rest being summarized.
+
+**Root cause.** Some scanners (notably overly-permissive Semgrep rulesets or first-time Trivy scans on legacy repos) emit massive SARIF reports. Sigilix caps the rendered findings at 100 per report to avoid posting a review of inhuman length.
+
+**Mitigation in Sigilix.** The cap is hardcoded. The full report is preserved in the GitHub Code Scanning view (where SARIF normally lives); only the Sigilix review's rendering is capped.
+
+**What to do if you see it.** Narrow your scanner's config. A SARIF report with 10K findings is noise, not signal — pick a tighter rule set or filter to a relevant subdirectory. The cap is intentional and won't be raised.
+
+## Same-family fallback failures during provider outages
+
+**Symptom.** A Sigilix review posts with `_3 of 4 specialists succeeded_` even though only one model provider is down. The expectation: cross-provider fallbacks should cover this.
+
+**Root cause.** Early fallbacks were configured **same-family** — a specialist's primary and its fallback ran on the same provider's infrastructure. When that provider had an incident, the primary AND the fallback failed together, defeating the fallback's purpose.
+
+**Mitigation in Sigilix.** This is fixed. Every domain specialist — **Metis** (`logic`), **Argus** (`security`), **Iris** (`performance`), **Eunomia** (`tests`) — now has a **cross-provider fallback on independent infrastructure**. Each specialist runs a model tuned to its role, and its fallback lives on a different provider, so a single provider outage can't silence a specialist.
+
+When one provider goes down, the affected specialists fail over to their cross-provider fallbacks and the review still completes with all four domain specialists. The security specialist (Argus) in particular never silently skips: it fails over rather than dropping out.
+
+**What to do if you see it.** Two independent providers being down simultaneously is rare. If it happens, check the [provider-side status pages](https://status.cloudflare.com/) and Sigilix's status feed. A `3 of 4` review still has a verdict; merge it with awareness that one specialist's perspective is missing.
+
+## Read next
+
+<Cards>
+<Cards.Card title="Release Notes" href="/operations-and-releases/release-notes">
+    What shipped during the Phase 4a/4b cycle.
+  </Cards.Card>
+<Cards.Card title="Common Errors" href="/troubleshooting/common-errors">
+    User-facing error messages and their fixes.
+  </Cards.Card>
+</Cards>

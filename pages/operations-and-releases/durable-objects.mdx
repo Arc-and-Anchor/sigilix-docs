@@ -1,0 +1,95 @@
+---
+title: "Durable Objects in Sigilix"
+description: "How Sigilix uses Cloudflare Durable Objects for per-PR serialization. Operator-facing context — useful when reading Sigilix's logs, not needed to use Sigilix."
+---
+
+import { Cards } from 'nextra/components'
+
+# Durable Objects in Sigilix
+
+This page exists for operators and curious customers. You don't need to read it to use Sigilix — DOs are an internal implementation detail. If you've never wondered "wait, how does Sigilix avoid duplicate reviews when two webhooks race?" you can skip this page.
+
+## What's a Durable Object
+
+A [Durable Object](https://developers.cloudflare.com/durable-objects/) (DO) is Cloudflare's per-key serialized actor. Each DO instance:
+
+- Lives at one location (one region) globally
+- Serializes all requests routed to it
+- Carries persistent storage that's transactionally consistent with the instance's execution
+
+For Sigilix, the key per DO is `(installationId, owner, repo, prNumber)`. Every webhook for that PR routes to the same DO instance, which means concurrent webhooks **queue** instead of racing.
+
+## The `PrReviewRunDO` (ARC-190)
+
+The main DO in Sigilix is `PrReviewRunDO`, which owns the pr-review pipeline state for a single PR. ARC-190 split the `pull_request` webhook ingest path off the stateless Worker and into this DO.
+
+### Why this matters
+
+Before ARC-190, the `pull_request.synchronize` and `pull_request.opened` webhooks could fire close in time and both trigger a full review. With cross-region KV being eventually consistent, the dedupe key was advisory — under load, two Workers could observe an empty key and both POST a review.
+
+After ARC-190, both webhooks route to the same DO. The DO serializes them. The second one observes the first's state and either short-circuits (no new commit) or runs an incremental review (new commit).
+
+### State the DO owns
+
+Per PR:
+
+- The most recent review's manifest (head SHA, finding counts, specialist outcomes)
+- The in-flight review's pipeline state (which stage it's at, started-at timestamp)
+- Feedback signals collected since the last review (for review-memory updates)
+- The `mode` flag — see below
+
+### Mode flag: `off` / `shadow` / `post`
+
+The DO carries a `mode` per repo that controls how its decisions interact with the production review path:
+
+| Mode | Behavior |
+|---|---|
+| `off` | The DO accepts requests, records state, but **does not** drive review behavior. The legacy KV-based path handles reviews. Used during rollout to validate the DO produces correct decisions without taking action. |
+| `shadow` | The DO drives decisions and records them, but the legacy KV path **also** runs in parallel. Outputs are compared; discrepancies are logged. Used to gain confidence before full cutover. |
+| `post` | The DO is the source of truth. Legacy KV path is bypassed. Production mode. |
+
+`PrReviewRunDO` rolled out through these stages in order: `off` (live and recording, but not driving review behavior) → `shadow` (driving decisions in parallel with the legacy KV path, with outputs compared) → `post` (the DO is the source of truth, legacy KV path bypassed). The legacy KV dedupe path is retired once `post` has soaked.
+
+This staged rollout was deliberate. A bug in the DO that silently drops reviews would be terrible; running shadow alongside the legacy path catches mismatches before cutover.
+
+## The `handlePrOverview` race (ARC-231)
+
+`handlePrOverview` (a separate pipeline that posts the sticky top-level "Sigilix Overview" comment) currently uses the legacy KV-dedupe path, not a DO. ARC-231 Stage 1 (a post-Ollama second-pass dedupe) shipped in `arc-156` to close the largest practical race window. Stage 2 — porting `handlePrOverview` to a DO mirroring `PrReviewRunDO`'s pattern — is a separate planned ticket.
+
+See [Known Issues — Duplicate pr-overview comments](/operations-and-releases/known-issues#duplicate-pr-overview-comments-arc-231-stage-1) for the user-visible symptom.
+
+## Reading DO logs
+
+If you're an operator looking at Sigilix's production logs, DO events appear as JSON lines tagged with the DO ID:
+
+```json
+{"do": "pr-review-run", "id": "acme/site#42", "event": "alarm-fired", "mode": "off"}
+{"do": "pr-review-run", "id": "acme/site#42", "event": "review-state-recorded", "headSha": "abc1234"}
+```
+
+DO IDs are deterministic from `(installationId, owner, repo, prNumber)` so logs across regions can be correlated by ID alone.
+
+## Cost model
+
+DOs are billed on three dimensions: per request, per GB-second of duration (wall-clock compute while active or non-hibernating), and per GB-month of stored data. For Sigilix the dominant cost is **requests**: each webhook is one request. Duration is small because the DO hibernates between webhooks. Storage per PR is tiny (a manifest is ~1 KB; feedback signals are a few KB per PR).
+
+Cost compared to the legacy KV path: roughly the same. KV reads/writes have similar economics. The win is correctness, not cost.
+
+## When to look at this page
+
+You're an operator and:
+
+- A duplicate review just got posted — check whether ARC-190 was active for this PR (look for the `do: pr-review-run` log lines).
+- A review's `sigilix-meta` provenance manifest has unexpected outcomes — the DO log will show the pipeline state at each stage.
+- You're reading the Sigilix codebase and want to understand why `handlePrReview` doesn't live in the Worker entry-point.
+
+## Read next
+
+<Cards>
+<Cards.Card title="Review Lifecycle" href="/how-it-works/review-lifecycle">
+    The full pipeline — DOs are step 14's substrate.
+  </Cards.Card>
+<Cards.Card title="Review Provenance" href="/evidence-and-provenance/review-provenance">
+    The manifest the DO records on every review.
+  </Cards.Card>
+</Cards>

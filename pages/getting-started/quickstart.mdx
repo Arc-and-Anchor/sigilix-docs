@@ -1,0 +1,85 @@
+---
+title: "Quickstart"
+description: "Install the Sigilix GitHub App and get your first review in minutes."
+---
+
+import { Callout, Cards, Steps } from 'nextra/components'
+
+# Quickstart
+
+This guide installs Sigilix on a single repository and walks you through your first review.
+
+<Callout type="info">
+Sigilix is in **private beta** — there's no public self-serve signup or paid plan yet. [Join our private beta](https://app.sigilix.ai) to get your account provisioned.
+</Callout>
+
+## Prerequisites
+
+- A GitHub account with admin permissions on at least one repository
+- A Sigilix beta account ([join the private beta](https://app.sigilix.ai))
+- A few minutes
+
+## 1. Install the GitHub App
+
+<Steps>
+
+### Join the private beta
+
+Go to [app.sigilix.ai](https://app.sigilix.ai) and request access. Once your account is provisioned, sign in to continue.
+
+### Sign in with GitHub
+
+Click **Sign in with GitHub** and authorize the Sigilix OAuth app. This is read-only at this stage — no code is fetched yet.
+
+### Install the GitHub App
+
+Click **Install Sigilix on a repository**. GitHub's standard App-installation flow opens. Choose:
+
+- **The account or org** that owns the repository
+- **Which repositories** to install on (start with one)
+
+Required permissions:
+- Pull requests · Read & write (to post reviews and inline comments)
+- Contents · Read (to fetch the diff)
+- Metadata · Read (default)
+- Issues · Read & write (to handle `@sigilix` mentions)
+
+Click **Install**. You're returned to your Sigilix dashboard.
+
+</Steps>
+
+## 2. Trigger your first review
+
+Open any pull request on the installed repository — or push a new commit to an existing PR. Sigilix listens for the `pull_request.opened` and `pull_request.synchronize` webhook events.
+
+<Callout type="default">
+**Don't have a PR handy?** Open a tiny one — change a single string in the README — to see Sigilix in action without spending much of your review budget.
+</Callout>
+
+Within a minute or two, you'll see a new review on the PR from `sigilix[bot]`. The review includes:
+
+- A summary from **Harmonia** (the synthesizer): what was reviewed, how many findings survived dedup, and the verdict
+- Inline findings (if any) anchored to specific lines, tagged by specialist (Metis, Argus, Iris, Eunomia)
+- Severity badges: Critical / Warning / Info
+- A proof-tier pill on each finding (VERIFIED / GROUNDED / MODEL) — see the [believability pipeline](/how-it-works/believability-pipeline)
+
+## 3. Resolve findings
+
+If Sigilix flagged real issues, fix them and push again. Sigilix re-reviews on every push (`pull_request.synchronize`) and updates the verdict — if all blocking findings are resolved, the next review approves.
+
+If a finding is a false positive or out of scope, reply to it. You can dismiss it, or teach Sigilix a rule so it stops happening: reply `@sigilix remember <the rule>` and it will apply — and attribute — that rule in later reviews. See [Conversational Learnings](/how-it-works/conversational-learnings).
+
+## 4. Configure (optional)
+
+If you need to tune behavior — ignore generated files, add per-role guidance, define deterministic regex rules — drop a `sigilix.json` (or `sigilix.yaml`) at the root of your repo. Sigilix reads JSON and YAML with the same schema. See [Configuration](/configuration/configuration-reference) for the full schema.
+
+## What's next
+
+<Cards>
+<Cards.Card title="The Believability Pipeline" href="/how-it-works/believability-pipeline">
+    The five gates a finding clears before it can post — and how to read the proof-tier pills.
+  </Cards.Card>
+<Cards.Card title="GitHub Integration" href="/integrations/github">
+    Branch protection, required checks, multi-repo install, deeper GitHub integration.
+  </Cards.Card>
+</Cards>

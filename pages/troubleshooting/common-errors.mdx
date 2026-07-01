@@ -1,0 +1,92 @@
+---
+title: "Common Errors"
+description: "What to do when Sigilix doesn't post a review, posts a partial review, or returns a 4xx/5xx error."
+---
+
+# Common Errors
+
+This page covers the most frequent failure modes and what to do about them.
+
+## "No review appears on my PR"
+
+A few things to check, in order:
+
+### 1. Is Sigilix installed on this repo?
+
+Open [GitHub App settings](https://github.com/settings/installations) → click Configure on Sigilix → confirm the repo is in the selected list. If not, add it and trigger a re-review by pushing an empty commit.
+
+### 2. Did the webhook deliver?
+
+Open the GitHub App webhook log: `Settings → Developer settings → GitHub Apps → Sigilix → Advanced → Recent Deliveries`. Look for the most recent `pull_request` event matching your PR number. If it's red (delivery failed), click Redeliver.
+
+### 3. Is the PR a draft?
+
+Sigilix doesn't review draft PRs by default. Convert to ready and Sigilix re-reviews automatically.
+
+### 4. Is the file ignored?
+
+If the PR only touches files matching your `sigilix.json` `pathFilters`, Sigilix posts no review (the "no specialists need to fire" short-circuit). Check the `Recent Deliveries` for a `webhook_skipped` log entry.
+
+### 5. Did you hit the rate limit?
+
+If your account's rate limit is exhausted, Sigilix posts a small "rate limit reached" comment instead of a full review. Check your usage at the dashboard or in any recent review's footer.
+
+### 6. Is the diff too large?
+
+Sigilix has a 5MB diff cap. PRs with diffs larger than that get a "diff too large to review" comment. Split the PR.
+
+## "Review posted but a specialist is missing"
+
+If a Sigilix review's footer says `_3 of 4 specialists succeeded._`, one of the four domain specialists — Metis (logic), Argus (security), Iris (performance), or Eunomia (tests) — failed. This usually means:
+
+- The specialist's primary model returned a 5xx (overloaded) and the cross-provider fallback also failed
+- The specialist ran out of its review budget. The budget is size-scaled — small diffs finish quickly, large diffs are allowed to run up to the platform's wall-clock ceiling — so a specialist running long usually means an unusually large or dense diff, not a fixed per-call cap
+
+The review still posts with the available specialists; Harmonia synthesizes whatever returned. Sigilix doesn't retry the missing specialist on the same SHA — push a new commit to trigger a fresh review.
+
+If a specific specialist is consistently failing, [contact us](mailto:support@sigilix.ai) — there may be an outage at the model provider.
+
+## "Inline anchors are missing — everything is in the body"
+
+This is the **anchorless fallback**. It happens when GitHub rejects Sigilix's inline-anchor positions (typical 422 — line numbers don't match the diff).
+
+The verdict is still posted; the findings are rolled into the review body as markdown grouped by file. Look for the footer:
+
+```
+_Inline anchoring unavailable for this review; findings grouped above._
+```
+
+This is rare — Sigilix's pre-validation should catch bad positions before submission. If you see it consistently on a particular repo, [contact us](mailto:support@sigilix.ai).
+
+## "Sigilix re-reviews on every push but my PR has hundreds of pushes"
+
+Each push fires a `pull_request.synchronize` webhook, but Sigilix coalesces synchronize events: it waits ~30s for additional pushes before starting the review. So a rapid push-fix-push-fix-push sequence costs **one review**, not multiple.
+
+If you push a single commit slowly (one every minute), you'll burn budget faster. Batch your pushes when possible.
+
+## "I'm getting 401 Unauthorized when I post a comment"
+
+This is a webhook-signature mismatch. Sigilix verifies the `X-Hub-Signature-256` header on every incoming GitHub webhook against `GITHUB_WEBHOOK_SECRET`.
+
+If you've rotated the GitHub App's webhook secret, you need to update the secret on the Sigilix deployment side. Reach out to [support@sigilix.ai](mailto:support@sigilix.ai) and we'll re-sync.
+
+## "Sigilix is reviewing but my `rules.<role>` aren't firing"
+
+Per-role rules are appended to the relevant specialist's system prompt. Check:
+
+1. **Is `sigilix.json` at the repo root?** Sigilix only reads it from the root. Subfolder configs are ignored.
+2. **Does the file parse?** A JSON-parse failure posts a single sticky `Sigilix config parse error` comment on the PR with the line/column of the failure. If you don't see your rules taking effect AND there's no parse-error comment, the file is parsing but might not contain your intended schema — double-check with `cat sigilix.json | jq`.
+3. **Is the rule too vague?** The model can't enforce "Code should be readable." Rewrite to something concrete.
+4. **Does the rule scope to the right role?** The role tokens are `logic`, `security`, `performance`, `tests`. A security rule under `rules.logic` won't fire on the security specialist — put it under `rules.security`.
+
+See [Rules & Guidance](/configuration/rules-and-guidance) for writing effective rules.
+
+## Still stuck?
+
+Email us at [support@sigilix.ai](mailto:support@sigilix.ai) with:
+- Your GitHub org name
+- The PR URL where the issue occurred
+- The expected behavior vs. observed
+- Recent webhook deliveries (screenshot from GitHub App webhook log)
+
+We typically reply within 24 hours during US business days.

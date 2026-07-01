@@ -1,0 +1,114 @@
+---
+title: "Commands"
+description: "The verbs you can @mention in Slack — a grounded question, review, summarize, file issue, and open a PR. Each one routes to the same engine that reviews your pull requests, scoped to your workspace and grounded in earned context."
+---
+
+import { Callout, Cards } from 'nextra/components'
+
+# Commands
+
+You drive @Sigilix the way you'd ask a teammate: @mention it and say what you want. A bare question gets a grounded answer; a verb like `review` or `open a PR` triggers an action. There's nothing to memorize and no rigid syntax — the phrasings below are the canonical forms, and @Sigilix understands natural variations of them.
+
+Every command runs inside your workspace's scope and draws on the [earned-context layer](/how-it-works/earned-context), so answers and artifacts are grounded in your actual codebase and its review history. See [How it answers](/slack-assistant/how-it-answers) for the flow each one follows.
+
+## At a glance
+
+| Command | What it does |
+| --- | --- |
+| `@Sigilix <question>` | A grounded answer to a codebase question, cited to `file:line`, PRs, and ADRs. |
+| `@Sigilix review <PR or branch>` | Runs the full Metis / Argus / Iris / Eunomia + Harmonia ensemble. |
+| `@Sigilix summarize <PR>` | Verdict, effort estimate, gates passed, and risk-ranked files. |
+| `@Sigilix file issue` | Opens a triaged Linear or Jira ticket from the thread. |
+| `@Sigilix open a PR` | Turns the thread's decision into code plus a regression test. |
+
+## `@Sigilix <question>`
+
+Ask anything about the codebase. @Sigilix retrieves from the index, code graph, and review memory, then answers anchored to concrete evidence — `file:line`, the merged PRs that set a pattern, and the ADRs behind a decision. It won't assert what it can't ground.
+
+```text
+@dana   @Sigilix where do we validate that an order total matches its line items?
+
+@Sigilix  In `orders/validate.ts:58` — `assertTotalsMatch(order)` sums
+          `lineItems[].amount` and compares against `order.total`, throwing
+          `TotalsMismatchError` on drift. It's called from the order
+          create/update path in `orders/service.ts:114` and `:139`. The
+          "validate totals server-side, never trust the client" rule is
+          ADR-0014, introduced in #488.
+```
+
+It keeps explaining **in-thread until the team is aligned** — follow up with "what calls that?" or "what breaks if I change it?" and it narrows further, pulling more context each turn rather than restarting.
+
+## `@Sigilix review <PR or branch>`
+
+Run the full ensemble on demand. The four specialists — **Metis** (logic & architecture), **Argus** (security), **Iris** (performance), **Eunomia** (tests) — run in parallel, unified by **Harmonia**, exactly as on an automatic review. See [The Ensemble](/how-it-works/the-ensemble).
+
+The verdict and inline findings post to **GitHub**; a summary posts back to the **Slack channel** so the thread stays informed without leaving Slack.
+
+```text
+@lee   @Sigilix review #627
+
+@Sigilix  Running the ensemble on #627 ("add bulk export")…
+          Metis ✓   Argus ⚠ 1 finding   Iris ✓   Eunomia ⚠ 1 finding
+          Verdict: Request changes. Posted 2 inline findings to #627.
+          • Argus (Warning): export endpoint missing tenant scope —
+            `export/bulk.ts:41`
+          • Eunomia (Info): no test covers the empty-result path —
+            `export/bulk.test.ts`
+```
+
+## `@Sigilix summarize <PR>`
+
+A fast read on where a PR stands: an effort estimate, which believability gates the findings passed, the files ranked by risk, and [Harmonia](/how-it-works/synthesizer)'s verdict. Useful before a merge decision or a standup.
+
+```text
+@kim   @Sigilix summarize #631
+
+@Sigilix  #631 "fix refund idempotency order" — small effort, 2 files.
+          Gates: evidence ✓ provenance ✓ refute ✓. Risk-ranked:
+          1. `payments/refunds.ts` (logic change to money path)
+          2. `payments/refunds.test.ts` (new regression test)
+          Verdict: Approved.
+```
+
+## `@Sigilix file issue`
+
+Turn the thread into a triaged **Linear or Jira** ticket. @Sigilix rewrites the title to be searchable, assigns a priority/severity, names a likely owner from code ownership and history, and links the relevant files and PRs. This is the [issue-triage pipeline](/how-it-works/the-dispatcher) reachable from Slack.
+
+```text
+@dana   the refund path bug we just found needs tracking. @Sigilix file issue
+
+@Sigilix  Filed SIG-742 (Linear):
+          "Refund idempotency guard runs after the pending short-circuit"
+          Priority: High · Severity: data-integrity
+          Likely owner: @alex (owns payments/*)
+          Links: payments/refunds.ts:142, #604 (origin), ADR-0017
+```
+
+## `@Sigilix open a PR`
+
+Turn the decision into code. @Sigilix opens a pull request with the change **plus a regression test mirroring the existing suite**, so the fix arrives review-ready. It's scoped to what the thread aligned on — not a speculative rewrite.
+
+```text
+@alex   @Sigilix open a PR to move assertIdempotent above the early return
+
+@Sigilix  Opened #631 → `fix/refund-idempotency-order`.
+          • Moves `assertIdempotent(key)` above the pending short-circuit
+            in `payments/refunds.ts`
+          • Adds a regression test mirroring `refunds.test.ts`
+          Ran the ensemble: Metis ✓ Argus ✓ Iris ✓ Eunomia ✓ — Approved.
+```
+
+<Callout type="info">
+You can chain these in one thread: ask a question, ask it to <code>file issue</code>, then ask it to <code>open a PR</code>. Because every step reuses the context retrieved for the first, the issue and the PR stay grounded in the same evidence the answer cited.
+</Callout>
+
+## Read next
+
+<Cards>
+<Cards.Card title="Capabilities" href="/slack-assistant/capabilities">
+    The full set of things @Sigilix can do, with the engineering behind each.
+  </Cards.Card>
+<Cards.Card title="Permissions & security" href="/slack-assistant/permissions-and-security">
+    What @Sigilix can see, how workspaces are isolated, and how code is handled.
+  </Cards.Card>
+</Cards>

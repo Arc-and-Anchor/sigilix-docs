@@ -1,0 +1,134 @@
+---
+title: "Anatomy of a Review"
+description: "What every Sigilix review contains — Harmonia summary, inline findings, severity badges, proof-tier pills, suggested patches — and how to read it."
+---
+
+import { Callout, Cards } from 'nextra/components'
+
+# Anatomy of a Review
+
+Every review Sigilix posts has the same shape. Once you know the shape, you can scan a review in 10 seconds.
+
+## The structure
+
+<style>{`
+  .sigilix-review-chrome { padding: 1.25rem 1.25rem 0.5rem; }
+  .sigilix-review-topbar { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 0.875rem; }
+  .sigilix-verdict-pill { padding: 0.125rem 0.625rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; color: #f1140d; background: rgba(241,20,13,0.12); border: 1px solid rgba(241,20,13,0.35); white-space: nowrap; }
+  .sigilix-synth-note { margin: 0 0 1rem !important; }
+  .sigilix-sev-critical { background: #f1140d !important; color: #fff !important; }
+  .sigilix-sev-warning { background: #B45309 !important; color: #fff !important; }
+  .sigilix-sev-info { background: #4B5563 !important; color: #E5E7EB !important; }
+  .sigilix-diff-link { display: inline-block; margin-top: 0.5rem; font-family: ui-monospace, monospace; font-size: 0.8125rem; color: #f1140d; text-decoration: none; border-bottom: 1px dashed rgba(241,20,13,0.4); }
+  .sigilix-diff-link:hover { border-bottom-color: #f1140d; }
+`}</style>
+
+<div className="sigilix-review-chrome">
+    <div className="sigilix-review-topbar">
+      <span><strong>Sigilix</strong> · 12 minutes ago</span>
+      <span className="sigilix-verdict-pill">Request changes</span>
+    </div>
+
+    <Callout type="info">
+      **Sigilix Summary** — Harmonia synthesized 4 findings across 3 specialists. 1 requires action before merge.
+    </Callout>
+
+    <details>
+<summary>Argus · Security · Critical · VERIFIED</summary>
+
+Unsanitized `userId` from `req.params` passed directly into a SQL template in `auth.ts:142`. Use the parameterized query pattern established in `authService.ts`.
+
+<a href="#" className="sigilix-diff-link">View diff →</a>
+
+</details>
+
+      <details>
+<summary>Iris · Performance · Warning · GROUNDED</summary>
+
+Nested loop in `aggregateReports` scales with repo count. Consider indexing `createdAt` or paginating upstream.
+
+<a href="#" className="sigilix-diff-link">View diff →</a>
+
+</details>
+
+      <details>
+<summary>Eunomia · Tests · Info · GROUNDED</summary>
+
+The new branch in `chargeCustomer` has no test covering the partial-refund path. Add a case before merge.
+
+<a href="#" className="sigilix-diff-link">View diff →</a>
+
+</details>
+  </div>
+
+## The verdict badge
+
+Top-right of every review:
+- **Approved** — no blocking findings; clean to merge once human review is done
+- **Request changes** — at least one Critical or Warning finding the synthesizer judged blocking
+
+The verdict updates on every push (`pull_request.synchronize`). If you fix the blocking findings and push, the next Sigilix review will flip to Approved.
+
+## The Harmonia summary
+
+The first paragraph is from **Harmonia** (the synthesizer). It tells you:
+- How many findings survived deduplication
+- How many specialists contributed
+- How many require action before merge
+
+This is the only block worth reading if you're triaging fast. If Harmonia says "0 findings," skim and move on. If Harmonia says "1 critical," that's your thing.
+
+## The inline findings
+
+Each finding is collapsed by default and lives on a specific line in the diff. Click to expand and read:
+
+- **Specialist tag** — Metis, Argus, Iris, Eunomia (Harmonia never posts inline findings — it only synthesizes)
+- **Category** — the area within that specialist's domain (e.g., Argus · Security)
+- **Severity** — Critical / Warning / Info
+- **Proof-tier pill** — VERIFIED (checked by execution or a signed receipt), GROUNDED (anchored to cited code), or MODEL (model judgment). See the [believability pipeline](/how-it-works/believability-pipeline).
+- **Body** — what's wrong, why, and the minimal fix
+- **View diff** link — jumps to the exact line on GitHub
+
+## Severity calibration
+
+Sigilix uses three severity levels. Calibration is done by Harmonia during synthesis:
+
+- **Critical** — broken correctness, security exposure, or data integrity risk. Should block the merge.
+- **Warning** — important but not catastrophic. Logic bug in a cold path, missing error handling on a non-fatal boundary, performance regression.
+- **Info** — nit-level. Naming, dead code, doc gaps. Surfaced for awareness but never blocks.
+
+A finding's severity can shift up or down during synthesis if multiple specialists flag the same code (escalation) or if Harmonia judges the finding a false positive (suppression).
+
+## Re-reviews on push
+
+When you push to a PR branch, Sigilix re-reviews on the new SHA. The new review:
+- Replaces the old review summary (one summary per SHA)
+- Re-runs the deterministic-checks layer and the four domain specialists incrementally on the changed lines, carrying forward findings on unchanged lines
+- May change the verdict if findings were resolved
+
+Old reviews on prior SHAs stay visible in the PR's review history — Sigilix doesn't delete them.
+
+## Mentions
+
+You can `@sigilix` Sigilix on any PR comment thread or inline review-comment thread. Sigilix replies as a regular GitHub comment, grounded in the repo and review history. Use mentions to:
+
+- Ask Sigilix to re-explain a finding
+- Push back on a finding ("this is intentional because…")
+- Ask about adjacent code that wasn't in the diff
+- Teach a rule — `@sigilix remember we use integer cents here` — which Sigilix records and applies, with inline attribution, in later reviews (`@sigilix forget …` walks it back). See [Conversational Learnings](/how-it-works/conversational-learnings).
+
+Mention replies are not full reviews — they're conversational. They don't change the verdict.
+
+## What's next
+
+<Cards>
+<Cards.Card title="The Believability Pipeline" href="/how-it-works/believability-pipeline">
+    The five gates behind every finding — and the proof-tier pills they earn.
+  </Cards.Card>
+<Cards.Card title="Conversational Learnings" href="/how-it-works/conversational-learnings">
+    Teach Sigilix a rule in plain language and have it applied — and attributed — in later reviews.
+  </Cards.Card>
+<Cards.Card title="sigilix.json" href="/configuration/configuration-reference">
+    Per-role rules, path filters, deterministic checks, and per-subsystem opt-outs.
+  </Cards.Card>
+</Cards>

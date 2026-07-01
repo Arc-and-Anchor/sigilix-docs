@@ -1,6 +1,9 @@
 node_modules/
 .next/
-.mintlify/
 .vercel/
 .DS_Store
 *.log
+
+# next build artifacts
+out/
+next-env.d.ts

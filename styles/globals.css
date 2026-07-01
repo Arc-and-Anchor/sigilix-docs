@@ -1,0 +1,65 @@
+/* Sigilix docs — theme tweaks layered on top of nextra-theme-docs. */
+
+:root {
+  --sig-accent: #f1140d;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+/* Non-navigational feature cards (FeatureCards / FeatureCard).
+   Mirrors nextra-theme-docs card visuals but renders plain <div>s, so these
+   summary cards are not focusable dead links. */
+.sig-feature-cards {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 640px) {
+  .sig-feature-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sig-feature-card {
+  border: 1px solid rgb(229 231 235);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: transparent;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.dark .sig-feature-card {
+  border-color: rgb(38 38 38);
+  background: rgb(23 23 23 / 0.3);
+}
+
+.sig-feature-card:hover {
+  border-color: var(--sig-accent);
+}
+
+.sig-feature-card-title {
+  font-weight: 600;
+  margin: 0;
+  color: rgb(55 65 81);
+}
+
+.dark .sig-feature-card-title {
+  color: rgb(229 231 235);
+}
+
+.sig-feature-card-body {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+
+.sig-feature-card-body :last-child {
+  margin-bottom: 0;
+}

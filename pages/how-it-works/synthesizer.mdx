@@ -1,0 +1,117 @@
+---
+title: "Synthesizer (Harmonia)"
+description: "Harmonia's four-stage pipeline: collect → cross-reference → calibrate → render. How four specialist streams become one coherent, believable review."
+---
+
+import { Cards } from 'nextra/components'
+
+# Synthesizer (Harmonia)
+
+Four parallel domain specialists produce a lot of overlap. Without a synthesizer, that overlap shows up as 40 redundant comments on the PR. **Harmonia** is the synthesizer that turns four streams into one signal — and the place where the believability pipeline does most of its work.
+
+## Where Harmonia sits in the believability pipeline
+
+Believability in Sigilix is architectural, not a prompt. A finding cannot post unless it earns its way through the [5-stage believability pipeline](/how-it-works/believability-pipeline): **evidence → provenance contracts → refute/execute → proof-tier receipts → memory**. Harmonia is the stage where evidence is checked against provenance contracts, refuted-or-confirmed, and stamped with a [proof-tier receipt](/how-it-works/confidence-scoring) (VERIFIED / GROUNDED / MODEL) before anything reaches the PR. The four stages below are how Harmonia does that.
+
+## The four stages
+
+### 1. Collect
+
+Specialists submit findings in a structured shape:
+
+```json
+{
+  "specialist": "security",
+  "path": "src/api/checkout.ts",
+  "line": 142,
+  "category": "security",
+  "severity": "critical",
+  "headline": "missing CSRF verification on POST /checkout",
+  "body": "...",
+  "citedCode": "app.post('/checkout', handler)"
+}
+```
+
+The `specialist` field is the **role** name (`logic`, `security`, `performance`, `tests`). The public-facing brand names — Metis, Argus, Iris, Eunomia — are rendered into the final review comment by Harmonia.
+
+Each finding must carry the evidence it stands on (the cited code it quotes). Findings missing required fields are dropped at this stage.
+
+### 2. Cross-reference
+
+Harmonia performs structural-provenance checks against the source code to suppress hallucinations. This is the **grounding gate**: a finding that cannot be anchored to cited code does not earn a GROUNDED receipt and is suppressed or demoted.
+
+- **Line-validity check.** Does the finding's `path:line` actually exist in the diff? Hallucinated line numbers are dropped.
+- **Symbol-resolution check.** Does the function/variable referenced in the finding actually exist in the file? Hallucinated identifiers are dropped.
+- **Pattern-match check.** For security findings, does the claimed unsafe pattern (e.g., "passes user input to SQL template") actually match the code? Pattern-mismatches are dropped or down-graded.
+
+Findings that pass all three checks proceed. Findings that fail are silently suppressed — they never reach the PR.
+
+### 3. Calibrate
+
+Harmonia then performs deduplication and severity calibration:
+
+**Deduplication.** Overlapping findings (same `path:line` from multiple specialists) are merged into one. The merged finding's body draws from each specialist's contribution; the severity is the maximum of the inputs.
+
+**Severity calibration.** Each finding's severity is recalculated:
+
+| Inputs | Final severity |
+|---|---|
+| 1 specialist, low confidence | Info |
+| 1 specialist, high confidence | Warning |
+| 2+ specialists, agreement | Warning or Critical |
+| Critical-tagged + structural check passed | Critical |
+| Critical-tagged + structural check skeptical | Warning (down-graded) |
+
+**Advisory cap.** If a flood of low-severity (Info) findings exists, Harmonia surfaces the top few inline and aggregates the rest into a single "advisory nits" line in the summary. This prevents review-comment dilution.
+
+**Proof-tier receipts.** Each surviving finding is stamped with a tier pill — **VERIFIED**, **GROUNDED**, or **MODEL** — recording how strongly it was witnessed. See [Confidence Scoring](/how-it-works/confidence-scoring).
+
+### 4. Render
+
+Harmonia writes the final comment. The shape:
+
+1. **Harmonia summary** — what was reviewed, how many findings survived, what verdict
+2. **Inline findings** — anchored to specific `path:line`, tagged by specialist + severity + proof-tier receipt
+3. **Suggested patches** — included where Harmonia's structural check confirms a clean fix is in scope
+
+Sigilix is inline-first: anchorable findings post on the line they quote, not buried in a review body.
+
+## Failure modes
+
+### Specialist provider failures
+
+If one specialist's model is overloaded (503) or exceeds its size-scaled budget, Sigilix retries once on the primary, then fires the cross-provider fallback. Primary + fallback run on independent infrastructure so a same-family provider outage can't silence the same role twice.
+
+If all attempts for a specialist fail, the specialist's findings are skipped — but Harmonia still synthesizes from the remaining specialists. The verdict is still posted with a footnote: `_3 of 4 specialists succeeded._`
+
+### Stale-head guards
+
+If the user pushes a new commit while Sigilix is mid-review, the old review would be stale. Sigilix has two stale-head guards:
+
+- **Before fan-out.** If the PR's head SHA changed since the webhook fired, abort.
+- **Before posting.** If the head SHA changed during specialist execution, abort and let the new webhook fire its own review.
+
+Both guards prevent stale reviews from racing to post.
+
+### Submit failures
+
+If GitHub rejects the inline-anchor positions in the review payload (typical 422 for a bad line number), Sigilix falls back to an anchorless review with all findings rolled into the body. The user sees one coherent review, just without inline anchors.
+
+This recovers verdicts that would otherwise be silently lost.
+
+## Why this beats single-agent review
+
+A single-agent reviewer has no synthesis stage. It produces raw output and posts it. There's no deduplication, no cross-reference, no calibration, no proof-tier receipt. Every false positive ships. Every redundant comment ships. Every hallucinated line number ships.
+
+Harmonia is the difference. The four-stage pipeline is what makes Sigilix's reviews believable and readable.
+
+## Read next
+
+<Cards>
+<Cards.Card title="Believability Pipeline" href="/how-it-works/believability-pipeline">
+    The five gates a finding earns before it can post.
+  </Cards.Card>
+<Cards.Card title="Confidence Scoring" href="/how-it-works/confidence-scoring">
+    Proof-tier receipts (VERIFIED / GROUNDED / MODEL) and the grounding gate.
+  </Cards.Card>
+</Cards>

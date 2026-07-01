@@ -1,0 +1,90 @@
+---
+title: "CLI & Chat"
+description: "Sigilix in the terminal — review parity from the command line, plus a Deep-Research Chat grounded in your repo and its review history. Bring your own models: Codex CLI, Claude Code, or your own SDK and keys."
+---
+
+import { Callout, Cards, Steps } from 'nextra/components'
+import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
+
+# CLI & Chat
+
+<Callout type="info">
+The Sigilix CLI and Deep-Research Chat are part of the **private beta**. Availability is per-account during the beta — [join the private beta](https://sigilix.ai) to get access, and contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a> if you are already in and want it enabled.
+</Callout>
+
+The hosted GitHub App reviews every PR. But review is not the only place the depth pays off — and the PR thread is not the only place developers work. The Sigilix CLI brings the same review to your terminal, and Deep-Research Chat lets you interrogate the repository and its review history in plain language.
+
+Both draw on the [earned-context layer](/how-it-works/earned-context): the index, code graph, trust ledger, review memory, and evidence manifests that every review deposits. The terminal and the chat read from that understanding instead of rebuilding it.
+
+## Two surfaces, one understanding
+
+<FeatureCards>
+<FeatureCard title="Sigilix CLI">
+    Review parity in the terminal. Run a Sigilix review on local changes before you open a PR — the same five-specialist ensemble and believability gates, reaching for the same earned context the hosted reviews built.
+</FeatureCard>
+<FeatureCard title="Deep-Research Chat">
+    A chat grounded in your repo and its review history. Ask why a finding fired, what a change affects, or how a subsystem fits together — answers are anchored in the index, code graph, and past reviews, not guessed.
+</FeatureCard>
+</FeatureCards>
+
+## Grounded in earned context
+
+The difference between the Deep-Research Chat and a generic code chatbot is the substrate. A generic chatbot reads whatever fits in its window. Deep-Research Chat reads from the earned-context layer:
+
+<FeatureCards>
+<FeatureCard title="The repo, in context">
+    The code graph and index mean answers reason about callers, dependencies, and symbols across the whole repository — the same context-before-judgment that powers reviews.
+</FeatureCard>
+<FeatureCard title="The review history">
+    Past findings, their proof-tier receipts, and taught rules are retrievable. The chat can tell you not just what the code does, but what Sigilix has already learned about it.
+</FeatureCard>
+</FeatureCards>
+
+## Bring your own models
+
+Sigilix is not locked to one provider for the CLI and chat. You can bring your own:
+
+<FeatureCards>
+<FeatureCard title="Codex CLI">
+    Use OpenAI's Codex CLI as the model behind your terminal workflow.
+</FeatureCard>
+<FeatureCard title="Claude Code">
+    Use Anthropic's Claude Code as the agent driving the work.
+</FeatureCard>
+<FeatureCard title="Your own SDK / keys">
+    Bring your own SDK or provider keys and route through them directly.
+</FeatureCard>
+</FeatureCards>
+
+<Callout type="info">
+BYO models apply to the CLI and chat surfaces. The hosted PR ensemble runs models tuned per specialist role — see [The Ensemble](/how-it-works/the-ensemble) — with cross-provider fallback so one provider's outage cannot silence a specialist.
+</Callout>
+
+## How it fits together
+
+<Steps>
+
+### Reviews build the context
+
+Every hosted review deposits a verified layer — index, code graph, trust ledger, review memory, evidence manifests.
+
+### The CLI reviews locally
+
+Run a review from the terminal before opening a PR, reaching for the same earned context, using the model you bring.
+
+### The chat answers from history
+
+Ask the Deep-Research Chat about the repo or a past finding; it answers grounded in that same layer.
+
+</Steps>
+
+## Read next
+
+<Cards>
+<Cards.Card title="Earned Context" href="/how-it-works/earned-context">
+    The reusable layer every review deposits — and what the CLI and chat read from.
+  </Cards.Card>
+<Cards.Card title="The Ensemble" href="/how-it-works/the-ensemble">
+    The five-specialist architecture behind review parity.
+  </Cards.Card>
+</Cards>

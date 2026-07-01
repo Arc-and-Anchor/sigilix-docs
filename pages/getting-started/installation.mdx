@@ -1,0 +1,87 @@
+---
+title: "Installation"
+description: "GitHub App permissions, OAuth scopes, org-level vs. repo-level install, and the access boundary."
+---
+
+import { Callout } from 'nextra/components'
+
+# Installation
+
+Sigilix is a hosted [GitHub App](https://docs.github.com/en/apps/using-github-apps/about-using-github-apps). This page details what permissions it requests, why, and how to scope its access.
+
+<Callout type="info">
+Sigilix is in **private beta**. [Join our private beta](https://app.sigilix.ai) to get your account provisioned before installing the App.
+</Callout>
+
+## Required permissions
+
+The Sigilix GitHub App requests the following permissions on each repository it's installed against:
+
+| Permission | Access | Why |
+|---|---|---|
+| Pull requests | Read & write | Post review comments and inline anchored findings |
+| Contents | Read | Fetch the diff and surrounding code context |
+| Metadata | Read | Default — required by all GitHub Apps |
+| Issues | Read & write | Reply to `@sigilix` mentions on issues and PR threads |
+| Checks | Read & write | Optionally publish a check run alongside the review |
+
+## Required webhook events
+
+Sigilix subscribes to these GitHub webhook events:
+
+- `pull_request` — `opened`, `synchronize`, `reopened`, `ready_for_review`
+- `issue_comment` — to handle `@sigilix` mentions
+- `pull_request_review_comment` — to handle inline-thread mentions
+
+No other events are subscribed to. We don't read commits to non-PR branches, push events, or releases.
+
+## Org-level vs. repo-level install
+
+You can install Sigilix at two scopes:
+
+### All repositories (org-level)
+
+Choose this if you want every existing and future repository to get reviews automatically. The install screen shows "All repositories" and lists what's covered.
+
+Trade-offs:
+- ✅ Zero config when new repos are created
+- ✅ Consistent review coverage across the org
+- ⚠️ Sigilix will review every PR — if you have noisy/auto-PR-heavy repos (e.g., dependabot-only repos), [filter them via `sigilix.json` `pathFilters`](/configuration/path-filters-and-profile) or use repo-level install instead.
+
+### Selected repositories
+
+Choose this to opt-in repo by repo. You can add more later from the [GitHub App settings page](https://github.com/settings/installations).
+
+## OAuth scopes (sign-in)
+
+When you sign in at [app.sigilix.ai](https://app.sigilix.ai), the OAuth flow requests:
+
+- `read:user` — fetch your GitHub username and email for the dashboard
+- `read:org` — list the organizations you can install the App into
+
+These are read-only scopes used only at sign-in time. The actual review work uses the GitHub App installation token, scoped per-repo.
+
+## Access boundary
+
+What Sigilix does:
+- Reads the diff and full file contents at the PR head SHA, scoped to files changed in the diff
+- Sends those file contents to its model providers (Anthropic, OpenAI-compatible, etc.) under their data-use terms
+- Discards the data after the review completes
+- Stores per-PR telemetry (review duration, finding counts, severity distribution) — no source code retained
+
+What Sigilix doesn't do:
+- Read your code outside of opened pull requests
+- Train, fine-tune, or evaluate models on your code
+- Share your code with other customers
+- Access secrets in your repository (we read source files, not GitHub Actions secrets or environment variables)
+
+For full data handling details, see the [Sigilix Trust page](https://sigilix.ai/security), or contact [support@sigilix.ai](mailto:support@sigilix.ai).
+
+## Uninstalling
+
+Uninstall the App at any time from your GitHub App settings:
+
+- **Personal account:** [github.com/settings/installations](https://github.com/settings/installations)
+- **Org account:** Org → Settings → GitHub Apps → Sigilix → Uninstall
+
+Uninstalling immediately revokes Sigilix's access. No further reviews are posted. Past reviews remain on PRs as historical comments.
