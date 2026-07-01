@@ -5,6 +5,9 @@ on:
   push:
     branches: [init/scaffold, main]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: build
