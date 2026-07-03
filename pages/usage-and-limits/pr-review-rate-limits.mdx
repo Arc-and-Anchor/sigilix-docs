@@ -15,13 +15,13 @@ Automated PR reviews draw from your **organization pool** — see [Usage & Limit
 
 ## The windows
 
-PR reviews are counted against the same two windows every meter uses (see [Usage & Limits → The two windows](/usage-and-limits#the-two-windows)):
+PR-review usage is counted in the **organization pool**, against the same two windows every meter uses (see [Usage & Limits → The two windows](/usage-and-limits#the-two-windows)):
 
-- A **rolling 5-hour window** — Sigilix counts how many reviews you've completed in the trailing five hours. It's rolling, not fixed: as older reviews age out, fresh capacity frees up gradually.
-- A **weekly window** — total review usage for the week, resetting Monday at 9:00 AM in your local time.
+- A **rolling 5-hour session window**.
+- A **weekly window** that resets **Monday at 9:00 AM** in your local time.
 
 <Callout type="info">
-  PR reviews are metered once for the whole organization — a busy teammate's reviews and your own draw from the same org pool. Per-seat work (the CLI agent and chatbot) is a separate pool and never eats into review budget.
+  PR reviews are metered once for the whole organization — a busy teammate's reviews and your own draw from the same org pool. Per-seat work (the CLI agent and chatbot) is a separate pool and never eats into review budget. A separate per-author rate limit also applies to guard against runaway automation; it's independent of the two-window usage model above.
 </Callout>
 
 ## What counts as a "review"
@@ -96,6 +96,6 @@ If reviews queue during peak hours, or you're hitting the cap multiple days per 
     Full configuration schema.
   </Cards.Card>
 <Cards.Card title="Join the private beta" href="https://sigilix.ai">
-    Pricing (per-seat + usage, BYO models) is handled per account during the beta.
+    Pricing (per-seat + usage) is handled per account during the beta.
   </Cards.Card>
 </Cards>

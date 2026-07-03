@@ -1,26 +1,26 @@
 ---
 title: "Specialists"
-description: "Metis, Argus, Iris, Eunomia — what each domain specialist catches, sample findings, and how models are selected."
+description: "Logic, Security, Performance, Tests — what each domain specialist catches, sample findings, and how models are selected."
 ---
 
 import { Cards } from 'nextra/components'
 
 # Specialists
 
-Sigilix runs **five** specialists per review: four domain specialists in parallel — **Metis**, **Argus**, **Iris**, **Eunomia** — unified by **Harmonia**, the synthesizer that runs after them. Each domain specialist has a focused prompt, a model tuned to its role, and a cross-provider fallback that makes a same-family provider outage unlikely to silence a specialist. A specialist can still be skipped if both primary and fallback fail — see the retry + fallback policy below.
+Sigilix runs **five** specialists per review: four domain specialists in parallel — **Logic**, **Security**, **Performance**, **Tests** — unified by **the synthesizer** that runs after them. Each domain specialist has a focused prompt, a model tuned to its role, and a cross-provider fallback that makes a same-family provider outage unlikely to silence a specialist. A specialist can still be skipped if both primary and fallback fail — see the retry + fallback policy below.
 
-Internally each specialist has a **role** name (`logic`, `security`, `performance`, `tests`) that appears in `sigilix.json` under `rules.<role>`. The public-facing brand names (Metis, Argus, Iris, Eunomia) are the same specialists with the same prompts.
+Internally each specialist has a **role** name (`logic`, `security`, `performance`, `tests`) that appears in `sigilix.json` under `rules.<role>`. The public-facing brand names (Logic, Security, Performance, Tests) are the same specialists with the same prompts.
 
 | Brand | Role | Domain |
 |---|---|---|
-| Metis | `logic` | Architecture, layering, dead code |
-| Argus | `security` | Auth, input validation, secret leakage |
-| Iris | `performance` | N+1, hot paths, big-O regressions |
-| Eunomia | `tests` | Naming, semantics, test coverage |
+| Logic | `logic` | Logic, layering, dead code |
+| Security | `security` | Auth, input validation, secret leakage |
+| Performance | `performance` | N+1, hot paths, big-O regressions |
+| Tests | `tests` | Naming, semantics, test coverage |
 
-Harmonia is covered on its own page — see [Synthesizer](/how-it-works/synthesizer). This page is the four domain specialists.
+The synthesizer is covered on its own page — see [Synthesizer](/how-it-works/synthesizer). This page is the four domain specialists.
 
-## Metis · Architecture
+## Logic
 
 **What it catches:**
 - Circular dependencies between modules
@@ -28,18 +28,18 @@ Harmonia is covered on its own page — see [Synthesizer](/how-it-works/synthesi
 - Interface drift between code and its tests/types
 - Module cohesion issues
 
-**Model selection:** Metis runs a reasoning-heavy model — its proof-style chain-of-thought reasoning is well-suited for architectural arguments: tracing imports across files, evaluating layered architecture rules, and judging cohesion. When its primary provider is unavailable, Sigilix falls back to a model on a different provider with an uncorrelated outage profile, so a single provider incident can't silence the logic role.
+**Model selection:** Logic runs a reasoning-heavy model — its proof-style chain-of-thought reasoning is well-suited for architectural arguments: tracing imports across files, evaluating layered architecture rules, and judging cohesion. When its primary provider is unavailable, Sigilix falls back to a model on a different provider with an uncorrelated outage profile, so a single provider incident can't silence the logic role.
 
 **Sample finding:**
 
 ```text
-[Metis] Boundary violation detected
+[Logic] Boundary violation detected
 domain/invoice.ts imports infra/stripe.ts
 Rule: Domain may not depend on Infrastructure.
 Suggested fix: Introduce `PaymentGateway` port in domain/.
 ```
 
-## Argus · Security
+## Security
 
 **What it catches:**
 - Unsanitized inputs (SQL injection, XSS, SSRF, formula injection)
@@ -48,17 +48,17 @@ Suggested fix: Introduce `PaymentGateway` port in domain/.
 - Insecure regex patterns prone to ReDoS
 - OWASP Top-10 patterns
 
-**Model selection:** Argus runs a faster, higher-volume model than Metis because security findings are higher-volume per PR and need turnaround. The cross-provider fallback ensures that if one provider is down, Argus still produces a verdict — security checks should never silently skip.
+**Model selection:** Security runs a faster, higher-volume model than Logic because security findings are higher-volume per PR and need turnaround. The cross-provider fallback ensures that if one provider is down, Security still produces a verdict — security checks should never silently skip.
 
 **Sample finding:**
 
 ```text
-[Argus] Critical: Potential SSRF
+[Security] Critical: Potential SSRF
 utils/fetcher.ts:71 — user-supplied URL passed to fetch()
 without an allowlist. Validate against approvedHosts[].
 ```
 
-## Iris · Performance
+## Performance
 
 **What it catches:**
 - N+1 query patterns in ORM-heavy code
@@ -67,17 +67,17 @@ without an allowlist. Validate against approvedHosts[].
 - Unbounded recursion or iteration
 - Big-O regressions vs. the previous implementation
 
-**Model selection:** Iris runs a model tuned for cost-effective, high-throughput pattern-spotting, with a cross-provider fallback. The exact model choice is tuned over time from shadow telemetry — Sigilix keeps the primary that produces the highest-quality performance findings at the lowest latency, without changing this page each time.
+**Model selection:** Performance runs a model tuned for cost-effective, high-throughput pattern-spotting, with a cross-provider fallback. The exact model choice is tuned over time from shadow telemetry — Sigilix keeps the primary that produces the highest-quality performance findings at the lowest latency, without changing this page each time.
 
 **Sample finding:**
 
 ```text
-[Iris] O(n²) render loop
+[Performance] O(n²) render loop
 components/Table.tsx:112 — sorting inside render()
 Memoize with useMemo keyed by sortKey.
 ```
 
-## Eunomia · Semantics
+## Tests · Semantics
 
 **What it catches:**
 - Dead code reachable only by impossible conditions
@@ -86,19 +86,19 @@ Memoize with useMemo keyed by sortKey.
 - Missing test coverage on non-trivial branches added in the diff
 - Inconsistent error handling between two functions added in the same PR
 
-**Model selection:** Eunomia's surface is broad and shallow — it needs speed and breadth more than depth, so it runs a fast, high-coverage model with a cross-provider fallback. It often shares a model family with Argus, which lets Sigilix amortize warm-cache costs across two specialists.
+**Model selection:** Tests's surface is broad and shallow — it needs speed and breadth more than depth, so it runs a fast, high-coverage model with a cross-provider fallback. It often shares a model family with Security, which lets Sigilix amortize warm-cache costs across two specialists.
 
 **Sample finding:**
 
 ```text
-[Eunomia] Unreachable branch
+[Tests] Unreachable branch
 checkout.ts:45 — early return bypasses tax calc
 when total < 0. Remove or handle as error path.
 ```
 
 ## Retry + fallback policy
 
-Each specialist runs against its primary model with one retry on transient failure (503, 429, timeout). If retries are exhausted, the cross-provider fallback fires once. If the fallback also fails, that specialist's contribution is skipped — Harmonia synthesizes from the remaining specialists and the verdict is posted with a `_3 of 4 specialists succeeded_` footnote.
+Each specialist runs against its primary model with one retry on transient failure (503, 429, timeout). If retries are exhausted, the cross-provider fallback fires once. If the fallback also fails, that specialist's contribution is skipped — the synthesizer synthesizes from the remaining specialists and the verdict is posted with a `_3 of 4 specialists succeeded_` footnote.
 
 The cross-provider design — primary and fallback on different infrastructure — is deliberate. Same-family fallbacks fail together when the upstream provider has an outage, defeating the fallback's purpose.
 
@@ -106,11 +106,11 @@ The cross-provider design — primary and fallback on different infrastructure �
 
 The split was chosen empirically:
 
-- **Architecture, security, performance, semantics** are the four most-cited categories in code review failure-mode taxonomies.
-- Adding a fifth domain specialist (e.g., a "documentation" specialist) didn't materially improve catches — Eunomia already covers naming and stale comments.
+- **Logic, security, performance, semantics** are the four most-cited categories in code review failure-mode taxonomies.
+- Adding a fifth domain specialist (e.g., a "documentation" specialist) didn't materially improve catches — Tests already covers naming and stale comments.
 - Reducing to three domain specialists (e.g., merging architecture and semantics) left blind spots in cross-module reasoning.
 
-The architecture supports adding domain specialists in the future. If a customer-driven category emerges (e.g., a domain-specific compliance specialist for financial code), it can plug into Harmonia's synthesis without changing the existing four.
+The architecture supports adding domain specialists in the future. If a customer-driven category emerges (e.g., a domain-specific compliance specialist for financial code), it can plug into the synthesizer's synthesis without changing the existing four.
 
 ## Tuning per-repo
 
@@ -120,13 +120,13 @@ You can't disable individual specialists — keeping the ensemble whole is what 
 - **Scope the review** via `pathFilters` so a specialist sees less ([Path Filters & Profile](/configuration/path-filters-and-profile)).
 - **Shift flag-worthiness** via `profile: "chill" | "assertive"`.
 
-Harmonia (the synthesizer) is always on. It's how Sigilix produces a single coherent comment.
+The synthesizer is always on. It's how Sigilix produces a single coherent comment.
 
 ## Read next
 
 <Cards>
 <Cards.Card title="Synthesizer" href="/how-it-works/synthesizer">
-    How Harmonia deduplicates, calibrates, and posts the final review.
+    How the synthesizer deduplicates, calibrates, and posts the final review.
   </Cards.Card>
 <Cards.Card title="Confidence Scoring" href="/how-it-works/confidence-scoring">
     Proof-tier receipts and the grounding gate that govern what posts.

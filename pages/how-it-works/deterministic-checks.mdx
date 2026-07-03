@@ -9,7 +9,7 @@ import { Cards } from 'nextra/components'
 
 LLM specialists are good at reasoning over code but expensive and probabilistic. Some categories of finding — banned APIs, stray secrets, dead-simple regressions — don't need reasoning. They need a regex or an AST visitor.
 
-Sigilix has a **deterministic checks layer** that runs *before* the four domain specialists. Matches surface as authoritative findings that Harmonia (the synthesizer) treats as ground truth, not as another opinion to weigh.
+Sigilix has a **deterministic checks layer** that runs *before* the four domain specialists. Matches surface as authoritative findings that the synthesizer treats as ground truth, not as another opinion to weigh.
 
 ## Three subsystems, one philosophy
 
@@ -40,7 +40,7 @@ flowchart LR
     ast["AST<br/>rule packs"]
     det["deterministic<br/>Checks"]
     ensemble["Specialist<br/>ensemble"]
-    zeus["Harmonia<br/>Synthesizer"]
+    zeus["the synthesizer<br/>Synthesizer"]
 
     diff --> sec --> zeus
     diff --> ast --> zeus
@@ -72,7 +72,7 @@ A finding like "regex `AKIA[0-9A-Z]{16}` matched line 142 of `config.ts`" has no
 
 ### 3. They run before the LLM, not alongside
 
-Because the layer runs first, its findings are **injected into the specialist prompts as facts**. When Argus gets the prompt, it already knows "the secret scanner flagged an AKIA key on line 142." Argus doesn't have to rediscover the secret; it can focus on the surrounding code path (how does the key get used? is it logged anywhere?).
+Because the layer runs first, its findings are **injected into the specialist prompts as facts**. When Security gets the prompt, it already knows "the secret scanner flagged an AKIA key on line 142." Security doesn't have to rediscover the secret; it can focus on the surrounding code path (how does the key get used? is it logged anywhere?).
 
 This converts the LLM's job from "find things" into "reason about things that were found." That's a much shorter prompt and a higher-yield one.
 
@@ -119,7 +119,7 @@ The synthesizer treats `deterministicChecks` findings the same as built-in scann
 
 ## How the synthesizer uses these findings
 
-When Harmonia synthesizes:
+When the synthesizer synthesizes:
 
 1. Deterministic findings are emitted directly into the review at their declared severity. They're not subject to the "cross-reference adjustment" step that LLM findings go through, because there's nothing to cross-reference.
 2. LLM findings that overlap a deterministic finding's `path:line` are merged — the deterministic finding becomes the spine of the merged comment, with LLM reasoning added as context.

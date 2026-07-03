@@ -1,6 +1,6 @@
 ---
 title: "CLI & Chat"
-description: "Sigilix in the terminal — review parity from the command line, plus a Deep-Research Chat grounded in your repo and its review history. Bring your own models: Codex CLI, Claude Code, or your own SDK and keys."
+description: "Sigilix in the terminal — review parity from the command line, plus a Deep-Research Chat grounded in your repo and its review history. Both run on Sigilix's own models; the CLI can optionally connect your own provider key (OpenAI, Anthropic, or OpenRouter)."
 ---
 
 import { Callout, Cards, Steps } from 'nextra/components'
@@ -53,24 +53,24 @@ The Sigilix CLI is more than a reviewer — running `sigilix` launches a **groun
 </FeatureCard>
 </FeatureCards>
 
-## Bring your own models
+## Bring your own key (CLI only)
 
-Sigilix is not locked to one provider for the CLI and chat. You can bring your own:
+The CLI runs on Sigilix's own models by default. On paid tiers you can optionally connect **your own model-provider API key** so the CLI agent runs on your provider instead, billed directly to you:
 
 <FeatureCards>
-<FeatureCard title="Codex CLI">
-    Use OpenAI's Codex CLI as the model behind your terminal workflow.
+<FeatureCard title="OpenAI">
+    Connect your OpenAI API key; the CLI agent runs on OpenAI models, and you pay OpenAI directly.
 </FeatureCard>
-<FeatureCard title="Claude Code">
-    Use Anthropic's Claude Code as the agent driving the work.
+<FeatureCard title="Anthropic">
+    Connect your Anthropic API key; the CLI agent runs on Claude models on your own account.
 </FeatureCard>
-<FeatureCard title="Your own SDK / keys">
-    Bring your own SDK or provider keys and route through them directly.
+<FeatureCard title="OpenRouter">
+    Connect an OpenRouter key to reach a broad range of models through one provider account.
 </FeatureCard>
 </FeatureCards>
 
 <Callout type="info">
-BYO models apply to the CLI and chat surfaces. The hosted PR ensemble runs models tuned per specialist role — see [The Ensemble](/how-it-works/the-ensemble) — with cross-provider fallback so one provider's outage cannot silence a specialist.
+Bring-your-own-key is **opt-in and CLI-only**. The [Deep-Research Chat](/cli-and-chat/deep-research) always runs on Sigilix's models and can't be pointed at another provider, and the hosted PR ensemble runs Sigilix's per-role tuned models. Whatever model you connect on the CLI still fetches the earned-context layer. See [Bring Your Own Key](/cli-and-chat/bring-your-own-models).
 </Callout>
 
 ## How it fits together
@@ -83,7 +83,7 @@ Every hosted review deposits a verified layer — index, code graph, trust ledge
 
 ### The CLI reviews locally
 
-Run a review from the terminal before opening a PR, reaching for the same earned context, using the model you bring.
+Run a review from the terminal before opening a PR, reaching for the same earned context — on Sigilix's models, or your own connected provider key.
 
 ### The chat answers from history
 

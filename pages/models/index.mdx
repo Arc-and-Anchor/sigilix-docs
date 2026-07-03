@@ -57,6 +57,59 @@ Spend the deepest reasoning where a mistake is most expensive — security, subt
 
 Model tiers do **not** map to plan tiers. Every plan can pick Boreas, Pyroeis, or Astraeus — the deeper tiers simply consume more of your [usage](/usage-and-limits), so higher plans have the headroom to run them more. You can change your model as your needs change.
 
+## Routing and grounding
+
+Whichever tier you pick, the request goes through the Sigilix **model gateway**. The gateway routes to the model behind that tier — and, crucially, **injects your earned context before the model ever reasons**. Grounding is not a property of a particular model; it's assembled from your codebase graph and learned memory and handed to whichever tier ran. That's why a lighter tier is still grounded, and why switching tiers changes the depth of reasoning without changing what the model knows about your repo.
+
+```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'background': '#0B0C10',
+    'primaryColor': '#1A1D23',
+    'primaryTextColor': '#E2E8F0',
+    'primaryBorderColor': '#4A5568',
+    'lineColor': '#4A5568',
+    'fontFamily': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace'
+  }
+} }%%
+flowchart TD
+    req([Your request · CLI or chat])
+    gw{{"Model gateway"}}
+
+    boreas["Boreas · Light"]
+    pyro["Pyroeis · Base"]
+    astra["Astraeus · Premium"]
+    phanes["Phanes · coming soon"]
+
+    ground[("Earned context injected<br/>codebase graph · learned memory")]
+    out([Grounded answer])
+
+    req --> gw
+    gw --> boreas
+    gw --> pyro
+    gw --> astra
+    gw -.-> phanes
+    ground --> boreas
+    ground --> pyro
+    ground --> astra
+    boreas --> out
+    pyro --> out
+    astra --> out
+
+    classDef tier fill:#1A1D23,stroke:#4A5568,color:#E2E8F0,stroke-width:1px
+    classDef soon fill:#14171C,stroke:#4A5568,color:#8A94A6,stroke-width:1px,stroke-dasharray: 4 4
+    classDef gwStyle fill:#f1140d,stroke:#f1140d,color:#FFFFFF,stroke-width:2px
+    classDef source fill:#14171C,stroke:#4A5568,color:#CBD5E0,stroke-width:1px,stroke-dasharray: 3 3
+    classDef output fill:#0B0C10,stroke:#4A5568,color:#E2E8F0,stroke-width:1px,stroke-dasharray: 4 4
+
+    class boreas,pyro,astra tier
+    class phanes soon
+    class gw gwStyle
+    class ground source
+    class req,out output
+```
+
 ## Why grounded models win
 
 Generic models guess. Sigilix models know. The difference isn't parameter count — it's what the model reasons over:
@@ -75,9 +128,9 @@ Generic models guess. Sigilix models know. The difference isn't parameter count 
 
 This is the whole bet: a smaller, grounded model beats a bigger, blind one on your code. The value isn't the model in isolation — it's the verified context every model in the line reasons over.
 
-## Bring your own model
+## Bring your own key (CLI only)
 
-On paid tiers, the **CLI and Deep-Research Chat** are not locked to the Sigilix line. Point Sigilix at OpenAI's Codex CLI, Anthropic's Claude Code, or your own SDK and provider keys, and pay that provider directly. Whatever model you bring still fetches Sigilix's verified [earned-context layer](/how-it-works/earned-context), so it inherits the grounding without re-deriving your repo. See [Bring Your Own Models](/cli-and-chat/bring-your-own-models).
+The Sigilix models are the default everywhere. On paid tiers, the **CLI** can optionally run on **your own model-provider API key** — OpenAI, Anthropic, or OpenRouter — billed directly to you. Whatever model you connect still fetches Sigilix's verified [earned-context layer](/how-it-works/earned-context), so it inherits the grounding without re-deriving your repo. This is **CLI-only and opt-in**: the [Deep-Research Chat](/cli-and-chat/deep-research) always runs on the Sigilix line. See [Bring Your Own Key](/cli-and-chat/bring-your-own-models).
 
 <Callout type="info">
 On the hosted PR ensemble, each specialist — logic, security, performance, and tests, unified by the synthesizer — runs the model tuned to its role, behind cross-provider fallback so one provider's outage can't silence a specialist. See [The Ensemble](/how-it-works/the-ensemble).
@@ -89,8 +142,8 @@ On the hosted PR ensemble, each specialist — logic, security, performance, and
 <Cards.Card title="Usage & Limits" href="/usage-and-limits">
     How usage is metered per model, the two pools, and the windows that reset.
   </Cards.Card>
-<Cards.Card title="Bring Your Own Models" href="/cli-and-chat/bring-your-own-models">
-    Use Codex CLI, Claude Code, or your own keys on the CLI and chat.
+<Cards.Card title="Bring Your Own Key (CLI)" href="/cli-and-chat/bring-your-own-models">
+    Optionally run the CLI agent on your own OpenAI, Anthropic, or OpenRouter key.
   </Cards.Card>
 <Cards.Card title="The Ensemble" href="/how-it-works/the-ensemble">
     How per-role tuned models power the hosted PR review.

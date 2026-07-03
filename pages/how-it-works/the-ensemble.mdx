@@ -3,15 +3,18 @@ title: "The Ensemble"
 description: "Why Sigilix runs four domain specialists unified by a synthesizer instead of one generalist — the architectural argument with concrete examples."
 ---
 
-import { Cards } from 'nextra/components'
+import { Callout, Cards } from 'nextra/components'
+import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
 
 # The Ensemble
 
 Most AI code review tools run a single model with a single prompt over the diff. The model is asked to be everything at once — security expert, performance engineer, architect, semantics nitpicker — and it does each role about half as well as a focused specialist would.
 
-Sigilix's architecture is different. Five specialists run per review: four domain specialists in parallel — **Metis** (logic/architecture), **Argus** (security), **Iris** (performance), **Eunomia** (tests/semantics) — with focused prompts and role-tuned models, unified by **Harmonia**, the synthesizer that arbitrates between them. Before the LLM specialists fire, a pre-LLM layer of deterministic checks — secret scanning, AST rule packs, user-defined regex rules — extracts cheap signal from the diff.
+Sigilix's architecture is different. Five specialists run per review: four domain specialists in parallel — **Logic, Security, Performance, and Tests** — with focused prompts and role-tuned models, unified by a fifth role, the **Synthesizer**, that arbitrates between them. But the specialists never judge the raw diff alone. A deterministic layer runs first (secret scanning, dependency-vulnerability checks, AST rule packs, user-defined regex, ingested SARIF), and a grounding layer surrounds the change with verified context before any model reasons about a line.
 
 ## The topology
+
+The picture people usually draw for AI review is "diff → model → comment." Sigilix's is wider: the diff goes through deterministic checks, the four specialists judge it against many verified context sources in parallel, and the Synthesizer reconciles their findings before anything clears the believability gates and posts.
 
 ```mermaid
 %%{init: {
@@ -27,46 +30,87 @@ Sigilix's architecture is different. Five specialists run per review: four domai
 } }%%
 flowchart TD
     diff([Diff])
-    det["Deterministic<br/>checks"]
-    athena["Metis<br/>Architecture"]
-    argus["Argus<br/>Security"]
-    hermes["Iris<br/>Performance"]
-    themis["Eunomia<br/>Semantics"]
-    zeus["Harmonia<br/>Synthesizer"]
-    mem[("Review<br/>memory")]
-    pr([PR Comment])
+    det["Deterministic checks<br/>secrets · deps · AST · regex · SARIF"]
+
+    subgraph ctx["Context sources · earned grounding"]
+      direction LR
+      idx["Codebase grounding<br/>index · retrieval · code graph"]
+      learn["Learnings<br/>per-repo · per-org"]
+      xrepo["Cross-repo context"]
+      revmem[("Previous reviews<br/>review memory")]
+      slack[("Slack memory")]
+    end
+
+    logic["Logic"]
+    sec["Security"]
+    perf["Performance"]
+    tst["Tests"]
+
+    synth["Synthesizer"]
+    gates{{"Believability gates"}}
+    pr([PR comment])
 
     diff --> det
-    det --> athena
-    det --> argus
-    det --> hermes
-    det --> themis
-    det --> zeus
-    athena --> zeus
-    argus --> zeus
-    hermes --> zeus
-    themis --> zeus
-    mem -.-> zeus
-    zeus --> pr
+    det --> logic
+    det --> sec
+    det --> perf
+    det --> tst
+    ctx --> logic
+    ctx --> sec
+    ctx --> perf
+    ctx --> tst
+    logic --> synth
+    sec --> synth
+    perf --> synth
+    tst --> synth
+    ctx --> synth
+    synth --> gates
+    gates --> pr
 
     classDef specialist fill:#1A1D23,stroke:#4A5568,color:#E2E8F0,stroke-width:1px
-    classDef preLLM fill:#1A1D23,stroke:#4A5568,color:#E2E8F0,stroke-width:1px,stroke-dasharray: 3 3
-    classDef zeusStyle fill:#f1140d,stroke:#f1140d,color:#FFFFFF,stroke-width:2px
+    classDef source fill:#14171C,stroke:#4A5568,color:#CBD5E0,stroke-width:1px,stroke-dasharray: 3 3
+    classDef synthStyle fill:#f1140d,stroke:#f1140d,color:#FFFFFF,stroke-width:2px
+    classDef gate fill:#1A1D23,stroke:#f1140d,color:#E2E8F0,stroke-width:1.5px
     classDef output fill:#0B0C10,stroke:#4A5568,color:#E2E8F0,stroke-width:1px,stroke-dasharray: 4 4
 
-    class athena,argus,hermes,themis specialist
-    class det,mem preLLM
-    class zeus zeusStyle
+    class logic,sec,perf,tst specialist
+    class det,idx,learn,xrepo,revmem,slack source
+    class synth synthStyle
+    class gates gate
     class diff,pr output
 ```
 
 Every review goes:
 
-1. **Deterministic checks run first** — secret scanning, AST rule packs, and any user-defined `deterministicChecks` regex rules run over the added diff lines. Their findings are injected into the specialist prompts as authoritative facts. See [Deterministic Checks](/how-it-works/deterministic-checks).
-2. **Domain specialists run in parallel** — Metis, Argus, Iris, and Eunomia receive the same diff plus the deterministic findings as authoritative facts in their context. Each specialist has a different prompt and a model tuned to its role, and can't see the other specialists' findings. Each runs with a size-scaled budget and a cross-provider fallback that protects against same-family provider outages.
-3. **Findings flow into Harmonia** — the synthesizer sees all four streams plus the deterministic findings plus the diff itself.
-4. **Harmonia deduplicates, calibrates, and renders** — overlapping findings collapse into one; severity shifts based on agreement; review memory adjusts category-level flag-worthiness; each surviving finding earns a proof-tier receipt; the final verdict is decided.
-5. **One comment is posted** — single GitHub review with the Harmonia summary at the top and inline findings below.
+1. **The deterministic layer runs first** — secret scanning, dependency-vulnerability checks, AST rule packs, ingested SARIF, and any user-defined `deterministicChecks` regex run over the added diff lines. Their findings are injected into the specialist prompts as authoritative facts, scoped so each role sees only what's relevant to it. See [Deterministic Checks](/how-it-works/deterministic-checks).
+2. **The grounding layer expands the change** — before any line is judged, Sigilix pulls the [earned context](/how-it-works/earned-context): the codebase grounding (index, retrieval, and the code graph — callers, dependents, blast radius), the learned rules for this repo and its org, cross-repo context, previous reviews and their dismissals (review memory), and Slack memory. The diff is read against the whole repository, not a window.
+3. **Domain specialists run in parallel** — **Logic, Security, Performance, and Tests** each receive the same diff plus the deterministic findings as authoritative facts. Each has its own prompt and a model tuned to its role, can't see the other specialists' findings, runs on a size-scaled budget, and has a cross-provider fallback that protects against same-family provider outages.
+4. **Findings flow into the Synthesizer** — which sees all four specialist streams, the diff, and the same context sources, so it can soften or suppress noise the specialists surfaced (for example, a finding this repo has dismissed before).
+5. **The Synthesizer deduplicates, calibrates, and gates** — overlapping findings collapse into one; severity shifts based on agreement; review memory adjusts category-level flag-worthiness; each survivor is cross-checked and stamped with a proof-tier receipt as it clears the [believability gates](/how-it-works/believability-pipeline).
+6. **One comment is posted** — a single GitHub review with the Synthesizer summary at the top and inline findings below, each anchored to the line it quotes.
+
+## What feeds a review
+
+The strength of the review is not just the models — it's what those models reason over. Each of these is a distinct, verified source, not a paraphrase of the diff:
+
+<FeatureCards>
+<FeatureCard title="Codebase grounding">
+    Semantic + lexical retrieval from the repo index, plus the code graph — callers, dependents, and the blast radius of a change — so a specialist reasons about the real reach of an edit, not the lines that changed.
+</FeatureCard>
+<FeatureCard title="Deterministic facts">
+    Secret hits, dependency advisories, AST rule violations, and ingested SARIF are injected as authoritative facts — cheap, certain signal the models treat as ground truth. See [Deterministic Checks](/how-it-works/deterministic-checks).
+</FeatureCard>
+<FeatureCard title="Learnings (repo + org)">
+    The rules your team has taught — per repo, and unioned across the org for cross-repo grounding — shape what the specialists and the Synthesizer flag. See [Conversational Learnings](/how-it-works/conversational-learnings).
+</FeatureCard>
+<FeatureCard title="Previous reviews">
+    Review memory — how similar findings were accepted or dismissed on past PRs — lets the Synthesizer soften noise the repo has already rejected. See [Review Memory](/how-it-works/review-memory).
+</FeatureCard>
+</FeatureCards>
+
+<Callout type="info">
+This same earned-context layer — codebase grounding, learnings, and review memory — is what the [CLI agent](/cli-and-chat/cli), [Deep-Research Chat](/cli-and-chat/deep-research), and [Slack assistant](/slack-assistant/overview) read from. One substrate, many surfaces: every hosted review makes it richer, and every other surface inherits that richness.
+</Callout>
 
 ## Why this beats single-agent review
 
@@ -74,11 +118,11 @@ Every review goes:
 
 A single-agent reviewer with one prompt can ask the model to "look for security issues, performance issues, architectural violations, and naming problems." The model attends to roughly one of those at a time and trades off depth.
 
-Sigilix's specialists each have a focused prompt. Argus is asked *only* about security. Its prompt is dense with OWASP-relevant patterns, secret-leak heuristics, and authentication boundary rules. The model running Argus's prompt finds more security issues than the same model running a generalist prompt — by a wide margin.
+Sigilix's specialists each have a focused prompt. Security is asked *only* about security. Its prompt is dense with OWASP-relevant patterns, secret-leak heuristics, and authentication boundary rules. The model running Security's prompt finds more security issues than the same model running a generalist prompt — by a wide margin.
 
 ### 2. Different models suit different roles
 
-Each specialist runs a model tuned to its role — a reasoning-heavy model for logic (Metis's architectural chain-of-thought), faster high-volume models for security and tests (Argus, Eunomia), a throughput-tuned model for performance (Iris), and a calibration-strong model for synthesis (Harmonia). The specific model behind each role is tuned over time from telemetry; the docs describe the role, not a model ID that churns.
+Each specialist runs a model tuned to its role — a reasoning-heavy model for logic (Logic's architectural chain-of-thought), faster high-volume models for security and tests (Security, Tests), a throughput-tuned model for performance (Performance), and a calibration-strong model for synthesis (the synthesizer). The specific model behind each role is tuned over time from telemetry; the docs describe the role, not a model ID that churns.
 
 All specialists have **cross-provider fallbacks** on independent infrastructure so a same-family outage can't silence multiple roles at once.
 
@@ -88,18 +132,18 @@ The right model for the job, not one model for everything. See [Specialists](/ho
 
 Single-agent review hallucinates findings. The model is confidently wrong about a function being unused, a variable being uninitialized, or a security pattern being broken — when the reviewer reads the file in question, the finding is fiction.
 
-Sigilix's synthesizer cross-references findings with the source code. If Argus flags a SQL injection at line 42 but Harmonia's structural-provenance check shows the parameter actually passes through a parameterized-query helper, the finding is suppressed before it reaches you.
+Sigilix's synthesizer cross-references findings with the source code. If Security flags a SQL injection at line 42 but the synthesizer's structural-provenance check shows the parameter actually passes through a parameterized-query helper, the finding is suppressed before it reaches you.
 
 The cross-reference is the difference between "AI review you tolerate" and "AI review you trust."
 
 ### 4. Severity calibration uses the agreement signal
 
-When multiple specialists flag the same code, that's a strong signal. Harmonia escalates the severity in those cases:
+When multiple specialists flag the same code, that's a strong signal. The synthesizer escalates the severity in those cases:
 
 - **One specialist flags + low confidence** → Info
 - **One specialist flags + high confidence** → Warning
 - **Two+ specialists flag** → Warning or Critical (depending on category)
-- **Specialist + Harmonia's structural check confirms** → Critical
+- **Specialist + the synthesizer's structural check confirms** → Critical
 
 A single-agent reviewer can't calibrate this way — it has nobody to disagree with.
 
@@ -107,11 +151,11 @@ A single-agent reviewer can't calibrate this way — it has nobody to disagree w
 
 If you've used a single-agent reviewer that dumps every thought it has into the PR thread, you know the cost. Reviewers stop reading after the third "Consider adding a docstring." Real findings get buried.
 
-Harmonia deduplicates relentlessly. If Argus and Iris both flag the same loop, you see one comment, not two. If a finding is a duplicate of one already posted on a prior SHA, you see it once.
+The synthesizer deduplicates relentlessly. If Security and Performance both flag the same loop, you see one comment, not two. If a finding is a duplicate of one already posted on a prior SHA, you see it once.
 
 ## The trade-off
 
-Multi-agent review is more expensive than single-agent review. Five model calls per PR cost more than one. Sigilix is in private beta; pricing is per-seat plus usage with bring-your-own-model support — see the marketing site for the current shape.
+Multi-agent review is more expensive than single-agent review. Five model calls per PR cost more than one. Sigilix is in private beta; pricing is per-seat plus usage, with optional bring-your-own-key on the CLI — see the marketing site for the current shape.
 
 For most teams, the trade-off is worth it: a single missed security bug shipped to production costs vastly more than the per-PR review cost. For teams with very high PR volume, the per-PR cost can be tuned via [rate limits](/usage-and-limits/pr-review-rate-limits) and [path filters](/configuration/path-filters-and-profile) that scope each review.
 
@@ -122,6 +166,6 @@ For most teams, the trade-off is worth it: a single missed security bug shipped 
     Each of the four domain specialists in detail — what they catch, sample findings, model selection.
   </Cards.Card>
 <Cards.Card title="Synthesizer" href="/how-it-works/synthesizer">
-    Harmonia's pipeline: collect → cross-reference → calibrate → render, inside the believability pipeline.
+    The synthesizer's pipeline: collect → cross-reference → calibrate → render, inside the believability pipeline.
   </Cards.Card>
 </Cards>

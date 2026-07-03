@@ -27,7 +27,7 @@ The Sigilix CLI is part of the **private beta**. Availability is per-account —
 
 ## `sigilix review`
 
-Runs Metis, Argus, Iris, and Eunomia in parallel — unified by Harmonia — against your local changes, after the deterministic checks and behind the same believability pipeline a PR review uses. By default it diffs your working tree against the merge-base with the default branch.
+Runs Logic, Security, Performance, and Tests in parallel — unified by the synthesizer — against your local changes, after the deterministic checks and behind the same believability pipeline a PR review uses. By default it diffs your working tree against the merge-base with the default branch.
 
 ```bash
 # Review the working tree against the default-branch merge-base
@@ -60,7 +60,7 @@ The command exits non-zero when a blocking finding survives the gates, so you ca
   <details>
 <summary>What the output looks like</summary>
 
-A Harmonia summary followed by inline findings tagged by specialist (Metis / Argus / Iris / Eunomia), severity (Critical / Warning / Info), and proof tier (VERIFIED / GROUNDED / MODEL). See [Sigilix CLI](/cli-and-chat/cli) for a worked example.
+A synthesizer summary followed by inline findings tagged by specialist (Logic / Security / Performance / Tests), severity (Critical / Warning / Info), and proof tier (VERIFIED / GROUNDED / MODEL). See [Sigilix CLI](/cli-and-chat/cli) for a worked example.
 
 </details>
 
@@ -73,7 +73,7 @@ Opens [Deep-Research Chat](/cli-and-chat/deep-research) — plain-language Q&A g
 sigilix chat
 
 # Ask a single question and exit (illustrative)
-sigilix chat "why did Argus flag the session compare on the last review?"
+sigilix chat "why did Security flag the session compare on the last review?"
 ```
 
 <details>
@@ -114,23 +114,26 @@ See [MCP](/mcp) for the full catalog and the portal connection flow.
 
 ## `sigilix config`
 
-Inspects and updates CLI configuration. The most common use is selecting the model behind your terminal workflow — on paid tiers you can bring your own (Codex CLI, Claude Code, or your own SDK/keys). See [Bring Your Own Models](/cli-and-chat/bring-your-own-models).
+Inspects and updates CLI configuration. The most common use is the active model — the CLI defaults to Sigilix's models, and on paid tiers you can optionally connect your own model-provider API key (OpenAI, Anthropic, or OpenRouter). See [Bring Your Own Key](/cli-and-chat/bring-your-own-models).
 
 ```bash
-# Inspect the active model and available providers
+# Inspect the active model (defaults to Sigilix's models)
 sigilix config model
 
-# Select a provider (illustrative)
-sigilix config model codex
-sigilix config model claude-code
-sigilix config model custom
-
-# Manage a bring-your-own provider key (store via your env/secret manager)
+# Connect your own provider key (store via your env/secret manager)
 sigilix config key set
+
+# Route the CLI agent through your connected provider (illustrative)
+sigilix config model openai
+sigilix config model anthropic
+sigilix config model openrouter
+
+# Switch back to Sigilix's models
+sigilix config model sigilix
 ```
 
 <Callout type="info">
-Model and provider names are surfaced by `sigilix config model` for your account. Authentication follows each provider's own flow — Codex CLI and Claude Code authenticate to OpenAI and Anthropic; "your own SDK / keys" uses the provider credentials you supply.
+Model and provider names are surfaced by `sigilix config model` for your account. Bringing your own key is CLI-only and opt-in — the Deep-Research Chat always runs on Sigilix's models. Authentication follows each provider's own flow; you supply the provider API key.
 </Callout>
 
 ## `sigilix auth`
@@ -149,7 +152,7 @@ sigilix auth logout
 ```
 
 <Callout type="info">
-Provider authentication (for the model you bring) is separate from Sigilix account authentication — `sigilix auth` connects you to Sigilix; provider credentials are managed via `sigilix config`. See [Bring Your Own Models](/cli-and-chat/bring-your-own-models).
+Provider authentication (for a connected bring-your-own key) is separate from Sigilix account authentication — `sigilix auth` connects you to Sigilix; provider credentials are managed via `sigilix config`. See [Bring Your Own Key](/cli-and-chat/bring-your-own-models).
 </Callout>
 
 ## Read next
@@ -161,8 +164,8 @@ Provider authentication (for the model you bring) is separate from Sigilix accou
 <Cards.Card title="Deep-Research Chat" href="/cli-and-chat/deep-research">
     Architecture and workflows behind `sigilix chat`.
   </Cards.Card>
-<Cards.Card title="Bring Your Own Models" href="/cli-and-chat/bring-your-own-models">
-    Configure Codex CLI, Claude Code, or your own keys via `sigilix config`.
+<Cards.Card title="Bring Your Own Key (CLI)" href="/cli-and-chat/bring-your-own-models">
+    Connect your own OpenAI, Anthropic, or OpenRouter key via `sigilix config`.
   </Cards.Card>
 <Cards.Card title="Slash Commands" href="/configuration/commands">
     The `@sigilix` / `/sigilix` commands on the hosted GitHub App.

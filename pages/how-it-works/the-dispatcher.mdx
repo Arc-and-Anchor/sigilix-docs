@@ -60,7 +60,7 @@ flowchart TD
     A fast pass that describes what the pull request changes. Cheap to run and useful immediately — it does not wait behind the full ensemble.
 </FeatureCard>
 <FeatureCard title="Ensemble review">
-    The full five-specialist pass: four domain specialists (Metis, Argus, Iris, Eunomia) unified by Harmonia, the synthesizer. This is the deep review.
+    The full five-specialist pass: four domain specialists (Logic, Security, Performance, Tests) unified by the synthesizer. This is the deep review.
 
   See [Ensemble review](/how-it-works/the-ensemble).
 </FeatureCard>
@@ -105,6 +105,14 @@ The event is handed to its pipeline. Fast pipelines return quickly; the ensemble
 Each pipeline writes back to the place the developer already is — the PR thread, the check, or the issue.
 
 </Steps>
+
+## Grounded across every pipeline
+
+Routing is about cost and latency — but every pipeline the dispatcher routes to draws on the same [earned-context layer](/how-it-works/earned-context). A CI-failure triage reads the code graph to name a root cause; an issue triage reasons over the repo index and past reviews; an `@sigilix` answer cites `file:line` and the PR that set a pattern. The dispatcher decides *how much* work an event deserves; grounding is what makes each pipeline's answer specific to *your* codebase rather than generic. Learned rules and review memory ride along too, so even a cheap pipeline respects what your team has taught Sigilix.
+
+<Callout type="info">
+One webhook fans out to many pipelines, but they share one substrate: the index, code graph, learnings, and review memory that every hosted review deposits. That's why even the fast paths answer in your codebase's terms.
+</Callout>
 
 ## Read next
 
