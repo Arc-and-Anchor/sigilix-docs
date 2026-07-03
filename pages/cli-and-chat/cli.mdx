@@ -8,7 +8,7 @@ import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
 
 # Sigilix CLI
 
-The hosted GitHub App reviews every PR. The Sigilix CLI brings that same review to where the change is born: your working tree. Run it against a dirty branch, a stash, or a diff range and you get the same five-specialist ensemble — **Metis** (logic & architecture), **Argus** (security), **Iris** (performance), and **Eunomia** (tests), unified by **Harmonia** (the synthesizer) — behind the same believability gates that decide what posts on a PR.
+The hosted GitHub App reviews every PR. The Sigilix CLI brings that same review to where the change is born: your working tree. Run it against a dirty branch, a stash, or a diff range and you get the same five-specialist ensemble — **Logic** (logic & architecture), **Security** (security), **Performance** (performance), and **Tests** (tests), unified by **the synthesizer** — behind the same believability gates that decide what posts on a PR.
 
 The point is not "AI in the terminal." The point is **parity without rebuild**. The CLI does not re-derive your repository from scratch each run. It reaches for the [earned-context layer](/how-it-works/earned-context) — the index, code graph, trust ledger, review memory, and evidence manifests that hosted reviews deposit — so a local review is judged against the whole repository, not the window of lines you happen to have changed.
 
@@ -16,13 +16,67 @@ The point is not "AI in the terminal." The point is **parity without rebuild**. 
 The Sigilix CLI is part of the **private beta**. Availability is per-account during the beta — [join the private beta](https://app.sigilix.ai) to get access, and contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a> if you are already in and want it enabled for your account.
 </Callout>
 
+## The grounded agent
+
+`sigilix review` is one command. Running `sigilix` on its own launches a **grounded coding agent** — it reads, edits, and verifies code in your repo, calling tools and skills as it works. What makes it different from a generic terminal agent is the same thing that makes the review different: it reasons over the [earned-context layer](/how-it-works/earned-context) — the very layer the hosted reviews build — fetched over the `/v1/context` endpoint, so it starts from a repo that's already been indexed and graphed rather than re-discovering it each session.
+
+```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'background': '#0B0C10',
+    'primaryColor': '#1A1D23',
+    'primaryTextColor': '#E2E8F0',
+    'primaryBorderColor': '#4A5568',
+    'lineColor': '#4A5568',
+    'fontFamily': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace'
+  }
+} }%%
+flowchart TD
+    you([Your prompt / task])
+
+    subgraph loop["Agent loop"]
+      direction TB
+      agent["Sigilix CLI agent"]
+      model["Model<br/>Sigilix models by default<br/>· your provider key (opt-in)"]
+      tools["Tools<br/>read · edit · run · MCP servers"]
+      skills["Skills<br/>23 bundled playbooks"]
+      agent --> model
+      model --> agent
+      agent --> tools
+      tools --> agent
+      agent --> skills
+    end
+
+    ground[("Earned context · /v1/context<br/>index · code graph · repo learnings")]
+    review["Hosted PR review<br/>builds the same layer"]
+    out([Grounded change / answer])
+
+    you --> agent
+    ground -.-> agent
+    review -.-> ground
+    agent --> out
+
+    classDef node fill:#1A1D23,stroke:#4A5568,color:#E2E8F0,stroke-width:1px
+    classDef accent fill:#f1140d,stroke:#f1140d,color:#FFFFFF,stroke-width:2px
+    classDef source fill:#14171C,stroke:#4A5568,color:#CBD5E0,stroke-width:1px,stroke-dasharray: 3 3
+    classDef output fill:#0B0C10,stroke:#4A5568,color:#E2E8F0,stroke-width:1px,stroke-dasharray: 4 4
+
+    class model,tools,skills node
+    class agent accent
+    class ground,review source
+    class you,out output
+```
+
+The loop is standard — plan, call a tool, observe, repeat — but three things are Sigilix's: it **defaults to Sigilix's own models** (with opt-in [bring-your-own-key](/cli-and-chat/bring-your-own-models)), it can reach your connected [MCP servers](/mcp) and a library of [23 bundled skills](/cli-and-chat/overview#tools-and-skills), and every step is grounded in the earned-context layer the review engine already built.
+
 ## Why review locally
 
 A PR review is a great backstop, but it fires after you have pushed, opened a PR, and asked teammates for their attention. By then the cost of a finding is higher — context-switching, force-pushes, re-review churn. The CLI moves the same depth one step earlier:
 
 <FeatureCards>
 <FeatureCard title="Same ensemble">
-    Metis, Argus, Iris, and Eunomia run in parallel and are unified by Harmonia — identical roles to the hosted review, not a stripped-down lint pass.
+    Logic, Security, Performance, and Tests run in parallel and are unified by the synthesizer — identical roles to the hosted review, not a stripped-down lint pass.
 </FeatureCard>
 <FeatureCard title="Same gates">
     Findings clear the same believability pipeline before they surface, so the terminal is as quiet and as trustworthy as the PR thread.
@@ -55,7 +109,7 @@ Instead of re-indexing your repo on every invocation, the CLI reaches for the ea
 
 ### Run the ensemble
 
-Metis, Argus, Iris, and Eunomia review the expanded diff in parallel. Each emits candidate findings anchored to specific lines.
+Logic, Security, Performance, and Tests review the expanded diff in parallel. Each emits candidate findings anchored to specific lines.
 
 ### Pass the believability gates
 
@@ -63,13 +117,13 @@ Every candidate must clear the five-stage [believability pipeline](/how-it-works
 
 ### Synthesize and print
 
-Harmonia cross-checks the survivors, drops duplicates, calibrates severity, and prints one coherent review: a summary plus inline findings tagged by specialist and severity, each carrying its proof-tier pill.
+The synthesizer cross-checks the survivors, drops duplicates, calibrates severity, and prints one coherent review: a summary plus inline findings tagged by specialist and severity, each carrying its proof-tier pill.
 
 </Steps>
 
 ## What a review looks like
 
-A local review reads like the PR review you already know — one summary from Harmonia, then findings anchored to files and lines, each tagged by specialist (Metis / Argus / Iris / Eunomia), by severity (Critical / Warning / Info), and by proof tier (VERIFIED / GROUNDED / MODEL).
+A local review reads like the PR review you already know — one summary from the synthesizer, then findings anchored to files and lines, each tagged by specialist (Logic / Security / Performance / Tests), by severity (Critical / Warning / Info), and by proof tier (VERIFIED / GROUNDED / MODEL).
 
 ```bash
 # Review the working tree against the default-branch merge-base
@@ -78,26 +132,26 @@ sigilix review
 # Reviewing 7 changed files (against origin/main)…
 #   deterministic checks ……… 1 dependency advisory injected
 #   earned context …………………… index + code graph + review memory loaded
-#   ensemble ……………………………… Metis · Argus · Iris · Eunomia
-#   synthesis ……………………………… Harmonia
+#   ensemble ……………………………… Logic · Security · Performance · Tests
+#   synthesis ……………………………… the synthesizer
 #
 # ── src/auth/session.ts ─────────────────────────────────────
-#   ✗ Critical · Argus · GROUNDED   L42
+#   ✗ Critical · Security · GROUNDED   L42
 #     Session token compared with == instead of a constant-time
 #     compare; vulnerable to timing analysis.
 #
-#   ⚠ Warning · Metis · GROUNDED    L88
+#   ⚠ Warning · Logic · GROUNDED    L88
 #     Early return skips the audit-log write on the error path.
 #
 # ── src/db/orders.ts ────────────────────────────────────────
-#   ⚠ Warning · Iris · MODEL        L17
+#   ⚠ Warning · Performance · MODEL        L17
 #     Query inside the loop — likely N+1 over `order.items`.
 #
 # Verdict: Request changes · 1 Critical · 2 Warnings
 ```
 
 <Callout type="info">
-The output above is illustrative — exact wording, glyphs, and counts depend on your repo and the change. The shape is real: a Harmonia summary, inline findings tagged by specialist and severity, and a proof-tier pill on every finding.
+The output above is illustrative — exact wording, glyphs, and counts depend on your repo and the change. The shape is real: a synthesizer summary, inline findings tagged by specialist and severity, and a proof-tier pill on every finding.
 </Callout>
 
 ## Common workflows
@@ -136,16 +190,16 @@ Because the CLI exits with a non-zero status when a blocking finding survives th
 
 </details>
 
-## Bring your own model
+## Bring your own key
 
-On paid tiers, the CLI does not lock you to one provider. Point Sigilix at OpenAI's Codex CLI, Anthropic's Claude Code, or your own SDK and provider keys, and you pay that provider's usage directly. Your model still fetches Sigilix's verified context layer, so it inherits the precision without re-deriving the repo.
+The CLI runs on Sigilix's own models by default. On paid tiers you can optionally connect **your own model-provider API key** — OpenAI, Anthropic, or OpenRouter — so the CLI agent runs on your provider and bills you directly. Your model still fetches Sigilix's verified context layer, so it inherits the grounding without re-deriving the repo.
 
 ```bash
-# Inspect and set the model behind your terminal workflow
+# Inspect the model behind your terminal workflow (defaults to Sigilix's models)
 sigilix config model
 ```
 
-See [Bring Your Own Models](/cli-and-chat/bring-your-own-models) for the full picture, and note that the hosted PR ensemble itself runs per-role tuned models with cross-provider fallback — BYO applies to the CLI and chat surfaces.
+See [Bring Your Own Key](/cli-and-chat/bring-your-own-models) for the full picture. This is **CLI-only and opt-in**: the [Deep-Research Chat](/cli-and-chat/deep-research) always runs on Sigilix models, and the hosted PR ensemble runs Sigilix's per-role tuned models with cross-provider fallback.
 
 ## How the CLI relates to the hosted App
 

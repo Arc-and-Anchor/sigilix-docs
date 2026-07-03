@@ -63,7 +63,7 @@ Mention triggers (`@sigilix` on a PR comment thread) are routed by the dispatche
    ↓
 10. Quorum check
    ↓
-11. Synthesizer (Harmonia) — grounding gate, proof-tier receipts, memory calibration
+11. Synthesizer — grounding gate, proof-tier receipts, memory calibration
    ↓
 12. Post-validation (provenance + line check)
    ↓
@@ -102,7 +102,7 @@ The router decides which specialists to fire based on the diff:
 - **Auth-sensitive paths touched** → security forced on
 - **Migration / schema files changed** → security + logic forced on
 - **Lockfile or `package.json` changes** → security forced on (supply-chain)
-- **Default** → all four domain specialists (Metis, Argus, Iris, Eunomia)
+- **Default** → all four domain specialists (Logic, Security, Performance, Tests)
 
 The router runs with conservative gating — when in doubt, it includes the specialist. Diff size is **not** a routing signal; CI status is **not** a routing signal.
 
@@ -148,10 +148,10 @@ The four (or fewer, per router) domain specialists run in parallel via `Promise.
 
 | Specialist | Role | Model selection |
 |---|---|---|
-| Metis | `logic` | Reasoning-heavy primary, cross-provider fallback |
-| Argus | `security` | Fast high-volume primary, cross-provider fallback |
-| Iris | `performance` | Throughput-tuned primary, cross-provider fallback |
-| Eunomia | `tests` | Fast broad-coverage primary, cross-provider fallback |
+| Logic | `logic` | Reasoning-heavy primary, cross-provider fallback |
+| Security | `security` | Fast high-volume primary, cross-provider fallback |
+| Performance | `performance` | Throughput-tuned primary, cross-provider fallback |
+| Tests | `tests` | Fast broad-coverage primary, cross-provider fallback |
 
 Specific model IDs are tuned over time from telemetry and intentionally not pinned in the docs. If a specialist's primary model fails (transient 503/429 or budget exhaustion), retry once. If retries are exhausted, the cross-provider fallback fires once. If the fallback also fails, that specialist's contribution is skipped.
 
@@ -159,9 +159,9 @@ Specific model IDs are tuned over time from telemetry and intentionally not pinn
 
 Sigilix requires a minimum number of successful specialists to proceed. If quorum isn't met, the review is aborted with `internal_error` and the queue retries.
 
-### 11. Synthesizer (Harmonia)
+### 11. Synthesizer
 
-See the [Synthesizer page](/how-it-works/synthesizer) for the four sub-stages. Harmonia runs a calibration-strong model with a cross-provider fallback. This is where the **grounding gate** runs and each surviving finding earns its [proof-tier receipt](/how-it-works/confidence-scoring).
+See the [Synthesizer page](/how-it-works/synthesizer) for the four sub-stages. The synthesizer runs a calibration-strong model with a cross-provider fallback. This is where the **grounding gate** runs and each surviving finding earns its [proof-tier receipt](/how-it-works/confidence-scoring).
 
 Cross-PR [review memory](/how-it-works/review-memory) feeds into this stage to calibrate severity per-category and apply learned rules.
 
@@ -181,7 +181,7 @@ A second stale-head check runs immediately before submission. If the PR's head S
 
 ### 14. Submit to GitHub
 
-Sigilix posts the review via `POST /repos/:owner/:repo/pulls/:number/reviews` with `event: APPROVE | REQUEST_CHANGES`, the body containing the synthesizer summary, and `comments: []` for inline findings.
+Sigilix posts the review via `POST /repos/:owner/:repo/pulls/:number/reviews` with `event: APPROVE | REQUEST_CHANGES`, the body containing synthesizer summary, and `comments: []` for inline findings.
 
 If the inline-anchor submission fails (422 — bad position), Sigilix falls back to an anchorless review with all findings rolled into the body. The verdict is still posted.
 

@@ -22,7 +22,7 @@ You can also write `@sigilix <free text question>` for a conversational reply th
 
 ### `/sigilix review`
 
-Re-runs the four domain specialists (Metis, Argus, Iris, Eunomia) unified by the Harmonia synthesizer on the current head SHA. Useful when:
+Re-runs the four domain specialists (Logic, Security, Performance, Tests) unified by the synthesizer on the current head SHA. Useful when:
 
 - You just rebased and want a fresh review instead of waiting on the webhook.
 - The previous review was on a stale SHA (rare, but happens during force-push storms).
@@ -141,7 +141,7 @@ Unknown model names fall back to the command's default with a single warning log
 |---|---|
 | Individual specialist models for `review` | Specialists are tuned together; per-repo overrides risk de-tuning the ensemble. Use [`guidance`](/configuration/rules-and-guidance) to influence behavior instead. |
 | The synthesizer model | Same — the synthesizer is fixed to keep cross-PR comparability. |
-| Per-command rate limits | Account-level limits apply during the private beta. Bursts beyond your limit queue or 429. See [Rate Limits](/configuration/rate-limits). |
+| Per-command rate limits | Account-level limits apply during the private beta. Bursts beyond your limit queue or 429. See [PR Review Rate Limits](/usage-and-limits/pr-review-rate-limits). |
 
 ## Defaults
 

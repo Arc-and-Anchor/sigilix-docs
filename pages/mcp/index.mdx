@@ -1,0 +1,102 @@
+---
+title: "MCP"
+description: "Connect Sigilix to your tools over the Model Context Protocol. Add well-known remote MCP servers to the CLI with a single command, or connect OAuth-backed servers per seat in the portal — GitHub, Linear, Sentry, Cloudflare, Supabase, Notion, Atlassian, Stripe, Vercel, and more."
+---
+
+import { Callout, Cards } from 'nextra/components'
+import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
+
+# MCP
+
+The [Model Context Protocol](https://modelcontextprotocol.io) (MCP) lets Sigilix reach the tools your team already uses — issue trackers, error monitors, cloud platforms, docs — as first-class context and actions. The Sigilix CLI agent and the portal chatbot can both call connected MCP servers on your behalf, using the OAuth grant you approve.
+
+<Callout type="info">
+MCP connections are **yours** — you choose which servers to connect, and the CLI agent or chatbot calls them with the minimum scopes you grant. Tokens are stored encrypted and are revocable at any time.
+</Callout>
+
+## Two ways to connect
+
+<FeatureCards>
+<FeatureCard title="CLI — sigilix mcp">
+    Add MCP servers to your Sigilix CLI configuration with a single command. The grounded coding agent then has those tools available in your terminal sessions.
+</FeatureCard>
+<FeatureCard title="Portal — connected apps">
+    Connect OAuth-backed MCP servers to your seat in the portal. The chatbot calls them with the grant you approve; disconnecting purges the stored tokens.
+</FeatureCard>
+</FeatureCards>
+
+## The catalog
+
+The CLI ships a catalog of well-known remote MCP servers. Add any of them by name — Sigilix configures the endpoint and, where the server supports it, walks you through OAuth:
+
+| Server | What it exposes |
+|---|---|
+| `github` | GitHub — repos, issues, PRs, code search |
+| `linear` | Linear — issues, projects, comments |
+| `sentry` | Sentry — errors, issues, performance |
+| `cloudflare` | Cloudflare — Workers bindings & resources |
+| `cloudflare-docs` | Cloudflare — documentation search |
+| `supabase` | Supabase — database, edge functions, projects |
+| `notion` | Notion — pages, databases, search |
+| `atlassian` | Atlassian — Jira & Confluence |
+| `stripe` | Stripe — payments, customers, docs |
+| `vercel` | Vercel — projects, deployments, docs |
+| `context7` | Context7 — up-to-date library documentation |
+
+<Callout type="info">
+Every catalog entry is a **remote (HTTP) MCP server** that supports OAuth. Remote servers auto-detect OAuth, so most connect with a single command and a browser approval — no keys to paste. You can also add any custom server by URL.
+</Callout>
+
+## Adding a server from the CLI
+
+```bash
+# Interactively pick from the catalog or add a custom server
+sigilix mcp add
+
+# Add a known server by name (configures the endpoint + OAuth)
+sigilix mcp add linear
+
+# Add a custom remote server by URL
+sigilix mcp add my-server --url https://mcp.example.com/mcp
+
+# See what's connected and its auth state
+sigilix mcp list
+```
+
+<Callout type="info">
+Commands and flags are surfaced by `sigilix mcp --help`. When you add a catalog server by name, flags other than the built-in endpoint aren't needed — use `--url` only for a custom server.
+</Callout>
+
+### Managing authentication
+
+OAuth-capable servers authenticate through a browser flow. You can review and revoke those credentials from the CLI:
+
+```bash
+# List OAuth-capable servers and their auth status
+sigilix mcp auth list
+
+# Remove stored OAuth credentials for a server
+sigilix mcp auth remove <server>
+```
+
+## Connecting servers in the portal
+
+In the portal, connected apps are managed per seat. Connecting a server opens the provider's OAuth consent screen; on approval, Sigilix stores the scoped token encrypted and the chatbot can call that server's tools. Disconnecting a server purges its tokens immediately.
+
+<Callout type="info">
+Portal MCP connections are scoped to **your seat** — each teammate connects their own servers with their own grants.
+</Callout>
+
+## Read next
+
+<Cards>
+<Cards.Card title="Sigilix CLI" href="/cli-and-chat/cli">
+    The grounded coding agent that uses your connected MCP servers.
+  </Cards.Card>
+<Cards.Card title="Deep-Research Chat" href="/cli-and-chat/deep-research">
+    Grounded Q&A that can draw on connected tools.
+  </Cards.Card>
+<Cards.Card title="Integrations" href="/integrations/github">
+    GitHub, GitLab, and Bitbucket — the platforms Sigilix reviews on.
+  </Cards.Card>
+</Cards>

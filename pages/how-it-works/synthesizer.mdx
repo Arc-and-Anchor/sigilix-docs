@@ -1,17 +1,17 @@
 ---
-title: "Synthesizer (Harmonia)"
-description: "Harmonia's four-stage pipeline: collect → cross-reference → calibrate → render. How four specialist streams become one coherent, believable review."
+title: "Synthesizer"
+description: "The synthesizer's four-stage pipeline: collect → cross-reference → calibrate → render. How four specialist streams become one coherent, believable review."
 ---
 
 import { Cards } from 'nextra/components'
 
-# Synthesizer (Harmonia)
+# Synthesizer
 
-Four parallel domain specialists produce a lot of overlap. Without a synthesizer, that overlap shows up as 40 redundant comments on the PR. **Harmonia** is the synthesizer that turns four streams into one signal — and the place where the believability pipeline does most of its work.
+Four parallel domain specialists produce a lot of overlap. Without a synthesizer, that overlap shows up as 40 redundant comments on the PR. **The synthesizer** turns four streams into one signal — and it is the place where the believability pipeline does most of its work.
 
-## Where Harmonia sits in the believability pipeline
+## Where the synthesizer sits in the believability pipeline
 
-Believability in Sigilix is architectural, not a prompt. A finding cannot post unless it earns its way through the [5-stage believability pipeline](/how-it-works/believability-pipeline): **evidence → provenance contracts → refute/execute → proof-tier receipts → memory**. Harmonia is the stage where evidence is checked against provenance contracts, refuted-or-confirmed, and stamped with a [proof-tier receipt](/how-it-works/confidence-scoring) (VERIFIED / GROUNDED / MODEL) before anything reaches the PR. The four stages below are how Harmonia does that.
+Believability in Sigilix is architectural, not a prompt. A finding cannot post unless it earns its way through the [5-stage believability pipeline](/how-it-works/believability-pipeline): **evidence → provenance contracts → refute/execute → proof-tier receipts → memory**. The synthesizer is the stage where evidence is checked against provenance contracts, refuted-or-confirmed, and stamped with a [proof-tier receipt](/how-it-works/confidence-scoring) (VERIFIED / GROUNDED / MODEL) before anything reaches the PR. The four stages below are how the synthesizer does that.
 
 ## The four stages
 
@@ -32,13 +32,13 @@ Specialists submit findings in a structured shape:
 }
 ```
 
-The `specialist` field is the **role** name (`logic`, `security`, `performance`, `tests`). The public-facing brand names — Metis, Argus, Iris, Eunomia — are rendered into the final review comment by Harmonia.
+The `specialist` field is the **role** name (`logic`, `security`, `performance`, `tests`). The public-facing brand names — Logic, Security, Performance, Tests — are rendered into the final review comment by the synthesizer.
 
 Each finding must carry the evidence it stands on (the cited code it quotes). Findings missing required fields are dropped at this stage.
 
 ### 2. Cross-reference
 
-Harmonia performs structural-provenance checks against the source code to suppress hallucinations. This is the **grounding gate**: a finding that cannot be anchored to cited code does not earn a GROUNDED receipt and is suppressed or demoted.
+The synthesizer performs structural-provenance checks against the source code to suppress hallucinations. This is the **grounding gate**: a finding that cannot be anchored to cited code does not earn a GROUNDED receipt and is suppressed or demoted.
 
 - **Line-validity check.** Does the finding's `path:line` actually exist in the diff? Hallucinated line numbers are dropped.
 - **Symbol-resolution check.** Does the function/variable referenced in the finding actually exist in the file? Hallucinated identifiers are dropped.
@@ -48,7 +48,7 @@ Findings that pass all three checks proceed. Findings that fail are silently sup
 
 ### 3. Calibrate
 
-Harmonia then performs deduplication and severity calibration:
+The synthesizer then performs deduplication and severity calibration:
 
 **Deduplication.** Overlapping findings (same `path:line` from multiple specialists) are merged into one. The merged finding's body draws from each specialist's contribution; the severity is the maximum of the inputs.
 
@@ -62,17 +62,17 @@ Harmonia then performs deduplication and severity calibration:
 | Critical-tagged + structural check passed | Critical |
 | Critical-tagged + structural check skeptical | Warning (down-graded) |
 
-**Advisory cap.** If a flood of low-severity (Info) findings exists, Harmonia surfaces the top few inline and aggregates the rest into a single "advisory nits" line in the summary. This prevents review-comment dilution.
+**Advisory cap.** If a flood of low-severity (Info) findings exists, the synthesizer surfaces the top few inline and aggregates the rest into a single "advisory nits" line in the summary. This prevents review-comment dilution.
 
 **Proof-tier receipts.** Each surviving finding is stamped with a tier pill — **VERIFIED**, **GROUNDED**, or **MODEL** — recording how strongly it was witnessed. See [Confidence Scoring](/how-it-works/confidence-scoring).
 
 ### 4. Render
 
-Harmonia writes the final comment. The shape:
+The synthesizer writes the final comment. The shape:
 
-1. **Harmonia summary** — what was reviewed, how many findings survived, what verdict
+1. **The synthesizer summary** — what was reviewed, how many findings survived, what verdict
 2. **Inline findings** — anchored to specific `path:line`, tagged by specialist + severity + proof-tier receipt
-3. **Suggested patches** — included where Harmonia's structural check confirms a clean fix is in scope
+3. **Suggested patches** — included where the synthesizer's structural check confirms a clean fix is in scope
 
 Sigilix is inline-first: anchorable findings post on the line they quote, not buried in a review body.
 
@@ -82,7 +82,7 @@ Sigilix is inline-first: anchorable findings post on the line they quote, not bu
 
 If one specialist's model is overloaded (503) or exceeds its size-scaled budget, Sigilix retries once on the primary, then fires the cross-provider fallback. Primary + fallback run on independent infrastructure so a same-family provider outage can't silence the same role twice.
 
-If all attempts for a specialist fail, the specialist's findings are skipped — but Harmonia still synthesizes from the remaining specialists. The verdict is still posted with a footnote: `_3 of 4 specialists succeeded._`
+If all attempts for a specialist fail, the specialist's findings are skipped — but the synthesizer still synthesizes from the remaining specialists. The verdict is still posted with a footnote: `_3 of 4 specialists succeeded._`
 
 ### Stale-head guards
 
@@ -103,7 +103,7 @@ This recovers verdicts that would otherwise be silently lost.
 
 A single-agent reviewer has no synthesis stage. It produces raw output and posts it. There's no deduplication, no cross-reference, no calibration, no proof-tier receipt. Every false positive ships. Every redundant comment ships. Every hallucinated line number ships.
 
-Harmonia is the difference. The four-stage pipeline is what makes Sigilix's reviews believable and readable.
+The synthesizer is the difference. The four-stage pipeline is what makes Sigilix's reviews believable and readable.
 
 ## Read next
 

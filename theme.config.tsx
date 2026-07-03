@@ -62,6 +62,7 @@ const config: DocsThemeConfig = {
     link: "https://github.com/Sigilix/sigilix-docs",
   },
   docsRepositoryBase: "https://github.com/Sigilix/sigilix-docs/blob/main",
+  editLink: { component: null },
   footer: {
     content: (
       <span>

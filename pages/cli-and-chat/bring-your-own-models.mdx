@@ -1,129 +1,136 @@
 ---
-title: "Bring Your Own Models"
-description: "On paid tiers, point Sigilix at OpenAI's Codex CLI, Anthropic's Claude Code, or your own SDK and provider keys for the CLI and chat. You pay the provider directly — and your model fetches Sigilix's verified context layer, so it inherits the precision without re-deriving the repo."
+title: "Bring Your Own Key (CLI)"
+description: "The Sigilix CLI defaults to Sigilix's own models. On paid tiers you can optionally connect your own model-provider API key — OpenAI, Anthropic, or OpenRouter — and pay that provider directly. Applies to the CLI only; the Deep-Research Chat always runs on Sigilix models. Whatever model you bring still fetches Sigilix's earned-context layer."
 ---
 
 import { Callout, Cards, Steps } from 'nextra/components'
 import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
 
-# Bring Your Own Models
+# Bring Your Own Key (CLI)
 
-On paid tiers, the Sigilix CLI and Deep-Research Chat are not locked to one provider. Point Sigilix at **OpenAI's Codex CLI**, **Anthropic's Claude Code**, or **your own SDK and provider keys**, and you pay that provider's usage directly. The model you bring still fetches Sigilix's verified [earned-context layer](/how-it-works/earned-context), so it inherits the precision of a Sigilix review without re-deriving your repository.
-
-This is the whole bet behind bring-your-own-models: the value isn't the model, and it isn't the chat loop. The value is the **verified context your model fetches**. A frontier model with a generic prompt re-discovers your codebase every session and guesses at the edges. The same model pointed at Sigilix's earned context starts from a repo that has already been indexed, graphed, reviewed, and remembered.
+The Sigilix CLI runs on **Sigilix's own models by default** — no setup required. On paid tiers you can optionally **connect your own model-provider API key** and have the CLI agent run on your provider instead, paying that provider directly. Whatever model you bring still fetches Sigilix's verified [earned-context layer](/how-it-works/earned-context), so it inherits the grounding of a Sigilix review without re-deriving your repository.
 
 <Callout type="info">
-BYO models apply to the **CLI and chat surfaces**. The hosted PR ensemble runs per-role tuned models with cross-provider fallback so one provider's outage cannot silence a specialist — see [The Ensemble](/how-it-works/the-ensemble). BYO is a paid-tier feature; availability is per-account during the **private beta**. [Join the private beta](https://app.sigilix.ai) or contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a>.
+**Bring-your-own-key applies to the CLI only, and it's opt-in.** The CLI defaults to Sigilix's models; you connect a provider by choice. The [Deep-Research Chat](/cli-and-chat/deep-research) always runs on Sigilix models and cannot be pointed at another provider — it's the metered, grounded surface. The hosted PR ensemble also runs Sigilix's per-role tuned models.
 </Callout>
 
-## What you can bring
+This is the whole bet behind bring-your-own-key: the value isn't the model. The value is the **verified context the model fetches**. A frontier model with a generic prompt re-discovers your codebase every session and guesses at the edges. The same model pointed at Sigilix's earned context starts from a repo that has already been indexed, graphed, reviewed, and remembered.
+
+## What you can connect
+
+A **model-provider API key** is a key you already hold with a model provider — not another company's CLI. Connect one and the Sigilix CLI agent routes its model calls through it, billed to your account with that provider.
 
 <FeatureCards>
-<FeatureCard title="Codex CLI">
-    Use OpenAI's Codex CLI as the model behind your terminal workflow. Sigilix drives it against the earned-context layer; you authenticate to OpenAI and pay OpenAI directly.
+<FeatureCard title="OpenAI">
+    Connect your OpenAI API key. The CLI agent runs on OpenAI models; you pay OpenAI directly.
 </FeatureCard>
-<FeatureCard title="Claude Code">
-    Use Anthropic's Claude Code as the agent driving the work. Sigilix supplies the verified context; Anthropic bills you for usage on your own account.
+<FeatureCard title="Anthropic">
+    Connect your Anthropic API key. The CLI agent runs on Claude models; Anthropic bills your account.
 </FeatureCard>
-<FeatureCard title="Your own SDK / keys">
-    Bring your own SDK or provider keys and route through them directly — useful when you have an existing provider contract, a self-hosted endpoint, or a model not covered above.
+<FeatureCard title="OpenRouter">
+    Connect an OpenRouter key to reach a broad range of models through a single provider account.
 </FeatureCard>
 </FeatureCards>
 
-## Why bring your own model
+<Callout type="info">
+This is a key you supply, not a separate tool you point Sigilix at. You are bringing a **provider API key** so the Sigilix CLI agent can run on that provider — the CLI is still Sigilix, still grounded, still gated.
+</Callout>
+
+## Why connect your own key
 
 <FeatureCards>
 <FeatureCard title="Pay the provider directly">
-    Usage runs on your account with the provider you choose. No model markup from Sigilix on the CLI and chat surfaces — you control the spend.
+    Model usage runs on your account with the provider you choose — no Sigilix model markup on CLI runs you route through your own key.
 </FeatureCard>
 <FeatureCard title="Use the model you trust">
-    If your team has standardized on a coding agent, keep using it. Sigilix supplies context and gates; the model you bring does the reasoning.
+    If your team has standardized on a specific provider or model, run the CLI agent on it. Sigilix supplies the context and the gates; the model you bring does the reasoning.
 </FeatureCard>
-<FeatureCard title="Inherit the precision">
+<FeatureCard title="Inherit the grounding">
     Whatever model you bring, it fetches the index, code graph, trust ledger, review memory, and evidence manifests — so it reasons about the whole repo, not a window.
 </FeatureCard>
 <FeatureCard title="Stay within your boundary">
-    Routing through your own keys means your code goes to the provider you've already vetted and contracted with, under their data-use terms.
+    Routing through your own key means your code goes to the provider you've already vetted and contracted with, under their data-use terms.
 </FeatureCard>
 </FeatureCards>
 
 ## How it fits together
 
-The model is the engine; the earned-context layer is the fuel. BYO swaps the engine without touching the fuel.
+The model is the engine; the earned-context layer is the fuel. Bringing your own key swaps the engine without touching the fuel — and only on the CLI.
 
 <Steps>
 
 ### Hosted reviews build the context
 
-Every PR review deposits a verified layer — index, code graph, trust ledger, review memory, evidence manifests. This is the substrate your model will fetch.
+Every PR review deposits a verified layer — index, code graph, trust ledger, review memory, evidence manifests. This is the substrate the CLI agent fetches.
 
-### You configure your model
+### You connect a provider (optional)
 
-Point Sigilix at Codex CLI, Claude Code, or your own SDK/keys, and authenticate to that provider. Sigilix records which model to drive for your CLI and chat sessions.
+By default the CLI runs on Sigilix's models. To use your own, connect an OpenAI, Anthropic, or OpenRouter API key and select it as the active provider for the CLI.
 
 ### Your model fetches earned context
 
-When you run a CLI review or a chat query, Sigilix expands the request with the earned-context layer before handing it to your model — so it judges and answers against the whole repo.
+When you run a CLI review or agent session, Sigilix expands the request with the earned-context layer before handing it to your model — so it judges against the whole repo.
 
 ### You pay the provider, Sigilix supplies the rigor
 
-Inference billing lands on your provider account. The believability gates, context expansion, and proof-tier receipts come from Sigilix.
+Model billing lands on your provider account. The believability gates, context expansion, and proof-tier receipts come from Sigilix.
 
 </Steps>
 
-## Configuring a model
+## Connecting a provider key
 
-The CLI exposes model selection through `sigilix config`. The exact provider setup depends on which model you bring — typically you authenticate to the provider once, then select it as your active model.
+The CLI exposes model selection through `sigilix config`. By default no provider is connected and the CLI uses Sigilix's models; connecting a key is a deliberate opt-in.
 
 ```bash
-# Inspect the current model and available providers
+# Inspect the active model — defaults to Sigilix's models
 sigilix config model
 
-# Select a provider for your CLI / chat sessions (illustrative)
-sigilix config model codex
-sigilix config model claude-code
-sigilix config model custom
-```
-
-```bash
-# Bring your own provider key (illustrative — store via your env/secret manager)
+# Connect your own provider key (stored via your env / secret manager)
 sigilix config key set
+
+# Route the CLI agent through your connected provider (illustrative)
+sigilix config model openai
+sigilix config model anthropic
+sigilix config model openrouter
+
+# Switch back to Sigilix's models at any time
+sigilix config model sigilix
 ```
 
 <Callout type="info">
-Commands above are illustrative — the precise flags and provider names are surfaced by `sigilix config model` for your account during the beta. Authentication follows each provider's own flow (Codex CLI and Claude Code authenticate to OpenAI and Anthropic respectively); for "your own SDK / keys," you supply the provider credentials.
+Commands above are illustrative — the precise flags and provider names are surfaced by `sigilix config model` for your account during the beta. Authentication follows each provider's own flow; you supply the provider API key.
 </Callout>
 
 ## Frequently asked
 
 <details>
-<summary>Does BYO change the hosted PR review?</summary>
+<summary>Can the Deep-Research Chat use my own model?</summary>
 
-No. The hosted PR ensemble runs per-role tuned models — a reasoning-heavy model for Metis, a faster high-volume model for Argus, and so on — behind cross-provider fallback so one outage can't silence a specialist. BYO applies only to the CLI and Deep-Research Chat surfaces. See [The Ensemble](/how-it-works/the-ensemble).
-
-</details>
-  <details>
-<summary>Who pays for inference?</summary>
-
-You do — directly to the provider whose model you bring. That's the point of BYO: usage runs on your own account with the provider you've chosen, with no model markup from Sigilix on these surfaces.
+No. The Deep-Research Chat always runs on Sigilix's models — it's the metered, grounded surface and cannot be pointed at another provider. Bring-your-own-key applies to the **CLI only**.
 
 </details>
   <details>
-<summary>Does my model still get Sigilix</summary>
+<summary>Does bringing my own key change the hosted PR review?</summary>
 
-Yes. The precision doesn't come from a particular model — it comes from the earned-context layer and the believability gates. Whatever model you bring fetches that verified context, so it inherits the grounding without re-deriving the repo.
-
-</details>
-  <details>
-<summary>What if I don</summary>
-
-On the CLI and chat, Sigilix uses a default model so you can get going without configuring a provider. BYO is for teams that want to run on their own provider account or standardize on a specific coding agent.
+No. The hosted PR ensemble runs Sigilix's per-role tuned models behind cross-provider fallback so one outage can't silence a specialist. Bringing your own key applies only to the CLI. See [The Ensemble](/how-it-works/the-ensemble).
 
 </details>
   <details>
-<summary>Is BYO available in the beta?</summary>
+<summary>Who pays for model usage?</summary>
 
-BYO is a paid-tier feature and availability is per-account during the private beta. [Join the private beta](https://app.sigilix.ai) or email <a href="mailto:support@sigilix.ai">support@sigilix.ai</a> if you're already in and want it enabled.
+When you connect your own key, model usage runs on your account with that provider, with no Sigilix model markup on those CLI runs. When you use Sigilix's models, usage draws from your per-seat pool — see [Usage &amp; Limits](/usage-and-limits).
+
+</details>
+  <details>
+<summary>Does my model still get Sigilix's grounding?</summary>
+
+Yes. The grounding doesn't come from a particular model — it comes from the earned-context layer and the believability gates. Whatever model you connect fetches that verified context, so it reasons about the whole repo without re-deriving it.
+
+</details>
+  <details>
+<summary>What if I don't connect a key?</summary>
+
+Then the CLI runs on Sigilix's models — the default. Bringing your own key is for teams that want to run the CLI agent on their own provider account.
 
 </details>
 
@@ -134,12 +141,12 @@ BYO is a paid-tier feature and availability is per-account during the private be
     Review parity in the terminal — what your model runs against.
   </Cards.Card>
 <Cards.Card title="Deep-Research Chat" href="/cli-and-chat/deep-research">
-    Grounded Q&A over your repo and review history.
+    Grounded Q&A over your repo and review history — always on Sigilix models.
   </Cards.Card>
-<Cards.Card title="Earned Context" href="/how-it-works/earned-context">
-    The verified layer your model fetches — and why it's the moat.
+<Cards.Card title="Models" href="/models">
+    The Sigilix model line the CLI and chat run on by default.
   </Cards.Card>
 <Cards.Card title="Command reference" href="/cli-and-chat/commands">
-    The CLI commands for review, chat, config, and auth.
+    The CLI commands for review, chat, mcp, config, and auth.
   </Cards.Card>
 </Cards>

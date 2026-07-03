@@ -74,10 +74,10 @@ Use `rules.<role>` when a rule clearly belongs to one specialist's domain. The r
 
 | Token | Specialist | Use for |
 |---|---|---|
-| `logic` | Metis | Architecture, layering, dependency rules, dead code |
-| `security` | Argus | Auth boundaries, input validation, secret leakage |
-| `performance` | Iris | N+1, hot paths, memory, big-O regressions |
-| `tests` | Eunomia | Naming, semantics, test coverage, branch reachability |
+| `logic` | Logic | Logic, layering, dependency rules, dead code |
+| `security` | Security | Auth boundaries, input validation, secret leakage |
+| `performance` | Performance | N+1, hot paths, memory, big-O regressions |
+| `tests` | Tests | Naming, semantics, test coverage, branch reachability |
 
 ```json
 {
@@ -95,7 +95,7 @@ Use `rules.<role>` when a rule clearly belongs to one specialist's domain. The r
 Two reasons:
 
 1. **Token budget.** Repo-wide guidance is read by every specialist. A 200-word security-only rule wastes 200 tokens × 4 specialists × every review. Per-role rules are read once, by the right specialist.
-2. **Signal clarity.** When you write "All POST routes need CSRF" in `guidance`, the performance specialist reads it too and now has noise to discount. Put it in `rules.security` and only Argus sees it.
+2. **Signal clarity.** When you write "All POST routes need CSRF" in `guidance`, the performance specialist reads it too and now has noise to discount. Put it in `rules.security` and only Security sees it.
 
 ## Anti-patterns
 

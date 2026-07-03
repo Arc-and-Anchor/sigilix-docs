@@ -35,6 +35,18 @@ export default withNextra({
         destination: "/configuration/path-filters-and-profile",
         permanent: true,
       },
+      // Models moved out of Configuration into its own section.
+      {
+        source: "/configuration/models-and-usage",
+        destination: "/models",
+        permanent: true,
+      },
+      // Rate limits moved under the new Usage & Limits section.
+      {
+        source: "/configuration/rate-limits",
+        destination: "/usage-and-limits/pr-review-rate-limits",
+        permanent: true,
+      },
     ];
   },
 });

@@ -25,7 +25,7 @@ The tier is a receipt, not a score. It tells the reader *why* they should believ
 
 ## The grounding gate
 
-Between a specialist producing a finding and that finding posting, Harmonia runs the **grounding gate**: the finding must be anchored to the code it claims to be about.
+Between a specialist producing a finding and that finding posting, the synthesizer runs the **grounding gate**: the finding must be anchored to the code it claims to be about.
 
 | Check | Outcome |
 |---|---|
@@ -66,7 +66,7 @@ A Critical finding the gate could not ground is demoted or dropped before it can
 
 ## Advisory cap
 
-To prevent comment dilution, Harmonia surfaces the top few low-severity (Info / nit) findings inline and aggregates the rest into a single "advisory nits" line in the summary. The remainder are recorded in telemetry, not posted. Switch [`profile`](/configuration/path-filters-and-profile) to `assertive` if you want low-severity findings surfaced more aggressively.
+To prevent comment dilution, the synthesizer surfaces the top few low-severity (Info / nit) findings inline and aggregates the rest into a single "advisory nits" line in the summary. The remainder are recorded in telemetry, not posted. Switch [`profile`](/configuration/path-filters-and-profile) to `assertive` if you want low-severity findings surfaced more aggressively.
 
 ## Tuning what posts
 
@@ -87,6 +87,6 @@ Every finding's lifecycle is recorded: which proof tier it earned, whether the g
     The five gates a finding earns before it can post.
   </Cards.Card>
 <Cards.Card title="Synthesizer" href="/how-it-works/synthesizer">
-    How Harmonia runs the grounding gate and stamps proof-tier receipts.
+    How the synthesizer runs the grounding gate and stamps proof-tier receipts.
   </Cards.Card>
 </Cards>
