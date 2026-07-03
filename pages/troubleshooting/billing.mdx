@@ -1,43 +1,42 @@
 ---
-title: "Billing (private beta)"
-description: "How billing works while Sigilix is in private beta."
+title: "Billing"
+description: "How Sigilix plans, seats, and usage pools fit together."
 ---
 
 import { Callout, Cards } from 'nextra/components'
 
-# Billing (private beta)
+# Billing
+
+Sigilix plans combine seats with usage allowances. The portal is the live source for your account's current plan, seat count, and usage state; the marketing pricing page is the source for current prices and packaging.
 
 <Callout type="info">
-Sigilix is in **private beta**. There are no public self-serve plans yet — no Free/Pro/Max tiers, no checkout, no published prices. Billing is handled per-account during the beta.
+This page explains billing concepts. For the exact pool and reset mechanics, use [Usage & Limits](/usage-limits).
 </Callout>
 
-## How billing works during the beta
+## Plan shape
 
-While Sigilix is in private beta, your account's terms — what's included, how usage is counted, and any cost — are arranged directly with us when you're onboarded. Nothing is charged automatically, and there's no plan to pick.
+The current product tiers are Free, Pro, Max, Ultra, Team, and Enterprise. Usage differs by tier: Free is capped, Pro is the standard paid window, Max has 5x Pro's usage windows, Ultra has 10x Max's usage windows, Team has more usage than Pro for teams, and Enterprise is scaled to the organization and contract.
 
-If you want to start using Sigilix, the front door is **"Join our private beta"** on the marketing site.
+Exact request counts are not published in the docs or the portal usage-limit copy. The portal Usage panel is the authoritative source for the allowance currently applied to your account.
 
-## What pricing will look like
+## What billing covers
 
-When Sigilix opens up, pricing is expected to combine, conceptually:
-
-- **A per-seat component** — for the people on your team using reviews, the CLI, and Deep-Research Chat.
-- **A usage component** — scaled to how much review work you run.
-- **Bring-your-own models (BYO)** — point Sigilix at your own model access (Codex CLI, Claude Code, or your own SDK/keys) so model spend stays on your side.
-
-We're not publishing specific numbers here while the model is still being finalized. The marketing pricing page is the canonical place those land.
+- **Seats** for people using Sigilix CLI, chat, and related per-seat workflows.
+- **Per-seat usage** for coding-agent and chatbot activity.
+- **Organization usage** for PR reviews, Linear triage, and Slack usage.
+- **Bring-your-own provider routing** where enabled for CLI and chat model workflows.
 
 ## Questions about billing
 
-For anything billing-related during the beta — onboarding terms, usage questions, invoices — contact [support@sigilix.ai](mailto:support@sigilix.ai).
+For account terms, invoices, or usage questions, contact [support@sigilix.ai](mailto:support@sigilix.ai).
 
 ## Read next
 
 <Cards>
-<Cards.Card title="Rate Limits" href="/configuration/rate-limits">
-    Account-level rate limiting during the beta.
+<Cards.Card title="Usage & Limits" href="/usage-limits">
+    Per-seat and organization pools, reset windows, and cap behavior.
   </Cards.Card>
 <Cards.Card title="CLI & Chat" href="/cli-and-chat/overview">
-    The Sigilix CLI and Deep-Research Chat, with BYO models.
+    The Sigilix CLI and grounded chat, with BYO models where enabled.
   </Cards.Card>
 </Cards>

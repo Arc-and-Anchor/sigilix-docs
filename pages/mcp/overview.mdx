@@ -1,0 +1,63 @@
+---
+title: "MCP Catalog"
+description: "How Sigilix uses MCP connections across the portal and CLI without treating speculative integrations as shipped review surfaces."
+---
+
+import { Callout, Cards } from 'nextra/components'
+
+# MCP Catalog
+
+Sigilix can use Model Context Protocol connections as additional context for chat, agent work, and workflows that need data outside the repository. MCP is separate from the GitHub App review surface: GitHub PR review is installed through the first-party GitHub App, while MCP connections are configured as app/catalog connections or CLI MCP servers.
+
+<Callout type="info">
+Use this page as a catalog orientation, not a promise that every listed workflow is enabled on every account. Some app connections are account-gated during beta, and the portal remains the source of truth for what your org can connect today.
+</Callout>
+
+## Portal catalog
+
+The portal exposes app connections for common engineering systems. The catalog is organized around the systems Sigilix can read for grounding or route work through:
+
+| Category | Catalog entries visible in the portal source |
+|---|---|
+| Source and review | GitHub App |
+| Issue trackers | Linear, Jira, Asana, ClickUp, Trello |
+| Chat | Slack |
+| Observability and incident | Sentry, Datadog, PagerDuty |
+| Design and docs | Figma, Confluence, Notion |
+| Data and payments | Supabase, Postgres by URL, Stripe |
+| CI and deploy | CircleCI, Vercel, Netlify, Cloudflare |
+| CRM and support | HubSpot, Intercom |
+
+GitHub is intentionally called out as the GitHub App, not an MCP replacement. It owns pull-request review installation, permissions, webhooks, and inline comments.
+
+## CLI MCP commands
+
+The Sigilix CLI exposes MCP management through the `sigilix mcp` command family:
+
+```bash
+sigilix mcp list
+sigilix mcp add <name>
+sigilix mcp auth <name>
+sigilix mcp logout <name>
+sigilix mcp debug <name>
+```
+
+Inside an interactive `sigilix` session, `/mcp` and `/mcps` open the MCP controls. Skills are exposed inside the interactive command surface and the skill tool; the current CLI source does not expose a separate top-level `sigilix skills` yargs command.
+
+## What MCP adds
+
+MCP connections can provide context that the repository alone cannot supply: issue state, incident details, design files, CI logs, customer-support context, or database metadata. Sigilix should still ground answers in retrieved artifacts and say when the connected source does not contain enough evidence.
+
+## Read next
+
+<Cards>
+<Cards.Card title="CLI Command Reference" href="/cli-and-chat/commands">
+    The `sigilix` command surface, including MCP and interactive skills.
+  </Cards.Card>
+<Cards.Card title="GitHub App" href="/integrations/github">
+    The first-party PR review integration.
+  </Cards.Card>
+<Cards.Card title="Earned Context" href="/how-it-works/earned-context">
+    How Sigilix reuses repository grounding, review memory, and trust-ledger evidence.
+  </Cards.Card>
+</Cards>

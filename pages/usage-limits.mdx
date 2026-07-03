@@ -1,0 +1,100 @@
+---
+title: "Usage & Limits"
+description: "Canonical Sigilix usage limits: per-seat and organization pools, rolling 5-hour and weekly windows, plan relationships, and cap behavior."
+---
+
+import { Callout, Cards } from 'nextra/components'
+
+# Usage & Limits
+
+This is the canonical docs target for the portal's **Learn more about usage limits** link. Sigilix usage is split into two independent pools and two windows, then shown in the portal as percentage-used bars.
+
+<Callout type="info">
+Usage is count-based. Sigilix counts requests and actions in the relevant pool and window; it is not per-minute runtime metering. The portal usually displays percentage used instead of raw counts.
+</Callout>
+
+## Two usage pools
+
+| Pool | Who owns it | What spends from it |
+|---|---|---|
+| Per-seat pool | One seat/user | Coding-agent usage and chatbot usage |
+| Organization pool | The org/team | PR reviews, Linear triage, and Slack usage |
+
+The pools are independent. Heavy CLI or chat usage by one user does not reduce the organization's PR review allowance, and heavy PR review volume does not reduce an individual user's seat pool.
+
+## What counts
+
+| Source | Pool | Notes |
+|---|---|---|
+| Coding agent | Per-seat | Terminal/agent work that reads, edits, or verifies code on behalf of the user. |
+| Chatbot | Per-seat | Portal or chat usage against Sigilix's grounded repository context. |
+| PR reviews | Organization | GitHub App pull-request reviews, including re-reviews when new commits are pushed. |
+| Linear triage | Organization | Issue triage and agent sessions triggered from Linear. |
+| Slack | Organization | Sigilix responding to mentions and requests in Slack. |
+
+Agentic coding and chatbot usage combine into one per-seat pool. They are not separate budgets.
+
+## Two windows
+
+| Window | Reset behavior | What to watch |
+|---|---|---|
+| Rolling 5-hour window | Usage ages out continuously over the trailing 5 hours. The portal shows a countdown like `Resets in 4h 12m`. | Short bursts of coding, chat, reviews, triage, or Slack requests. |
+| Weekly limit | Resets every Monday at 9:00 AM in the user's local time. The usage API labels this as a 7-day window. | Sustained weekly usage across the pool. |
+
+Both windows apply at the same time. Staying under the weekly limit does not bypass the rolling 5-hour window, and staying under the rolling window does not bypass the weekly cap.
+
+## Models in usage
+
+The current portal usage model tracks the available Sigilix model keys **Boreas**, **Pyroeis**, and **Astraeus**. **Phanes** is part of the model family but is marked coming soon and is not available in the current usage model.
+
+For model positioning, see [Models](/configuration/models-and-usage):
+
+- **Boreas:** Light/fast, grounded in your codebase for everyday use.
+- **Pyroeis:** Base/balanced.
+- **Astraeus:** Premium/deep reasoning.
+- **Phanes:** Frontier, coming soon.
+
+## Plan relationships
+
+The current product pages and portal usage page verify the tier names and relative usage relationships, but they do **not** publish exact request counts for every plan/window. This docs page therefore does not invent exact per-window counts. Use the portal Usage panel as the live source for your account's current allowance.
+
+| Plan | Verified usage relationship | Exact request count in docs/portal |
+|---|---|---|
+| Free | Capped usage for trying Sigilix. | Not published. |
+| Pro | Standard paid usage windows. | Not published. |
+| Max | 5x Pro's usage windows. | Not published. |
+| Ultra | 10x Max's usage windows. | Not published. |
+| Team | More usage than Pro for team seats; model access depends on plan settings. | Not published. |
+| Enterprise | Usage scaled to the organization and contract. | Contract/account-specific. |
+
+<Callout type="warning">
+Older docs mentioned a five-day reset cadence and review-only private-beta allowances. Those are stale. The current documented model is a rolling 5-hour window plus a weekly Monday reset, split across per-seat and organization pools.
+</Callout>
+
+## When a cap is reached
+
+When a pool reaches 100% in a window, Sigilix pauses new requests that would spend from that pool until the window resets or usage rolls off. Existing reviews and prior results remain visible.
+
+The portal shows usage as a percentage bar. Normal usage is white, the bar turns yellow around 70%, and it turns red around 90%. At the cap, new requests are held back rather than billed as overage.
+
+For users on Free, Pro, or Max, the portal can show an upgrade action for more usage. Ultra and Enterprise-level accounts generally do not show that nudge because their allowance is already the top or account-specific tier.
+
+## Where to see usage
+
+- Individual users can see per-seat usage in the portal usage panel.
+- Admins can see both per-seat and organization pools under **Organization -> Billing -> Usage**.
+- Organization usage can be scoped by team or person in the portal where that data is available.
+
+## Read next
+
+<Cards>
+<Cards.Card title="Models" href="/configuration/models-and-usage">
+    Boreas, Pyroeis, Astraeus, and Phanes.
+  </Cards.Card>
+<Cards.Card title="GitHub App" href="/integrations/github">
+    How PR review usage is triggered from GitHub.
+  </Cards.Card>
+<Cards.Card title="Billing troubleshooting" href="/troubleshooting/billing">
+    Common billing and usage questions.
+  </Cards.Card>
+</Cards>

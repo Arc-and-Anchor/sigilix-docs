@@ -27,9 +27,9 @@ Sigilix doesn't review draft PRs by default. Convert to ready and Sigilix re-rev
 
 If the PR only touches files matching your `sigilix.json` `pathFilters`, Sigilix posts no review (the "no specialists need to fire" short-circuit). Check the `Recent Deliveries` for a `webhook_skipped` log entry.
 
-### 5. Did you hit the rate limit?
+### 5. Did you hit a usage cap?
 
-If your account's rate limit is exhausted, Sigilix posts a small "rate limit reached" comment instead of a full review. Check your usage at the dashboard or in any recent review's footer.
+If the relevant usage pool is exhausted, Sigilix pauses new requests in that window instead of starting more work. Check the portal usage panel for your seat pool and the organization usage view for PR reviews, Linear triage, and Slack. See [Usage & Limits](/usage-limits).
 
 ### 6. Is the diff too large?
 

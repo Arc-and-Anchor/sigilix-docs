@@ -141,7 +141,7 @@ Unknown model names fall back to the command's default with a single warning log
 |---|---|
 | Individual specialist models for `review` | Specialists are tuned together; per-repo overrides risk de-tuning the ensemble. Use [`guidance`](/configuration/rules-and-guidance) to influence behavior instead. |
 | The synthesizer model | Same — the synthesizer is fixed to keep cross-PR comparability. |
-| Per-command rate limits | Account-level limits apply during the private beta. Bursts beyond your limit queue or 429. See [Rate Limits](/configuration/rate-limits). |
+| Per-command usage caps | Commands spend from the relevant seat or organization pool. Bursts beyond the active window pause or queue until capacity returns. See [Usage & Limits](/usage-limits). |
 
 ## Defaults
 

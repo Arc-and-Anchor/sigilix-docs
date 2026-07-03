@@ -1,83 +1,75 @@
 ---
-title: "Models & Usage"
-description: "Why Sigilix usage windows are far larger than a comparable OpenAI or Claude plan — the models we run, how to pick one, and the 5-day reset cadence."
+title: "Models"
+description: "Sigilix model tiers, where they fit, and how they relate to the canonical Usage & Limits page."
 ---
 
-import { Callout, Cards, Steps } from 'nextra/components'
+import { Callout, Cards } from 'nextra/components'
 import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
 
-# Models & Usage
+# Models
 
-Most AI-tooling plans meter you tightly because the model underneath is expensive. A plan built on a single first-party frontier API — a Claude Pro seat, say — burns through its allowance fast, because every token is billed at premium first-party rates.
+Sigilix runs on the Sigilix model family. The product is Sigilix, the current default coding model is **Boreas**, and the upcoming family is **Boreas, Pyroeis, Astraeus, Phanes**.
 
-Sigilix is built differently. We run a roster of **cheap, highly reliable open and frontier models** — the kind that are now industry-standard and dependable for production code work — so our cost base per review is a fraction of a single-vendor stack. That difference is passed straight to you: **far more headroom for the same money.**
-
-<Callout type="info">
-The point isn't "cheap models, cheaper output." Every finding still clears the full [believability pipeline](/how-it-works/believability-pipeline) — evidence, provenance, refute/execute, proof-tier receipts. Lower cost buys you **more usage**, not lower standards.
-</Callout>
-
-## The models we run
-
-You can pick the model that fits your work and your usage. The roster includes industry-standard open and frontier models such as:
+The hosted PR review engine still runs specialist roles for logic, security, performance, and tests, then synthesizes one inline-first GitHub review. Model choice changes the depth and budget of the reasoning behind a surface; it does not bypass grounding, evidence, or the trust ledger.
 
 <FeatureCards>
-<FeatureCard title="DeepSeek V4">
-    Strong reasoning for logic and architecture work.
+<FeatureCard title="Boreas · Light">
+    Fast, grounded everyday coding. Boreas is tuned for the CLI, chat, and common review work where speed matters and repository context does most of the lift.
 </FeatureCard>
-<FeatureCard title="Kimi K2.7">
-    High-quality, high-throughput code reasoning.
+<FeatureCard title="Pyroeis · Base">
+    Balanced reasoning for larger edits, multi-file questions, and work that needs more deliberation than Boreas without moving to the deepest tier.
 </FeatureCard>
-<FeatureCard title="MiniMax M3">
-    Reliable general-purpose code understanding.
+<FeatureCard title="Astraeus · Premium">
+    Deep reasoning for subtle logic, security, architecture, and blast-radius questions where extra depth is worth the additional usage cost.
 </FeatureCard>
-<FeatureCard title="GLM 5.2">
-    Capable, cost-efficient coverage across roles.
+<FeatureCard title="Phanes · Frontier">
+    Coming soon. Phanes is part of the Sigilix model family, but it is not available in the current portal usage model yet.
 </FeatureCard>
 </FeatureCards>
 
-…and more are added as the open/frontier landscape moves. These models are reliable enough to stand behind a believability guarantee, and cheap enough that we can give you usage windows a single-vendor plan can't match.
-
 <Callout type="info">
-On the hosted PR ensemble, each specialist — **Metis** (logic), **Argus** (security), **Iris** (performance), **Eunomia** (tests), unified by **Harmonia** — runs the model tuned to its role, behind cross-provider fallback so one provider's outage can't silence a specialist. See [The Ensemble](/how-it-works/the-ensemble).
+Phanes is intentionally documented as **coming soon**. Do not treat it as selectable until it appears in the product and portal usage model.
 </Callout>
 
-## Pick your own model
+## How the review engine uses models
 
-You're not locked to one choice. Select the model that matches the work and the budget you want to spend, and change it as your needs change.
+The GitHub App review path is the authoritative code-review product. It installs as a GitHub App, reviews pull requests inline first, and uses the earned context layer before posting findings: repository index, dependency graph, review memory, learned rules, evidence manifests, and the trust ledger for verified findings.
 
-On the **CLI and Deep-Research Chat**, you can also [bring your own model](/cli-and-chat/bring-your-own-models) — Codex CLI, Claude Code, or your own SDK and provider keys — and pay that provider directly. Your model still fetches Sigilix's verified [earned-context layer](/how-it-works/earned-context), so it inherits the precision without re-deriving your repo.
+The public role names in review output are stable: logic, security, performance, and tests feed the synthesizer. The exact model behind a role can change as Sigilix tunes the product, so these docs describe the model tiers rather than promising a fixed vendor model ID.
 
-## Generous usage windows
+## How CLI and chat use models
 
-Because the cost base is low, included usage is generous — meaningfully higher than a comparable OpenAI- or Claude-based plan for the same price.
+The CLI binary is `sigilix`. Terminal sessions, chat, and local review workflows draw on the same grounded context as hosted reviews. Where a paid plan enables bring-your-own provider routing for CLI and chat, the model you bring still works against Sigilix's verified repository context rather than starting from an empty prompt.
 
-<Steps>
+Use the CLI to inspect what your account and build expose:
 
-### Per-seat base + metered usage
+```bash
+sigilix models
+sigilix --help
+```
 
-Each tier is a per-seat base plus metered usage for review volume and agent tokens. No fixed PR windows — you pay for your team plus the work Sigilix actually does.
+## Usage lives on the canonical page
 
-### Pick the model that fits
+Model selection affects which usage pool and model row a request spends against, but the rules for pools, windows, caps, and upgrade behavior are centralized on [Usage & Limits](/usage-limits).
 
-Run a cheaper model for routine volume, or a heavier one where it matters. The choice is yours, per your usage.
+The verified usage model is:
 
-### Windows reset every 5 days
-
-Usage windows reset on a **5-day** cadence — not weekly — so you spend less time waiting on a limit.
-
-</Steps>
-
-<Callout type="info">
-For tier pricing and what's included at each level, see the [pricing page](https://sigilix.ai/pricing).
-</Callout>
+- Per-seat usage covers coding-agent and chatbot activity.
+- Organization usage covers PR reviews, Linear triage, and Slack usage.
+- The short window is rolling 5 hours.
+- The weekly window resets Monday at 9:00 AM local time.
+- Usage is count-based by request/action, not per-minute metering.
 
 ## Read next
 
 <Cards>
-<Cards.Card title="Bring Your Own Models" href="/cli-and-chat/bring-your-own-models">
-    Use Codex CLI, Claude Code, or your own keys on the CLI and chat.
+<Cards.Card title="Usage & Limits" href="/usage-limits">
+    The canonical rules for pools, windows, caps, and plan relationships.
   </Cards.Card>
-<Cards.Card title="Rate Limits" href="/configuration/rate-limits">
-    How limits are applied and what happens at the ceiling.
+<Cards.Card title="Sigilix CLI" href="/cli-and-chat/cli">
+    How terminal review and chat use the same earned context layer.
+  </Cards.Card>
+<Cards.Card title="Review Engine" href="/how-it-works/the-ensemble">
+    How the specialist review pipeline posts one grounded GitHub review.
   </Cards.Card>
 </Cards>
