@@ -1,26 +1,27 @@
 ---
-title: "Rate Limits"
-description: "How the rolling window works, burst behavior, monitoring usage, and what happens when you hit the cap."
+title: "PR Review Rate Limits"
+description: "The organization pool in detail — how the rolling 5-hour and weekly windows apply to PR reviews, what counts as a review, event coalescing, monitoring, and what happens at the cap."
 ---
 
 import { Callout, Cards } from 'nextra/components'
 
-# Rate Limits
+# PR Review Rate Limits
 
-Sigilix limits review volume to keep shared infrastructure stable. This page covers the window mechanics, burst behavior, and what happens at the limit.
+Automated PR reviews draw from your **organization pool** — see [Usage & Limits](/usage-and-limits) for the full picture of pools, windows, and per-plan allowances. This page covers the review-specific mechanics: what counts as a review, how bursts are coalesced, and how to monitor usage.
 
 <Callout type="info">
-  Sigilix is in **private beta**. Rate limits are set per account during the beta rather than by a published Free/Pro/Max tier. The mechanics below (rolling window, coalescing, monitoring) are accurate; the exact number of reviews allowed for your account is provisioned when you're onboarded. If you need more throughput, [contact us](mailto:support@sigilix.ai).
+  Sigilix is in **private beta**. Exact per-plan review allowances surface as a percentage in the portal rather than as raw counts; the mechanics below (rolling window, coalescing, monitoring) are accurate. If you need more throughput, [contact us](mailto:support@sigilix.ai).
 </Callout>
 
-## The rolling window
+## The windows
 
-Sigilix uses a **rolling window** keyed by GitHub installation. Your account is provisioned with a review allowance over that window during the private beta.
+PR reviews are counted against the same two windows every meter uses (see [Usage & Limits → The two windows](/usage-and-limits#the-two-windows)):
 
-The window is rolling, not fixed. At any moment, Sigilix counts how many reviews you've completed in the trailing window. As old reviews age out, fresh capacity is freed up. **Usage windows reset on a 5-day cadence** — not weekly.
+- A **rolling 5-hour window** — Sigilix counts how many reviews you've completed in the trailing five hours. It's rolling, not fixed: as older reviews age out, fresh capacity frees up gradually.
+- A **weekly window** — total review usage for the week, resetting Monday at 9:00 AM in your local time.
 
 <Callout type="info">
-  Because Sigilix runs on cheap, reliable open and frontier models rather than a single expensive first-party API, included usage is far more generous than a comparable OpenAI- or Claude-based plan. See [Models & Usage](/configuration/models-and-usage) for the model roster, picking your own model, and the economics behind the larger windows.
+  PR reviews are metered once for the whole organization — a busy teammate's reviews and your own draw from the same org pool. Per-seat work (the CLI agent and chatbot) is a separate pool and never eats into review budget.
 </Callout>
 
 ## What counts as a "review"
@@ -57,10 +58,10 @@ Old reviews on prior SHAs of the same PR remain visible — they don't disappear
 Every Sigilix-posted review has a footer in its body that reports your current usage against the window:
 
 ```
-_Sigilix · 2 of 4 reviews used in the current window · resets in 38m_
+_Sigilix · 2 of 3 reviews used in past 5h · resets in 38m_
 ```
 
-Use this to gauge how close you are to the cap.
+Use this to gauge how close you are to the cap. Your live usage across all pools and windows is also shown as a percentage in the portal.
 
 ### Webhook
 
@@ -72,8 +73,8 @@ For programmatic monitoring, a `review.completed` webhook is available. It inclu
   "pr": { "owner": "...", "repo": "...", "number": 42 },
   "rate_limit": {
     "window_hours": 5,
-    "max_reviews": 10,
-    "used": 6,
+    "max_reviews": 3,
+    "used": 2,
     "resets_at": "2026-05-05T03:42:00Z"
   }
 }
@@ -88,6 +89,9 @@ If reviews queue during peak hours, or you're hitting the cap multiple days per 
 ## Read next
 
 <Cards>
+<Cards.Card title="Usage & Limits" href="/usage-and-limits">
+    The two pools, the rolling 5-hour and weekly windows, and per-plan allowances.
+  </Cards.Card>
 <Cards.Card title="sigilix.json" href="/configuration/configuration-reference">
     Full configuration schema.
   </Cards.Card>

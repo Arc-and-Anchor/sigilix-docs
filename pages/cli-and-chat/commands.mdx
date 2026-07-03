@@ -17,8 +17,10 @@ The Sigilix CLI is part of the **private beta**. Availability is per-account —
 
 | Command | What it does |
 |---|---|
+| `sigilix` | Launches the grounded coding agent — reads, edits, and verifies code in your repo |
 | `sigilix review` | Runs the five-specialist ensemble on local changes, behind the believability gates |
 | `sigilix chat` | Opens Deep-Research Chat, grounded in your repo and review history |
+| `sigilix mcp` | Connects MCP servers so the agent can reach your tools — see [MCP](/mcp) |
 | `sigilix config` | Inspects and sets configuration — model selection, provider keys |
 | `sigilix auth` | Authenticates the CLI to your Sigilix account |
 | `sigilix --help` | Lists available commands and global flags |
@@ -86,6 +88,29 @@ Past findings, the specialist that raised them, the code they cited, their proof
 When the earned-context layer doesn't contain what a question needs, the chat says so rather than fabricating — the same believability bar as a review.
 
 </details>
+
+## `sigilix mcp`
+
+Connects [MCP](/mcp) servers to the CLI so the grounded coding agent can reach your tools — GitHub, Linear, Sentry, Cloudflare, Supabase, Notion, Atlassian, Stripe, Vercel, and more. Catalog servers connect by name with OAuth auto-detection; custom servers connect by URL.
+
+```bash
+# Interactively pick from the catalog or add a custom server
+sigilix mcp add
+
+# Add a known catalog server by name (configures the endpoint + OAuth)
+sigilix mcp add linear
+
+# Add a custom remote server by URL
+sigilix mcp add my-server --url https://mcp.example.com/mcp
+
+# List connected servers and their auth status
+sigilix mcp list
+
+# Review or revoke stored OAuth credentials
+sigilix mcp auth list
+```
+
+See [MCP](/mcp) for the full catalog and the portal connection flow.
 
 ## `sigilix config`
 
