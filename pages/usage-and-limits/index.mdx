@@ -1,0 +1,108 @@
+---
+title: "Usage & Limits"
+description: "How Sigilix usage limits work — what counts as usage, the two independent pools (per-seat and organization), the rolling 5-hour and weekly windows, per-plan allowances, and what happens at the cap."
+---
+
+import { Callout, Cards } from 'nextra/components'
+
+# Usage & Limits
+
+Every Sigilix plan includes a generous amount of usage. Limits keep the service fast and fair for everyone — this page is the canonical reference for exactly what counts as usage, when each window resets, how much each plan includes, and what happens when you reach a cap.
+
+<Callout type="info">
+Your **per-seat** usage and your **organization's** usage are two independent pools — heavy use of one never draws down the other. See [Two independent pools](#two-independent-pools) below.
+</Callout>
+
+## What counts as usage
+
+Usage is metered from two kinds of work, and each source draws from its own pool:
+
+| Source | What it includes | Pool |
+|---|---|---|
+| **Agentic coding** | Work the Sigilix CLI agent does in your repositories — reading, editing, and verifying code on your behalf. | Per-seat |
+| **Chatbot** | Conversations with Sigilix in the portal, including research and follow-up questions. | Per-seat |
+| **PR reviews** | Automated pull-request reviews across the organization's repositories. | Organization |
+| **Linear triage** | Automated issue triage and agent sessions in Linear. | Organization |
+| **Slack** | Sigilix responding to mentions and requests in your Slack workspace. | Organization |
+
+Agentic coding and chatbot activity are **combined** into a single per-seat pool — there is no separate budget for each.
+
+<Callout type="info">
+Usage is **count-based**, not per-minute. Sigilix meters the amount of work done over each window — it does not throttle you to a requests-per-second rate.
+</Callout>
+
+## The two windows
+
+Two limit windows apply to your seat at the same time. Staying inside the weekly limit does not bypass the session window, and vice versa.
+
+### Current session — rolling 5-hour window
+
+Measures your recent activity over the last five hours and resets continuously. The usage panel shows a live countdown (`Resets in 4h 12m`) to when your session usage rolls off. Because it is a **rolling** window, capacity frees up gradually as older activity ages out — you don't wait for a fixed reset time.
+
+### Weekly limit — resets Monday 9:00 AM
+
+Caps total usage across all models for the week. The full allowance returns at the start of each week — every **Monday at 9:00 AM in your local time**.
+
+## How limits are displayed
+
+Usage is always shown as a **percentage** of your limit — `42% used` — never as raw token or request counts. The bar shifts color as you approach a cap:
+
+- **White** at normal levels, on every plan
+- **Yellow** at 70%
+- **Red** at 90%
+
+You can see your live usage in the portal's usage panel, and Sigilix-posted PR reviews carry a short footer reporting your review usage against the current window (for example, `Sigilix · 2 of 3 reviews used in past 5h`).
+
+## What happens at the cap
+
+Reaching **100%** in a window pauses new requests in that window until it resets — **nothing is billed for overage**. Work already in progress finishes; new work in the capped window waits for capacity.
+
+- Hit the **session** cap and capacity returns as your rolling 5-hour window ages out.
+- Hit the **weekly** cap and the full allowance returns Monday at 9:00 AM local time.
+
+Because the per-seat and organization pools are independent, reaching a cap in one never blocks the other — a busy day of CLI-agent work never stops your team's PR reviews, and vice versa.
+
+## Two independent pools
+
+Your per-seat usage and the organization's usage are separate pools that never draw from each other:
+
+- **Per-seat usage** — agentic coding and chatbot activity, metered per seat. Heavy use by a teammate never reduces your own allowance.
+- **Organization usage** — PR reviews, Linear triage, and Slack, metered once for the whole organization. Your personal sessions never eat into the org's review budget.
+
+<Callout type="info">
+Admins can see both pools — scoped by team or by person — under **Organization → Billing → Usage** in the portal.
+</Callout>
+
+## Limits by plan
+
+The exact allowance for each window scales with your plan. Rather than publish raw counts here — which change as the platform tunes capacity — Sigilix shows your live headroom as a percentage in the portal. The shape across plans:
+
+| Plan | Usage windows |
+|---|---|
+| **Free** | A capped allowance — enough to try reviews and CLI on a single repo. |
+| **Pro** | Standard windows for everyday review, CLI, and chat work. |
+| **Max** | Larger windows — 5× Pro's usage. |
+| **Ultra** | Largest windows — 10× Max's usage — with org controls. |
+| **Teams / Enterprise** | Org-wide plans with team-scaled windows; Enterprise allowances are set with you. |
+
+<Callout type="info">
+For plan pricing and what's included at each level, see the [pricing page](https://sigilix.ai/pricing). Model tiers do not map to plan tiers — every plan can pick [Boreas, Pyroeis, or Astraeus](/models); the deeper tiers just draw more usage, so higher plans have the headroom to run them more.
+</Callout>
+
+## Questions about your allowance
+
+Limits vary by plan. If reviews queue during peak hours, or you're regularly hitting a cap, your plan may need raising — or your account allowance adjusted during the private beta. Contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a>.
+
+## Read next
+
+<Cards>
+<Cards.Card title="PR Review Rate Limits" href="/usage-and-limits/pr-review-rate-limits">
+    The organization pool in detail — what counts as a review, event coalescing, and monitoring.
+  </Cards.Card>
+<Cards.Card title="Models" href="/models">
+    Boreas, Pyroeis, Astraeus, and Phanes — pick the tier of reasoning you need.
+  </Cards.Card>
+<Cards.Card title="Billing" href="/troubleshooting/billing">
+    How billing works during the private beta.
+  </Cards.Card>
+</Cards>

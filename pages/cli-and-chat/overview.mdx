@@ -40,6 +40,19 @@ The difference between the Deep-Research Chat and a generic code chatbot is the 
 </FeatureCard>
 </FeatureCards>
 
+## Tools and skills
+
+The Sigilix CLI is more than a reviewer — running `sigilix` launches a **grounded coding agent** that reads, edits, and verifies code in your repo. Two things extend what it can do:
+
+<FeatureCards>
+<FeatureCard title="MCP servers">
+    Connect your tools over the Model Context Protocol — GitHub, Linear, Sentry, Cloudflare, Supabase, Notion, Atlassian, Stripe, Vercel, and more — with `sigilix mcp add`. The agent then reaches those tools on your behalf. See [MCP](/mcp).
+</FeatureCard>
+<FeatureCard title="Skill library">
+    The CLI ships a library of 23 bundled skills — focused, reusable procedures the agent loads on demand (code review, TDD, systematic debugging, conventional commits, frontend design, MCP building, and more) — so it follows proven playbooks instead of improvising.
+</FeatureCard>
+</FeatureCards>
+
 ## Bring your own models
 
 Sigilix is not locked to one provider for the CLI and chat. You can bring your own:
@@ -83,6 +96,12 @@ Ask the Deep-Research Chat about the repo or a past finding; it answers grounded
 <Cards>
 <Cards.Card title="Earned Context" href="/how-it-works/earned-context">
     The reusable layer every review deposits — and what the CLI and chat read from.
+  </Cards.Card>
+<Cards.Card title="MCP" href="/mcp">
+    Connect GitHub, Linear, Sentry, and more so the agent can reach your tools.
+  </Cards.Card>
+<Cards.Card title="Command reference" href="/cli-and-chat/commands">
+    review, chat, mcp, config, and auth — with representative usage.
   </Cards.Card>
 <Cards.Card title="The Ensemble" href="/how-it-works/the-ensemble">
     The five-specialist architecture behind review parity.
