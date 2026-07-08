@@ -1,0 +1,132 @@
+---
+title: "SDK Guidance"
+description: "When a PR touches a supported vendor SDK, Sigilix layers in that SDK's correct-usage rules — self-authored from the vendor's public docs — so the review catches SDK-specific footguns a generic reviewer misses. Findings link back to the exact docs page."
+---
+
+import { Callout, Cards, Steps } from 'nextra/components'
+import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
+
+# SDK Guidance
+
+A generic reviewer reads your diff and reasons from what it already knows. But the expensive bugs in SDK code are the ones that look fine in isolation and are only wrong against the vendor's contract — parsing a Stripe webhook body before verifying its signature, reading `cookies()` synchronously in Next.js 15, enabling Supabase RLS with no policies. **SDK guidance** is how Sigilix carries that vendor-specific knowledge into a review.
+
+When a PR touches a supported SDK or framework, Sigilix layers in a small set of that SDK's known correct-usage rules as additional context for the specialists — and when a rule informs a finding, the finding links back to the exact vendor docs page it came from.
+
+<Callout type="warning">
+SDK guidance is **self-authored by Sigilix from each vendor's public documentation**. It is **not** a partner integration — there is no endorsement, no sponsorship, and no relationship implied with the vendors named here. The rules are Sigilix's own review context, labeled as "SDK guidance," sourced from public docs.
+</Callout>
+
+## Supported SDKs
+
+Six packs ship today. Each is a small, static set of review-actionable rules matched against the PR's diff:
+
+| Pack | Vendor | Source docs |
+|---|---|---|
+| `stripe` | Stripe | [stripe.com/docs](https://stripe.com/docs) |
+| `nextjs` | Next.js | [nextjs.org/docs](https://nextjs.org/docs) |
+| `openai-sdk` | OpenAI SDK | [platform.openai.com/docs](https://platform.openai.com/docs) |
+| `anthropic-sdk` | Anthropic SDK | [docs.anthropic.com](https://docs.anthropic.com) |
+| `supabase` | Supabase | [supabase.com/docs](https://supabase.com/docs) |
+| `posthog` | PostHog | [posthog.com/docs](https://posthog.com/docs) |
+
+Adding a vendor is additive — a new pack is a standalone data file registered in the pack list — so the roster grows without touching the review pipeline.
+
+## How it works
+
+<Steps>
+
+### Detect from the diff
+
+Detection is cheap, pure regex work over the unified diff the review already has in memory — **no extra fetches, no network**. A pack matches a PR on any of three signals:
+
+- **A dependency add** — the pack's package name (e.g. `stripe`, `next`, `@supabase/supabase-js`) appears on an added line in a `package.json`.
+- **An import** — an added `import`/`require` line matches one of the pack's import patterns (e.g. `from "stripe"`, `from "@supabase/…"`).
+- **A path** — for packs that declare them, a changed file's path matches a glob (Next.js, for instance, matches `**/app/**/*.tsx`, `**/pages/api/**/*.ts`, and `**/middleware.ts`).
+
+The package-add signal only attributes to the `package.json` that carried it, so a single dependency bump doesn't mark the whole PR as touching that SDK.
+
+### Rank and cap
+
+Matched packs are ranked by how many distinct changed files contributed a match — more files touching an SDK means it's more relevant — with a stable tie-break on pack id. Selection is capped at **3 packs** per review, and rendering is capped at **12 rules total** across them, taken pack-by-pack in relevance order. SDK guidance stays a sharp, bounded nudge, never a wall of text.
+
+### Inject as labeled context
+
+The matched rules are rendered into a clearly-labeled `## SDK guidance` section and injected into the **specialist** prompts — the same context-injection channel Sigilix uses for per-repo [Conversational Learnings](/how-it-works/conversational-learnings). The section header states plainly that the guidance is self-authored from public docs and not a partner endorsement, and instructs the specialists to treat it as *additional* attention that never replaces their own judgment or limits what they may flag.
+
+### Attribute back to the docs
+
+When a rule directly informs a finding, the specialist appends an `[sdk:<packId>]` marker (e.g. `[sdk:stripe]`) to that finding. Sigilix parses the marker out, strips it from the visible text, and stamps a quiet provenance line on the finding — rendered as *"via Stripe SDK guidance — https://stripe.com/docs/webhooks/signatures"*, linking to the rule's specific docs page (falling back to the pack's canonical docs URL). A marker that references a pack that wasn't actually part of this review is dropped rather than rendered.
+
+</Steps>
+
+<Callout type="info">
+Attribution here is **model-authored and honest about it**. Unlike a deterministic check — where Sigilix re-derives the match after the fact — a pack rule is prompt-level guidance the model may or may not have leaned on, so the marker is a lightweight self-tag, not a claim that the pipeline re-verified. It exists to show provenance, never to change a finding's severity or trust tier.
+</Callout>
+
+## What the rules look like
+
+The rules are concrete, review-actionable failure patterns — not vague advice. A few real examples from the **Stripe** pack:
+
+<FeatureCards>
+<FeatureCard title="Webhook signature verification (P1)">
+    Verify the payload with <code>stripe.webhooks.constructEvent</code> using the <strong>raw</strong> request body and the <code>Stripe-Signature</code> header before trusting the event. Parsing <code>req.body</code> as JSON first — common with body-parser or Next.js API routes — breaks verification and lets anyone POST a forged event.
+</FeatureCard>
+<FeatureCard title="Idempotent webhook handlers (P1)">
+    Stripe retries delivery on any non-2xx response, so a handler that always inserts a row or increments a balance double-processes on retry. Key side effects off the event id or a unique object id, not the event type.
+</FeatureCard>
+<FeatureCard title="Idempotency keys on mutating calls (P1)">
+    A client-retried <code>paymentIntents.create</code> or <code>charges.create</code> without an <code>idempotencyKey</code> can create a duplicate charge on a flaky network. User-facing retries should pass a stable idempotency key.
+</FeatureCard>
+<FeatureCard title="Integer minor units, not decimals (P1)">
+    Stripe amounts are integers in the currency's smallest unit — cents for USD. Passing a float dollar amount (<code>19.99</code>) instead of <code>1999</code>, or double-converting an amount already in cents, is a 100x pricing bug that's easy to miss in review.
+</FeatureCard>
+</FeatureCards>
+
+The other packs are cut from the same cloth. A sample from each:
+
+- **Next.js** — *`cookies()` / `headers()` / `params` / `searchParams` are async (P1):* since Next.js 15 these are Promises; accessing them synchronously either throws or silently yields a Promise where a value was expected — a partially-migrated diff mixing both patterns is a real bug, not a style nit.
+- **Supabase** — *A new table needs RLS enabled AND policies (P1):* enabling Row Level Security with no policies blocks all access by default, while a table with RLS disabled is fully open to anyone with the anon key — a migration adding a table should add both `ENABLE ROW LEVEL SECURITY` and the intended policies in the same change.
+- **Supabase** — *Use `getUser()`, not `getSession()`, to authorize a request (P1):* `getSession()` reads the session without revalidating against the Auth server and can return a stale or spoofable session server-side; `getUser()` verifies the JWT over the network.
+- **OpenAI / Anthropic SDK** — *Tool-call arguments from the model aren't automatically safe (P1):* arguments the model returns for a function/tool call are still untrusted input — validate them before building a DB query, file path, or shell command.
+- **PostHog** — *Missing `posthog.reset()` on logout leaks the next user's session (P2):* without a reset on logout, the next person on a shared device inherits the previous user's `distinct_id` and has their events attributed to the prior identity.
+
+Each rule carries a soft **severity hint** (`P1` / `P2` / `P3`) that sharpens the specialist's attention — it is explicitly *never* a score mutation or a gate.
+
+## Recall-safety
+
+SDK guidance can only ever **add** attention to a known failure pattern. The rendered prompt section carries exactly one negative instruction, and it is the opposite of suppression: the `[sdk:<packId>]` marker may be used only to attribute a finding already being reported — **never** to suppress, downgrade, omit, soften, or ignore a finding, including one unrelated to the guidance. This is enforced structurally by a test over the rendered template (and over every individual rule's text), not left to prose.
+
+The guidance never fabricates a finding either. It informs the specialists' reasoning, but every candidate finding still clears the full [believability pipeline](/how-it-works/believability-pipeline) — evidence, provenance, refute/execute, proof-tier receipt, memory — before it can post. An SDK-informed finding earns its [proof tier](/how-it-works/confidence-scoring) the same way any other finding does.
+
+## Rollout modes
+
+SDK guidance runs on the same three-stage rollout ladder as Learnings and config-as-code rules:
+
+| Mode | Behavior |
+|---|---|
+| **off** (default) | Fully inert — no detection, no telemetry, byte-identical review output. |
+| **shadow** | Detects matched packs from the diff and logs a `sdk-pack-matched` telemetry event, but injects **nothing** into the prompt — output is byte-identical to `off`. This measures which packs *would* fire on real PRs before any behavior changes. |
+| **on** | Injects the matched packs' rules into the specialist prompts and enables `[sdk:<packId>]` attribution. |
+
+<Callout type="info">
+The mode is an **internal, service-side capability toggle** (`OPENCLAW_SDK_PACKS_MODE`), rolled out by Sigilix — **not** a per-org `sigilix.json` setting. There is nothing to configure in your repository: SDK guidance is part of how Sigilix reviews, enabled centrally as it graduates from shadow to on. (This is distinct from [config-as-code custom rules](/configuration/rules-and-guidance), which *are* yours to define in `sigilix.json`.)
+</Callout>
+
+## How it relates to your own rules
+
+SDK guidance is Sigilix's built-in, vendor-specific knowledge. It sits alongside the guidance **you** provide, and they compose:
+
+<Cards>
+<Cards.Card title="Conversational Learnings" href="/how-it-works/conversational-learnings">
+    Rules you teach in plain language, per repo. SDK guidance uses the same prompt-injection channel — think of it as a maintained, vendor-scoped complement to what your team teaches.
+  </Cards.Card>
+<Cards.Card title="Rules & Guidance" href="/configuration/rules-and-guidance">
+    Your own config-as-code rules in <code>sigilix.json</code>, with their own <code>[repo-rule:&lt;id&gt;]</code> attribution.
+  </Cards.Card>
+<Cards.Card title="The Believability Pipeline" href="/how-it-works/believability-pipeline">
+    The gates every SDK-informed finding still clears before it posts.
+  </Cards.Card>
+<Cards.Card title="Confidence & Proof Tiers" href="/how-it-works/confidence-scoring">
+    Why the attribution marker never changes a finding's severity or trust tier.
+  </Cards.Card>
+</Cards>

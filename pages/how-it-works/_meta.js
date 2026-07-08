@@ -6,8 +6,11 @@ export default {
   "believability-pipeline": "The Believability Pipeline",
   "deterministic-checks": "Deterministic Checks",
   "confidence-scoring": "Confidence & Proof Tiers",
+  "verification": "Verification & Trust Ledger",
   "review-lifecycle": "Review Lifecycle",
   "review-memory": "Review Memory",
   "conversational-learnings": "Conversational Learnings",
+  "sdk-guidance": "SDK Guidance",
+  "code-graph": "Code Graph & Blast Radius",
   "earned-context": "Earned Context",
 }

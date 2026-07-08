@@ -1,0 +1,103 @@
+---
+title: "The Code Graph & Blast Radius"
+description: "How Sigilix knows what a change actually affects — a per-repo symbol graph with import and call edges, a semantic code index, and blast-radius analysis that expands every diff into its real consequences."
+---
+
+import { Callout, Cards, Steps } from 'nextra/components'
+import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
+
+# The Code Graph & Blast Radius
+
+A diff tells you what changed. It cannot tell you what the change *breaks* — that requires knowing who calls the modified function, which files import the renamed symbol, and what depends on the module whose contract just shifted. Sigilix maintains that knowledge as a **per-repository code graph**, and every review consults it before any specialist judges a line.
+
+This page is the mechanics behind the [earned-context layer](/how-it-works/earned-context)'s two structural pieces: the graph and the index.
+
+## What the graph contains
+
+For each repository, Sigilix maintains a structural graph in isolated per-repo storage:
+
+<FeatureCards>
+<FeatureCard title="Symbols">
+    Every function, class, and exported binding — its name, kind, whether it's exported, and exactly where it lives (file, line span).
+</FeatureCard>
+<FeatureCard title="Import edges">
+    Which files import which symbols — resolved to the symbol they actually target, not just a path string.
+</FeatureCard>
+<FeatureCard title="Call edges">
+    Which functions call which — the caller/callee relationships that let a review walk from a changed function to everything that invokes it.
+</FeatureCard>
+</FeatureCards>
+
+Alongside the graph, a **semantic index** holds embedded chunks of the codebase for retrieval by meaning — so a review can pull in code that is *relevant* to the change even when no structural edge connects them. The two are complementary: the graph answers "what is connected," the index answers "what is related."
+
+<Callout type="info">
+The graph stores **structure, not source**. Edges and locations live in the graph; the actual code bodies are sliced from files fetched fresh at the PR's head SHA for each review. Nothing in the graph is a copy of your code.
+</Callout>
+
+## How it stays current
+
+<Steps>
+
+### Indexed on install
+
+When Sigilix is installed on a repository, indexing is queued automatically — the first reviews on a repo begin building its graph and index.
+
+### Refreshed on push
+
+Push events refresh the default branch, long-lived branches, and the branches of open PRs. Branch-scoped namespaces mean a PR review reads context that matches the branch under review, not a stale default-branch snapshot.
+
+### Versioned atomically
+
+A new graph version is built alongside the active one, committed in one step (with import edges resolved), and only then made active — the old version is garbage-collected. A review never sees a half-built graph.
+
+</Steps>
+
+## Blast radius: from a diff to its consequences
+
+When a review runs, the diff is expanded into its **blast radius**:
+
+1. **Extract changed symbols.** The diff is parsed for the symbols it modifies — the functions and bindings actually touched.
+2. **Resolve conservatively.** Names are resolved to graph symbols *scoped to the changed files*, so a common name like `handler` in another module can't contaminate the result.
+3. **Walk two edge sets.** From the changed symbols, the graph yields the files that **import** them and the functions that **call** them — the real, structural dependents of the change.
+
+The result is handed to the specialists as context: the change is judged against its callers and dependents, not through the keyhole of the diff. This is what stops the classic hallucination — "this function is unused" about a function called three files away — and what powers findings the diff alone cannot support, like "this signature change breaks two call sites you didn't touch."
+
+<Callout type="info">
+Blast-radius resolution is deliberately **precision-biased**: an edge the graph could not fully resolve is excluded rather than guessed at. A missing edge costs a little context; a false edge would put a wrong "fact" in front of a specialist. Sigilix prefers missing over false.
+</Callout>
+
+## Findings outside the diff
+
+Because context expansion reaches beyond the changed files, a specialist can surface an issue whose subject is *outside* the PR — a caller that now violates an invariant, a dependent that needs the same fix. These out-of-scope findings are tagged and rendered in their own section of the review, and they never block the merge: the PR is judged on its own changes, with the blast radius shown as advisory context.
+
+## Engineered to never slow a review
+
+Graph consultation is **purely additive**. It runs inside its own time budget within the review's wall clock; if the graph is slow or unavailable, the review proceeds without it rather than stalling or failing. Grounding depth degrades gracefully — believability gates still apply either way.
+
+## Who reads the graph
+
+<Cards>
+<Cards.Card title="Hosted reviews" href="/how-it-works/review-lifecycle">
+    Context-before-judgment: the graph and index expand every diff before specialists fire.
+  </Cards.Card>
+<Cards.Card title="The CLI" href="/cli-and-chat/cli">
+    The CLI fetches a pre-computed, budget-capped context slice from the same graph and index — grounded context at a fraction of the tokens of re-reading the repo.
+  </Cards.Card>
+<Cards.Card title="Deep-Research Chat" href="/cli-and-chat/deep-research">
+    "What does this change affect?" answered by walking real edges, not guessing.
+  </Cards.Card>
+<Cards.Card title="Triage" href="/triage/overview">
+    CI-failure and issue triage reason against the same structure to produce grounded root causes.
+  </Cards.Card>
+</Cards>
+
+## Read next
+
+<Cards>
+<Cards.Card title="Earned Context" href="/how-it-works/earned-context">
+    The full layer the graph belongs to — index, graph, trust ledger, memory, manifests.
+  </Cards.Card>
+<Cards.Card title="Review Lifecycle" href="/how-it-works/review-lifecycle">
+    Where context expansion happens in the pipeline.
+  </Cards.Card>
+</Cards>

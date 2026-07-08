@@ -1,6 +1,6 @@
 ---
 title: "Confidence & Proof Tiers"
-description: "How Sigilix decides whether a finding has earned the right to post — proof-tier receipts (VERIFIED / GROUNDED / MODEL) and the grounding gate, not a numeric score."
+description: "How Sigilix decides whether a finding has earned the right to post — proof-tier receipts (VERIFIED / REPRODUCED / GROUNDED / MODEL) and the grounding gate, not a numeric score."
 ---
 
 import { Callout, Cards } from 'nextra/components'
@@ -13,15 +13,21 @@ The principle: **the model's job is interpretation; the deterministic layer is t
 
 ## Proof-tier receipts
 
-Every finding that survives to the PR carries one of three tier pills:
+Every finding that survives to the PR carries one of four tier pills:
 
 | Tier | What it means | How it's earned |
 |---|---|---|
-| **VERIFIED** | Checked by execution or backed by a signed receipt | A deterministic check ran (secret scan, AST rule, executed/refuted assertion) and the finding was confirmed against ground truth |
-| **GROUNDED** | Anchored to cited code / evidence in the diff | The finding quotes specific code that exists at the cited location; the grounding gate matched the quote to the source |
+| **VERIFIED** | Corroborated by an independent receipt | A scanner in **your own CI** confirmed the same finding — a signed runner receipt (e.g., a SARIF result) joined to the finding. The strongest witness: two independent systems agree |
+| **REPRODUCED** | Demonstrated by execution | Sigilix's own sealed execution sandbox re-ran the cited code and reproduced the claimed behavior — the bug was *shown*, not argued. See [Verification & the Trust Ledger](/how-it-works/verification) |
+| **GROUNDED** | Anchored to cited code / evidence in the diff | The finding quotes specific code that exists at the cited location, or a deterministic check (secret scan, AST rule, dependency advisory) backs it; the grounding gate matched the claim to the source |
 | **MODEL** | Model judgment, no external witness | A specialist's reasoning the deterministic layer could not independently confirm — still useful, but explicitly labeled as opinion |
 
-The tier is a receipt, not a score. It tells the reader *why* they should believe a finding, not how confident the model claims to be. A VERIFIED secret leak and a MODEL-tier naming suggestion are both legitimate; the pill lets you triage at a glance.
+The tier is a receipt, not a score. It tells the reader *why* they should believe a finding, not how confident the model claims to be. A REPRODUCED logic bug and a MODEL-tier naming suggestion are both legitimate; the pill lets you triage at a glance.
+
+Two properties of the tiers are architectural, not stylistic:
+
+- **A receipt always outranks self-attestation.** A finding corroborated by your own CI (VERIFIED) outranks one Sigilix reproduced itself (REPRODUCED), which outranks one that is merely well-anchored (GROUNDED). The hierarchy is about *independence of the witness*.
+- **Tiers only move up.** Once a finding has earned a tier, a later, weaker signal can never demote it. Signals are folded together by keeping the strongest witness.
 
 ## The grounding gate
 
@@ -33,10 +39,25 @@ Between a specialist producing a finding and that finding posting, Harmonia runs
 | Finding's `path:line` is hallucinated | Dropped |
 | Cited code quote matches the source (whitespace-normalized) | Earns **GROUNDED** |
 | Cited code quote paraphrases / doesn't match | Demoted to **MODEL** or dropped |
-| Claimed unsafe pattern actually present | Confirmed; eligible for **VERIFIED** if a check ran |
+| Claimed unsafe pattern actually present | Confirmed; eligible for **REPRODUCED** or **VERIFIED** if an execution or receipt check runs |
 | Claimed pattern absent | Suppressed before it reaches you |
 
 The gate is what makes Sigilix's reviews trustworthy: a finding that survives it is one whose subject genuinely exists in your code. Findings the model invented — an "unused" function that is called, a "missing" guard that is present — are caught here and never posted.
+
+## The gate score is deterministic, not self-reported
+
+Whether a finding clears a gate is driven by a **deterministic score computed by the pipeline**, not by the model's own confidence number. The score blends four signals:
+
+- The specialist's self-reported confidence — **rescaled conservatively**, so a model claiming maximum confidence still doesn't saturate the score
+- Whether the finding carries its required evidence (cited code, a deterministic-fact reference)
+- Agreement — a bounded bonus when additional specialists flag the same code
+- Severity — higher-stakes categories shift the threshold
+
+The model's opinion of itself is one input among four, and the weakest one. This is the practical meaning of "the model's job is interpretation; the deterministic layer is the witness."
+
+## Dismissals feed a false-positive ruler
+
+What happens after a finding posts also feeds back. When your team dismisses a finding, the dismissal is recorded with a bounded reason — *not a bug*, *bad anchor*, *already covered*, *too minor*, *wrong context* — and those reasons drive an internal **false-positive rate** metric, computed per specialist with statistical confidence intervals and treated as a lower bound on the true rate. Repeated dismissals of a category on your repo also soften future findings of that category — see [Review Memory](/how-it-works/review-memory). The pipeline is tuned against this ruler: precision regressions show up as a moving number, not anecdotes.
 
 <Callout type="info">
 Grounding is content-matched, not line-counted. Models routinely miscount line numbers but quote code verbatim, so the gate matches the quoted code against the source to anchor the finding precisely — including to deleted lines (`side: LEFT`) when the finding's subject is removed code.
@@ -74,7 +95,7 @@ The proof-tier and grounding logic is fixed — it's the believability guarantee
 
 - **`profile`** — `"chill"` (default, only must-fix) vs `"assertive"` (include nits + style). Shifts what each specialist flags in the first place.
 - **`rules.<role>`** — Per-specialist prompt addendum. Influences what each specialist *chooses* to flag.
-- **`deterministicChecks`** — Regex rules whose severity you set explicitly. These post at the severity you declare and earn a deterministic (VERIFIED-class) receipt — they bypass model judgment entirely.
+- **`deterministicChecks`** — Regex rules whose severity you set explicitly. These post at the severity you declare and carry a deterministic receipt (GROUNDED, backed by the check itself) — they bypass model judgment entirely.
 
 ## Telemetry
 
@@ -85,6 +106,9 @@ Every finding's lifecycle is recorded: which proof tier it earned, whether the g
 <Cards>
 <Cards.Card title="Believability Pipeline" href="/how-it-works/believability-pipeline">
     The five gates a finding earns before it can post.
+  </Cards.Card>
+<Cards.Card title="Verification & the Trust Ledger" href="/how-it-works/verification">
+    How REPRODUCED and VERIFIED are earned — the sandbox, the receipts, the ledger.
   </Cards.Card>
 <Cards.Card title="Synthesizer" href="/how-it-works/synthesizer">
     How Harmonia runs the grounding gate and stamps proof-tier receipts.

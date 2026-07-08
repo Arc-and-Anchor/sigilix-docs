@@ -1,30 +1,67 @@
 ---
 title: "GitLab"
-description: "GitLab support is on the roadmap. Targeting Q3 2026."
+description: "Connect a GitLab project in one click — Sigilix sets up the merge-request webhook and review token automatically, and the same review ensemble runs on every MR."
 ---
+
+import { Callout, Cards, Steps } from 'nextra/components'
 
 # GitLab
 
-GitLab integration is **on the roadmap**. Estimated availability: **Q3 2026**.
+Sigilix reviews GitLab **merge requests** with the same engine that reviews GitHub PRs — the same specialists, the same believability gates, one review per MR with inline findings.
 
-## What's coming
+<Callout type="info">
+GitLab support is part of the **private beta**. [Join the private beta](https://app.sigilix.ai) to get your account provisioned. You can also **sign in to the dashboard with GitLab** directly.
+</Callout>
 
-The GitLab integration will mirror the GitHub experience as closely as possible:
+## Connect a project
 
-- Install Sigilix as an [OAuth app](https://docs.gitlab.com/ee/integration/oauth_provider.html) on your GitLab instance
-- Sigilix listens for Merge Request events and posts reviews as MR comments
-- The same five specialists — four domain specialists (Metis, Argus, Iris, Eunomia), unified by Harmonia — run unchanged
-- Same `sigilix.json` config; MR reviews behave the same as PR reviews
-- Self-hosted GitLab supported
+There is no manual webhook or token setup — connecting is one click per project:
 
-## Differences vs. GitHub
+<Steps>
 
-A few GitLab-specific behaviors:
+### Sign in at app.sigilix.ai
 
-- **Discussions vs. notes.** GitLab uses "discussions" (resolvable thread groups) and "notes" (top-level comments). Sigilix posts findings as a single discussion with inline notes per finding, mirroring how it posts on GitHub.
-- **Approval rules.** Sigilix's verdict will count as a GitLab approval if the MR project's approval rules allow bot approvers.
-- **`@sigilix` mentions.** Use the same syntax — Sigilix replies in the same discussion thread.
+Sign in to the [Sigilix dashboard](https://app.sigilix.ai) — with GitHub or with GitLab.
 
-## Get notified
+### Open the GitLab connector
 
-If GitLab support is critical for your team, [join our private beta](https://sigilix.ai/signup) and tell us — we'll prioritize based on demand. GitLab support will be announced here once shipped.
+In the dashboard, open **GitLab** from the apps list and click **Connect GitLab**. You're taken through GitLab's standard OAuth authorization and returned to the dashboard.
+
+### Pick your projects
+
+The connector lists the GitLab projects where you have **Maintainer** access or above. Connect each project you want reviewed in one click — Sigilix creates the merge-request webhook and a scoped project access token for you, server-side.
+
+</Steps>
+
+Disconnecting a project reverses the setup: the webhook is removed and the review token revoked.
+
+## What happens on a merge request
+
+When an MR is opened or updated on a connected project, the dispatcher routes it into the same review pipeline GitHub PRs use. The review posts as:
+
+- **A summary note** on the MR — the synthesizer's verdict and what survived the gates
+- **Inline discussions** per finding, anchored to the lines they cite — resolvable like any GitLab discussion thread
+
+Findings carry the same specialist tags, severity badges, and [proof-tier pills](/how-it-works/confidence-scoring) as on GitHub. Duplicate webhook deliveries for the same MR head are deduplicated, so you never get two reviews for one push.
+
+## Security model
+
+- The webhook secret and the project's review token are **generated and stored server-side** — they are never displayed, logged, or handled by you.
+- Your Maintainer-level access is re-verified through your own GitLab authorization before a project can be connected.
+- A project already connected by another Sigilix workspace is refused — connections are tenant-isolated.
+- Reviews address projects by their immutable project ID, so a token can never be steered at a different project than the one you connected.
+
+## Current scope
+
+GitLab support is newer than the GitHub integration, and some GitHub-side features are still GitHub-only for now — the deeper PR-thread interactions like `@sigilix` mentions and slash commands are documented for [GitHub](/integrations/github). If a GitLab-side capability matters to your team, tell us: [support@sigilix.ai](mailto:support@sigilix.ai).
+
+## Read next
+
+<Cards>
+<Cards.Card title="The Ensemble" href="/how-it-works/the-ensemble">
+    The specialist architecture that reviews your MRs.
+  </Cards.Card>
+<Cards.Card title="The Believability Pipeline" href="/how-it-works/believability-pipeline">
+    The gates every finding clears before it posts.
+  </Cards.Card>
+</Cards>

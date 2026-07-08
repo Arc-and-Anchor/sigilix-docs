@@ -1,69 +1,81 @@
 ---
-title: "Bring Your Own Models"
-description: "On paid tiers, point Sigilix at OpenAI's Codex CLI, Anthropic's Claude Code, or your own SDK and provider keys for the CLI and chat. You pay the provider directly — and your model fetches Sigilix's verified context layer, so it inherits the precision without re-deriving the repo."
+title: "Bring Your Own Key"
+description: "On paid tiers, run the Sigilix CLI on your own model-provider key — Anthropic Claude, OpenAI GPT, or another provider you already use. You pay the provider directly. Read the grounding trade-off first: BYOK swaps model choice for the strongest grounding guarantee."
 ---
 
 import { Callout, Cards, Steps } from 'nextra/components'
 import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
 
-# Bring Your Own Models
+# Bring Your Own Key
 
-On paid tiers, the Sigilix CLI and Deep-Research Chat are not locked to one provider. Point Sigilix at **OpenAI's Codex CLI**, **Anthropic's Claude Code**, or **your own SDK and provider keys**, and you pay that provider's usage directly. The model you bring still fetches Sigilix's verified [earned-context layer](/how-it-works/earned-context), so it inherits the precision of a Sigilix review without re-deriving your repository.
+On paid tiers, the Sigilix CLI and Deep-Research Chat are not locked to Sigilix's own models. Connect **your own model-provider key** — Anthropic (Claude), OpenAI (GPT), or another provider you already have a contract with — and the CLI runs on that model, billed directly to your provider account. Whatever model you bring is still handed Sigilix's [earned-context layer](/how-it-works/earned-context): the injected codebase context and learned memory that make a Sigilix review grounded rather than generic.
 
-This is the whole bet behind bring-your-own-models: the value isn't the model, and it isn't the chat loop. The value is the **verified context your model fetches**. A frontier model with a generic prompt re-discovers your codebase every session and guesses at the edges. The same model pointed at Sigilix's earned context starts from a repo that has already been indexed, graphed, reviewed, and remembered.
+This is the bet behind bring-your-own-key: the value isn't the model itself. The value is the **verified context the model is given**. A frontier model with a generic prompt re-discovers your codebase every session and guesses at the edges. The same model handed Sigilix's earned context starts from a repo that has already been indexed, graphed, reviewed, and remembered.
+
+<Callout type="warning">
+**BYOK trades the strongest grounding guarantee for model choice and your own billing — read this first.**
+
+Sigilix's accuracy comes from **grounding**: the codebase context Sigilix injects into a review and the org/seat [memory](/how-it-works/review-memory) it has learned about your repo. Sigilix's own hosted models (Boreas, Pyroeis, Astraeus) are **tuned to prioritize that injected context** — to defer to your repository's facts and your team's learned rules over their own general knowledge.
+
+Frontier models accessed through BYOK carry **strong internal priors**. In observed behavior, a general-purpose frontier model can **deprioritize, argue with, or override** injected context and memory in favor of what it already "believes" — a tendency sometimes described as *prior-knowledge dominance* or an *alignment conflict* between the model's own training and the context it's handed. This is a known behavior of large models given authoritative external context, not a defect specific to any one provider.
+
+Because of that, **Sigilix cannot guarantee a BYOK model will fully honor your organization's memory and codebase context** the way its hosted models do. For the strongest grounding, use Sigilix's [hosted models](/cli-and-chat/models). BYOK is the right choice when model choice or your own billing matters more to you than the grounding guarantee.
+</Callout>
 
 <Callout type="info">
-BYO models apply to the **CLI and chat surfaces**. The hosted PR ensemble runs per-role tuned models with cross-provider fallback so one provider's outage cannot silence a specialist — see [The Ensemble](/how-it-works/the-ensemble). BYO is a paid-tier feature; availability is per-account during the **private beta**. [Join the private beta](https://app.sigilix.ai) or contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a>.
+BYOK applies to the **CLI and chat surfaces**. The hosted PR ensemble runs per-role tuned models with cross-provider fallback so one provider's outage cannot silence a specialist — see [The Ensemble](/how-it-works/the-ensemble). BYOK is a paid-tier feature; availability is per-account during the **private beta**. [Join the private beta](https://app.sigilix.ai) or contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a>.
 </Callout>
 
 ## What you can bring
 
+BYOK connects a **model-provider key**, not an external agent. Sigilix's own CLI does the work; the key just selects the model behind it.
+
 <FeatureCards>
-<FeatureCard title="Codex CLI">
-    Use OpenAI's Codex CLI as the model behind your terminal workflow. Sigilix drives it against the earned-context layer; you authenticate to OpenAI and pay OpenAI directly.
+<FeatureCard title="Anthropic (Claude)">
+    Connect your Anthropic API key and run the CLI on a Claude model. You authenticate to Anthropic and Anthropic bills you directly.
 </FeatureCard>
-<FeatureCard title="Claude Code">
-    Use Anthropic's Claude Code as the agent driving the work. Sigilix supplies the verified context; Anthropic bills you for usage on your own account.
+<FeatureCard title="OpenAI (GPT)">
+    Connect your OpenAI API key and run the CLI on a GPT model. Usage lands on your OpenAI account.
 </FeatureCard>
-<FeatureCard title="Your own SDK / keys">
-    Bring your own SDK or provider keys and route through them directly — useful when you have an existing provider contract, a self-hosted endpoint, or a model not covered above.
+<FeatureCard title="Another provider you use">
+    Bring a key for another supported provider — useful when you have an existing provider contract or a self-hosted / gateway endpoint. Run `sigilix providers list` to see what your account supports.
 </FeatureCard>
 </FeatureCards>
 
-## Why bring your own model
+## Why bring your own key
 
 <FeatureCards>
 <FeatureCard title="Pay the provider directly">
     Usage runs on your account with the provider you choose. No model markup from Sigilix on the CLI and chat surfaces — you control the spend.
 </FeatureCard>
 <FeatureCard title="Use the model you trust">
-    If your team has standardized on a coding agent, keep using it. Sigilix supplies context and gates; the model you bring does the reasoning.
+    If your team has standardized on a specific frontier model, run the CLI on it. Sigilix supplies the context and the gates; the model you bring does the reasoning.
 </FeatureCard>
-<FeatureCard title="Inherit the precision">
-    Whatever model you bring, it fetches the index, code graph, trust ledger, review memory, and evidence manifests — so it reasons about the whole repo, not a window.
+<FeatureCard title="Still handed the context">
+    Whatever model you bring is handed the index, code graph, trust ledger, review memory, and evidence manifests — so it reasons about the whole repo, not a window. (How fully it uses that context depends on the model — see the grounding trade-off above.)
 </FeatureCard>
 <FeatureCard title="Stay within your boundary">
-    Routing through your own keys means your code goes to the provider you've already vetted and contracted with, under their data-use terms.
+    Routing through your own key means your code goes to the provider you've already vetted and contracted with, under their data-use terms.
 </FeatureCard>
 </FeatureCards>
 
 ## How it fits together
 
-The model is the engine; the earned-context layer is the fuel. BYO swaps the engine without touching the fuel.
+The model is the engine; the earned-context layer is the fuel. BYOK swaps the engine without touching the fuel — though a swapped-in engine may not burn the fuel as completely (see the grounding trade-off above).
 
 <Steps>
 
 ### Hosted reviews build the context
 
-Every PR review deposits a verified layer — index, code graph, trust ledger, review memory, evidence manifests. This is the substrate your model will fetch.
+Every PR review deposits a verified layer — index, code graph, trust ledger, review memory, evidence manifests. This is the substrate your model is handed.
 
-### You configure your model
+### You connect your key
 
-Point Sigilix at Codex CLI, Claude Code, or your own SDK/keys, and authenticate to that provider. Sigilix records which model to drive for your CLI and chat sessions.
+Connect your provider key with `sigilix providers login` and select the model. Sigilix records which model to run for your CLI and chat sessions.
 
-### Your model fetches earned context
+### Sigilix hands your model the context
 
-When you run a CLI review or a chat query, Sigilix expands the request with the earned-context layer before handing it to your model — so it judges and answers against the whole repo.
+When you run a CLI review or a chat query, Sigilix expands the request with the earned-context layer before handing it to your model — so it can judge and answer against the whole repo.
 
 ### You pay the provider, Sigilix supplies the rigor
 
@@ -71,59 +83,59 @@ Inference billing lands on your provider account. The believability gates, conte
 
 </Steps>
 
-## Configuring a model
+## Connecting a key
 
-The CLI exposes model selection through `sigilix config`. The exact provider setup depends on which model you bring — typically you authenticate to the provider once, then select it as your active model.
-
-```bash
-# Inspect the current model and available providers
-sigilix config model
-
-# Select a provider for your CLI / chat sessions (illustrative)
-sigilix config model codex
-sigilix config model claude-code
-sigilix config model custom
-```
+The CLI manages providers through `sigilix providers` (alias: `sigilix auth`). You connect a provider once with your own key, then pick its models per run or in the interactive UI.
 
 ```bash
-# Bring your own provider key (illustrative — store via your env/secret manager)
-sigilix config key set
+# See what's configured and what's available
+sigilix providers list
+sigilix models
+
+# Connect a provider with your own key (paid tiers)
+sigilix providers login
+
+# Use a connected provider's model for a run
+sigilix run --model <provider/model> "…"
+
+# Disconnect a provider
+sigilix providers logout
 ```
 
 <Callout type="info">
-Commands above are illustrative — the precise flags and provider names are surfaced by `sigilix config model` for your account during the beta. Authentication follows each provider's own flow (Codex CLI and Claude Code authenticate to OpenAI and Anthropic respectively); for "your own SDK / keys," you supply the provider credentials.
+Connecting any non-Sigilix provider key is checked against your plan's entitlements before the key is accepted — `sigilix whoami` shows whether BYOK is enabled for your account. Authentication follows each provider's own flow; you supply the provider credentials.
 </Callout>
 
 ## Frequently asked
 
 <details>
-<summary>Does BYO change the hosted PR review?</summary>
+<summary>Does BYOK change the hosted PR review?</summary>
 
-No. The hosted PR ensemble runs per-role tuned models — a reasoning-heavy model for Metis, a faster high-volume model for Argus, and so on — behind cross-provider fallback so one outage can't silence a specialist. BYO applies only to the CLI and Deep-Research Chat surfaces. See [The Ensemble](/how-it-works/the-ensemble).
+No. The hosted PR ensemble runs per-role tuned models — a reasoning-heavy model for Metis, a faster high-volume model for Argus, and so on — behind cross-provider fallback so one outage can't silence a specialist. BYOK applies only to the CLI and Deep-Research Chat surfaces. See [The Ensemble](/how-it-works/the-ensemble).
 
 </details>
   <details>
 <summary>Who pays for inference?</summary>
 
-You do — directly to the provider whose model you bring. That's the point of BYO: usage runs on your own account with the provider you've chosen, with no model markup from Sigilix on these surfaces.
+You do — directly to the provider whose key you connect. That's the point of BYOK: usage runs on your own account with the provider you've chosen, with no model markup from Sigilix on these surfaces.
 
 </details>
   <details>
-<summary>Does my model still get Sigilix</summary>
+<summary>Will a BYOK model use my org memory and codebase context as fully as a hosted model?</summary>
 
-Yes. The precision doesn't come from a particular model — it comes from the earned-context layer and the believability gates. Whatever model you bring fetches that verified context, so it inherits the grounding without re-deriving the repo.
-
-</details>
-  <details>
-<summary>What if I don</summary>
-
-On the CLI and chat, Sigilix uses a default model so you can get going without configuring a provider. BYO is for teams that want to run on their own provider account or standardize on a specific coding agent.
+Not guaranteed. Sigilix hands every model the same earned context, but its own hosted models are **tuned to prioritize** that injected context and learned memory. A general-purpose frontier model brought via BYOK carries strong internal priors and may, in observed behavior, deprioritize or override the context in favor of its own general knowledge. If maximal grounding matters more than model choice, use Sigilix's [hosted models](/cli-and-chat/models). See the grounding trade-off at the top of this page.
 
 </details>
   <details>
-<summary>Is BYO available in the beta?</summary>
+<summary>What if I don't connect a key?</summary>
 
-BYO is a paid-tier feature and availability is per-account during the private beta. [Join the private beta](https://app.sigilix.ai) or email <a href="mailto:support@sigilix.ai">support@sigilix.ai</a> if you're already in and want it enabled.
+On the CLI and chat, Sigilix's own hosted lineup is the default — see [The Sigilix Models](/cli-and-chat/models) — so you can get going without connecting a provider. BYOK is for teams that want to run on their own provider account or standardize on a specific frontier model.
+
+</details>
+  <details>
+<summary>Is BYOK available in the beta?</summary>
+
+BYOK is a paid-tier feature and availability is per-account during the private beta. [Join the private beta](https://app.sigilix.ai) or email <a href="mailto:support@sigilix.ai">support@sigilix.ai</a> if you're already in and want it enabled.
 
 </details>
 
@@ -140,6 +152,6 @@ BYO is a paid-tier feature and availability is per-account during the private be
     The verified layer your model fetches — and why it's the moat.
   </Cards.Card>
 <Cards.Card title="Command reference" href="/cli-and-chat/commands">
-    The CLI commands for review, chat, config, and auth.
+    The CLI commands for review, run, providers, and models.
   </Cards.Card>
 </Cards>

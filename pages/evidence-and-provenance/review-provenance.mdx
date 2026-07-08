@@ -31,7 +31,7 @@ Every review comment includes a hidden manifest at the bottom:
   },
   "synthesis":   { "specialist": "Harmonia", "outcome": "ok", "ms": 9800 },
   "evidence":    { "sarif": 3, "depVulns": 1, "secrets": 0 },
-  "proofTiers":  { "verified": 1, "grounded": 4, "model": 0 },
+  "proofTiers":  { "verified": 1, "reproduced": 0, "grounded": 4, "model": 0 },
   "deterministicChecks": 2,
   "incremental": true,
   "schema": 1
@@ -88,8 +88,9 @@ Provenance answers *what ran*. The **proof tier** answers the harder question: *
 
 | Tier | Pill | Meaning |
 |---|---|---|
-| Verified | **VERIFIED** | The claim was checked by execution or carries a signed receipt — the strongest tier. A finding that says "this throws" was confirmed to throw. |
-| Grounded | **GROUNDED** | The finding is anchored to cited code or external evidence (a SARIF row, a CVE record, a quoted diff span). The claim is tied to something verifiable in the PR. |
+| Verified | **VERIFIED** | The claim carries a signed receipt from an independent system — a scanner in your own CI confirmed the same finding. The strongest tier: two unrelated witnesses agree. |
+| Reproduced | **REPRODUCED** | The claim was demonstrated by execution — Sigilix's sealed sandbox re-ran the cited code and reproduced the behavior. A finding that says "this diverges on the boundary case" was shown to diverge. |
+| Grounded | **GROUNDED** | The finding is anchored to cited code or deterministic evidence (a SARIF row, a CVE record, a quoted diff span). The claim is tied to something verifiable in the PR. |
 | Model | **MODEL** | Model judgment that passed the grounding gate but wasn't independently executed or receipt-backed. Still anchored to the diff, but the validation is reasoning, not a check. |
 
 This replaces any older "1–5 confidence score" framing. A number invites the question "1–5 according to whom?"; a proof tier answers "validated how?" — which is the question a reviewer actually has when deciding whether to act on a finding.
@@ -100,7 +101,7 @@ Proof tiers are not self-assigned by the specialist that raised the finding. Bef
 
 1. **Grounding check.** The finding must anchor to cited code or evidence in the diff. A claim that can't point at the line it's about is demoted out of the inline channel — it cannot earn GROUNDED or above.
 2. **Refutation pass.** The system actively tries to *disprove* the finding against the surrounding context (callers, dependencies, the rest of the file). A finding that the refutation pass overturns is dropped or downgraded rather than posted as a false alarm.
-3. **Execution / receipt.** Where a claim is checkable — and a check is available — it is executed or matched against a signed receipt. Surviving that promotes the finding to VERIFIED.
+3. **Execution / receipt.** Where a claim is checkable — and a check is available — it is executed or matched against a signed receipt. Execution in Sigilix's sealed sandbox promotes the finding to REPRODUCED; corroboration by a receipt from your own CI promotes it to VERIFIED. See [Verification & the Trust Ledger](/how-it-works/verification).
 
 A finding cannot post unless it clears these gates. This is what makes believability architectural rather than a matter of prompt wording: the proof tier on the pill is the receipt of which gates the finding actually passed. The manifest's `proofTiers` counts let tooling audit the tier distribution of a review at a glance.
 

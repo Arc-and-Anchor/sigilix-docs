@@ -11,7 +11,7 @@ Four parallel domain specialists produce a lot of overlap. Without a synthesizer
 
 ## Where Harmonia sits in the believability pipeline
 
-Believability in Sigilix is architectural, not a prompt. A finding cannot post unless it earns its way through the [5-stage believability pipeline](/how-it-works/believability-pipeline): **evidence → provenance contracts → refute/execute → proof-tier receipts → memory**. Harmonia is the stage where evidence is checked against provenance contracts, refuted-or-confirmed, and stamped with a [proof-tier receipt](/how-it-works/confidence-scoring) (VERIFIED / GROUNDED / MODEL) before anything reaches the PR. The four stages below are how Harmonia does that.
+Believability in Sigilix is architectural, not a prompt. A finding cannot post unless it earns its way through the [5-stage believability pipeline](/how-it-works/believability-pipeline): **evidence → provenance contracts → refute/execute → proof-tier receipts → memory**. Harmonia is the stage where evidence is checked against provenance contracts, refuted-or-confirmed, and stamped with a [proof-tier receipt](/how-it-works/confidence-scoring) (VERIFIED / REPRODUCED / GROUNDED / MODEL) before anything reaches the PR. The four stages below are how Harmonia does that.
 
 ## The four stages
 
@@ -64,7 +64,7 @@ Harmonia then performs deduplication and severity calibration:
 
 **Advisory cap.** If a flood of low-severity (Info) findings exists, Harmonia surfaces the top few inline and aggregates the rest into a single "advisory nits" line in the summary. This prevents review-comment dilution.
 
-**Proof-tier receipts.** Each surviving finding is stamped with a tier pill — **VERIFIED**, **GROUNDED**, or **MODEL** — recording how strongly it was witnessed. See [Confidence Scoring](/how-it-works/confidence-scoring).
+**Proof-tier receipts.** Each surviving finding is stamped with a tier pill — **VERIFIED**, **REPRODUCED**, **GROUNDED**, or **MODEL** — recording how strongly it was witnessed. See [Confidence Scoring](/how-it-works/confidence-scoring) and [Verification & the Trust Ledger](/how-it-works/verification).
 
 ### 4. Render
 
@@ -112,6 +112,6 @@ Harmonia is the difference. The four-stage pipeline is what makes Sigilix's revi
     The five gates a finding earns before it can post.
   </Cards.Card>
 <Cards.Card title="Confidence Scoring" href="/how-it-works/confidence-scoring">
-    Proof-tier receipts (VERIFIED / GROUNDED / MODEL) and the grounding gate.
+    Proof-tier receipts (VERIFIED / REPRODUCED / GROUNDED / MODEL) and the grounding gate.
   </Cards.Card>
 </Cards>

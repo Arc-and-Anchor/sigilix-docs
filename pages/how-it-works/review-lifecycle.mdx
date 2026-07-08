@@ -96,13 +96,17 @@ Incremental review avoids the re-flag loop where the same finding surfaces on ev
 
 ### 5. Router
 
-The router decides which specialists to fire based on the diff:
+The router decides which specialists to fire. It is a **hybrid**: a deterministic rule layer sets the floor, and a lightweight classifier handles the ambiguous middle.
+
+The rule floor covers the clear-cut cases:
 
 - **Docs-only PR** (markdown / RST changes, no fenced code blocks with executable content) → no specialists; PR overview only
 - **Auth-sensitive paths touched** → security forced on
 - **Migration / schema files changed** → security + logic forced on
 - **Lockfile or `package.json` changes** → security forced on (supply-chain)
 - **Default** → all four domain specialists (Metis, Argus, Iris, Eunomia)
+
+For PRs the rules don't decide, a fast classifier judges which domains the change plausibly touches. Its authority is deliberately bounded: **the classifier can never override the rule layer on security or logic** — those roles run unless *both* layers independently agree the PR can't need them, and any skip decision was shadow-tested against recall telemetry before it was allowed to take effect. When a dispatched specialist fails at runtime, the posted review carries a degraded-coverage notice rather than a silent gap.
 
 The router runs with conservative gating — when in doubt, it includes the specialist. Diff size is **not** a routing signal; CI status is **not** a routing signal.
 
@@ -124,11 +128,13 @@ For PRs whose diff exceeds the per-attempt token cap, Sigilix packs the diff at 
 
 A telemetry event (`pr-review-truncated`) fires on every truncated review so the team can track which PRs are hitting the cap.
 
+For the largest PRs, an **in-invocation multi-batch scheduler** goes further than packing: the diff is split into batches reviewed sequentially within the same run — budget-gated so the review still finishes inside its wall clock — and the batch results are unified into one review with a single summary. Coverage scales with PR size instead of falling off a token cliff.
+
 ### 8. Context before judgment
 
 Before any specialist runs, Sigilix expands the diff into the context it needs to be judged against the *whole repo*, not a window:
 
-- **Code graph.** Callers, dependencies, and symbol definitions for the changed code, so a specialist can see who calls the function being modified.
+- **Code graph.** Callers, dependencies, and symbol definitions for the changed code, so a specialist can see who calls the function being modified — see [The Code Graph & Blast Radius](/how-it-works/code-graph).
 - **Index retrieval.** A retrieval call against the codebase index for the PR's title + body; the retrieved chunks are passed to all specialists, so they don't each re-retrieve.
 - **Review memory.** Relevant [Conversational Learnings](/how-it-works/conversational-learnings) and category calibration for this repo.
 

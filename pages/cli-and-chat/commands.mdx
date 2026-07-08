@@ -1,6 +1,6 @@
 ---
 title: "CLI Command Reference"
-description: "The Sigilix CLI commands — review, chat, config, and auth. Representative usage for running review parity in the terminal and querying Deep-Research Chat, grounded in the earned-context layer."
+description: "The Sigilix CLI commands — review, run, login/whoami/logout, providers, and models. Representative usage for reviewing changes and driving the grounded agent from the terminal."
 ---
 
 import { Callout, Cards } from 'nextra/components'
@@ -10,134 +10,153 @@ import { Callout, Cards } from 'nextra/components'
 This page covers the **Sigilix CLI** — the `sigilix` binary you run in your terminal. For the `@sigilix` / `/sigilix` commands you type on a PR comment, see [Slash Commands](/configuration/commands); those run on the hosted GitHub App, while the commands here run locally and reach for the same [earned-context layer](/how-it-works/earned-context).
 
 <Callout type="info">
-The Sigilix CLI is part of the **private beta**. Availability is per-account — [join the private beta](https://app.sigilix.ai) or contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a> to get it enabled. The commands and flags below are **representative**; run `sigilix --help` and `sigilix <command> --help` to see exactly what your account exposes.
+The Sigilix CLI is part of the **private beta**. Availability is per-account — [join the private beta](https://app.sigilix.ai) or contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a> to get it enabled. Run `sigilix --help` and `sigilix <command> --help` for the authoritative list on your installed version.
 </Callout>
 
 ## Command overview
 
 | Command | What it does |
 |---|---|
-| `sigilix review` | Runs the five-specialist ensemble on local changes, behind the believability gates |
-| `sigilix chat` | Opens Deep-Research Chat, grounded in your repo and review history |
-| `sigilix config` | Inspects and sets configuration — model selection, provider keys |
-| `sigilix auth` | Authenticates the CLI to your Sigilix account |
+| `sigilix` | Opens the interactive terminal UI — chat with the grounded agent in your repo |
+| `sigilix run [message..]` | Runs the agent non-interactively with a message |
+| `sigilix review [target]` | Reviews changes — uncommitted by default, or a branch / commit / PR URL |
+| `sigilix login` | Signs in to Sigilix (opens your browser) |
+| `sigilix whoami` | Shows the signed-in user, plan, and entitlements |
+| `sigilix logout` | Signs out (clears the stored key on this device) |
+| `sigilix providers` | Manages AI providers and credentials (alias: `sigilix auth`) |
+| `sigilix models [provider]` | Lists the models available to your account |
+| `sigilix update` | Updates the CLI to the latest version |
 | `sigilix --help` | Lists available commands and global flags |
+
+## `sigilix` (interactive)
+
+Running `sigilix` with no arguments opens the interactive terminal UI in the current directory. This is the chat surface: ask questions about the repo, drive changes, or interrogate past findings — the agent is grounded in the [earned-context layer](/how-it-works/earned-context) on every turn. See [Deep-Research Chat](/cli-and-chat/deep-research).
+
+```bash
+# Open the interactive UI in the current repo
+sigilix
+```
 
 ## `sigilix review`
 
-Runs Metis, Argus, Iris, and Eunomia in parallel — unified by Harmonia — against your local changes, after the deterministic checks and behind the same believability pipeline a PR review uses. By default it diffs your working tree against the merge-base with the default branch.
+Reviews changes. With no target it reviews your **uncommitted changes** — staged, unstaged, and untracked files. Pass a branch name, a commit hash, or a PR URL to review that instead. The reviewer reads the full files being modified (not just the diff hunks) and judges the change in the context of the repository.
 
 ```bash
-# Review the working tree against the default-branch merge-base
+# Review your uncommitted changes
 sigilix review
 
-# Review a specific base or commit range
-sigilix review --base origin/main
-sigilix review --range HEAD~3..HEAD
+# Review the current branch against another branch
+sigilix review main
 
-# Narrow to a subtree (path filters from sigilix.json are also honored)
-sigilix review --path "packages/api/**"
+# Review a single commit
+sigilix review 4f2c9ab
+
+# Review a pull request
+sigilix review https://github.com/acme/api/pull/214
+```
+
+<details>
+<summary>What the output looks like</summary>
+
+A summary followed by findings anchored to files and lines, tagged by severity and proof tier. See [Sigilix CLI](/cli-and-chat/cli) for a worked example.
+
+</details>
+
+## `sigilix run`
+
+Runs the agent non-interactively with a message — useful for one-shot tasks and scripting.
+
+```bash
+# One-shot question or task
+sigilix run "why did the order-total finding fire on the refunds PR?"
+
+# Continue the most recent session
+sigilix run --continue "now fix it"
 ```
 
 <details>
 <summary>Representative flags</summary>
 
-- `--base <ref>` — review the diff against this ref instead of the computed merge-base.
-- `--range <a..b>` — review an explicit commit range.
-- `--path <glob>` — scope the review to matching paths, on top of your `sigilix.json` filters.
+- `--continue` — continue the last session instead of starting fresh.
+- `--session <id>` — continue a specific session.
+- `--model <provider/model>` — pick the model for this run.
+- `--agent <name>` — run a specific agent.
+- `--format json` — machine-readable output instead of the default rendering.
+- `--dir <path>` — run against a different directory.
 
-These are illustrative — run `sigilix review --help` for the authoritative list on your account.
-
-</details>
-  <details>
-<summary>Exit status</summary>
-
-The command exits non-zero when a blocking finding survives the gates, so you can wire it into a pre-push hook or a CI step as a fast first pass ahead of the authoritative hosted PR review.
-
-</details>
-  <details>
-<summary>What the output looks like</summary>
-
-A Harmonia summary followed by inline findings tagged by specialist (Metis / Argus / Iris / Eunomia), severity (Critical / Warning / Info), and proof tier (VERIFIED / GROUNDED / MODEL). See [Sigilix CLI](/cli-and-chat/cli) for a worked example.
+Run `sigilix run --help` for the full list.
 
 </details>
 
-## `sigilix chat`
+## `sigilix login` / `whoami` / `logout`
 
-Opens [Deep-Research Chat](/cli-and-chat/deep-research) — plain-language Q&A grounded in the index, code graph, trust ledger, and review memory. Ask why a finding fired, what a change affects, or how a subsystem fits together; answers anchor to retrieved evidence rather than guesses.
+Authenticates the CLI to your Sigilix account. `sigilix login` opens your browser to [app.sigilix.ai](https://app.sigilix.ai); approve the request and the CLI stores a per-user API key for this device. The default API host is `api.sigilix.ai` — no environment variables needed.
 
 ```bash
-# Start an interactive chat session
-sigilix chat
-
-# Ask a single question and exit (illustrative)
-sigilix chat "why did Argus flag the session compare on the last review?"
+sigilix login    # opens your browser and authorizes this device
+sigilix whoami   # shows your login, plan, and entitlements
+sigilix logout   # clears the stored key on this device
 ```
 
 <details>
-<summary>What it can retrieve</summary>
+<summary>What `whoami` shows</summary>
 
-Past findings, the specialist that raised them, the code they cited, their proof-tier receipts, and the rules you've taught — all from the earned-context layer. The chat reasons over these anchors instead of improvising.
+`sigilix whoami` re-checks your account and prints your login, your plan, and whether paid-tier entitlements — like bring-your-own model keys — are enabled. If the check can't reach the server, it shows the cached plan and marks it as offline rather than guessing.
 
 </details>
   <details>
-<summary>Grounded by design</summary>
+<summary>Signing out</summary>
 
-When the earned-context layer doesn't contain what a question needs, the chat says so rather than fabricating — the same believability bar as a review.
+`sigilix logout` clears the credential stored on this device. To revoke the key server-side, use your account settings at [app.sigilix.ai](https://app.sigilix.ai).
 
 </details>
 
-## `sigilix config`
+## `sigilix providers`
 
-Inspects and updates CLI configuration. The most common use is selecting the model behind your terminal workflow — on paid tiers you can bring your own (Codex CLI, Claude Code, or your own SDK/keys). See [Bring Your Own Models](/cli-and-chat/bring-your-own-models).
+Manages AI providers and credentials (alias: `sigilix auth`). This is where you connect your own provider key on paid tiers — see [Bring Your Own Key](/cli-and-chat/bring-your-own-models).
 
 ```bash
-# Inspect the active model and available providers
-sigilix config model
-
-# Select a provider (illustrative)
-sigilix config model codex
-sigilix config model claude-code
-sigilix config model custom
-
-# Manage a bring-your-own provider key (store via your env/secret manager)
-sigilix config key set
+sigilix providers list     # show configured providers
+sigilix providers login    # connect a provider with your own key (paid tiers)
+sigilix providers logout   # disconnect a provider
 ```
 
 <Callout type="info">
-Model and provider names are surfaced by `sigilix config model` for your account. Authentication follows each provider's own flow — Codex CLI and Claude Code authenticate to OpenAI and Anthropic; "your own SDK / keys" uses the provider credentials you supply.
+Sigilix account authentication (`sigilix login`) and provider credentials (`sigilix providers`) are separate. The hosted Sigilix models work with just your account; connecting any **other** provider's key is a paid-tier entitlement, checked against your plan before a key is accepted.
 </Callout>
 
-## `sigilix auth`
+## `sigilix models`
 
-Authenticates the CLI to your Sigilix account so it can reach the earned-context layer for your repositories. Run this once after install.
+Lists the models available to your account — the hosted Sigilix lineup plus any providers you've connected.
 
 ```bash
-# Authenticate the CLI to your Sigilix account
-sigilix auth login
-
-# Check who you're authenticated as
-sigilix auth status
-
-# Sign out
-sigilix auth logout
+sigilix models             # all available models
+sigilix models <provider>  # models for one provider
 ```
 
-<Callout type="info">
-Provider authentication (for the model you bring) is separate from Sigilix account authentication — `sigilix auth` connects you to Sigilix; provider credentials are managed via `sigilix config`. See [Bring Your Own Models](/cli-and-chat/bring-your-own-models).
-</Callout>
+See [The Sigilix Models](/cli-and-chat/models) for the hosted lineup.
+
+## Housekeeping
+
+```bash
+sigilix update       # update the CLI to the latest version
+sigilix uninstall    # remove the CLI from this machine
+sigilix completion   # generate a shell completion script
+```
+
+Global flags: `--help` / `-h`, `--version` / `-v`, `--print-logs`, `--log-level DEBUG|INFO|WARN|ERROR`.
 
 ## Read next
 
 <Cards>
 <Cards.Card title="Sigilix CLI" href="/cli-and-chat/cli">
-    Architecture and workflows behind `sigilix review`.
+    Install, sign in, and the architecture behind `sigilix review`.
   </Cards.Card>
 <Cards.Card title="Deep-Research Chat" href="/cli-and-chat/deep-research">
-    Architecture and workflows behind `sigilix chat`.
+    The grounded chat surface behind the interactive UI.
   </Cards.Card>
-<Cards.Card title="Bring Your Own Models" href="/cli-and-chat/bring-your-own-models">
-    Configure Codex CLI, Claude Code, or your own keys via `sigilix config`.
+<Cards.Card title="Bring Your Own Key" href="/cli-and-chat/bring-your-own-models">
+    Connect your own provider key via `sigilix providers`.
   </Cards.Card>
 <Cards.Card title="Slash Commands" href="/configuration/commands">
     The `@sigilix` / `/sigilix` commands on the hosted GitHub App.

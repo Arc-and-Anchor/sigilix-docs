@@ -1,0 +1,79 @@
+---
+title: "The Sigilix Models"
+description: "Boreas, Pyroeis, Astraeus — and Phanes, coming soon. Sigilix's model lineup for the CLI and agent surfaces: one agent contract, tiered capability, served through Sigilix's managed gateway."
+---
+
+import { Callout, Cards } from 'nextra/components'
+import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
+
+# The Sigilix Models
+
+The CLI and agent surfaces run on Sigilix's own model lineup — four tiers, one contract:
+
+| Model | Tier | Status |
+|---|---|---|
+| **Boreas** | Light — the everyday coding agent | Available — the CLI default |
+| **Pyroeis** | Base — a stronger tier for harder changes | Per-account during the beta |
+| **Astraeus** | Premium — the top agentic tier, for the hardest multi-file and subtle-logic work | Per-account during the beta |
+| **Phanes** | The top of the lineup | **Coming soon** |
+
+<Callout type="info">
+The hosted **PR review ensemble** is a different lane: each review specialist runs a model tuned to its role, behind cross-provider fallback — see [The Ensemble](/how-it-works/the-ensemble). The lineup on this page powers the **CLI and agent** surfaces.
+</Callout>
+
+## One contract, tiered capability
+
+What makes a model a Sigilix model is not the base engine underneath — it is the **agent contract** every tier runs:
+
+<FeatureCards>
+<FeatureCard title="Ground before edit">
+    Before touching code, the agent pulls a repo-aware context packet — the repo map, relevant symbols, and prior learnings — from the <a href="/how-it-works/earned-context">earned-context layer</a>, so changes are grounded in your actual repository instead of guessed.
+</FeatureCard>
+<FeatureCard title="Edits with discipline">
+    Minimal patches, verified with your project's own tests and linters. Pure-logic edits can carry proof from a sealed sandbox check.
+</FeatureCard>
+<FeatureCard title="Knows the blast radius">
+    Impact-analysis tools surface what an edit affects — callers, dependents, and a review of the change — before it lands. See <a href="/how-it-works/code-graph">The Code Graph &amp; Blast Radius</a>.
+</FeatureCard>
+<FeatureCard title="Remembers">
+    Compounding per-developer, per-repo memory that improves every run — layered with your org's learnings. See <a href="/how-it-works/review-memory">Review Memory</a>.
+</FeatureCard>
+</FeatureCards>
+
+The tiers share this contract and differ in the strength of the model driving it: Boreas for everyday work, Pyroeis for harder changes, Astraeus for the hardest multi-file and subtle-logic work.
+
+## How they're served
+
+The lineup is served **model-as-a-service through Sigilix's managed, authenticated gateway** — you authenticate to Sigilix (`sigilix login`) and never touch the model host or hold provider keys.
+
+- **Ordered failover.** Each model has an ordered chain of independent serving backends. Failover triggers only before the first response byte (connection failures, timeouts, upstream errors) — a genuine request error is returned, not retried into confusion.
+- **Never silent.** Every response records which backend served it, so a fallback is observable, not invisible.
+- **Availability guarded.** Per-model daily ceilings protect the service from runaway usage instead of degrading everyone's latency.
+
+The base engine behind each tier is deliberately swappable and — like the [ensemble's per-role models](/how-it-works/specialists) — not pinned in the docs: the durable contract is the tier's role, the grounding, and the memory, not a model ID that churns.
+
+## Using them
+
+```bash
+sigilix models     # list the models available to your account
+sigilix            # the interactive UI runs on the lineup by default
+```
+
+Prefer to run on your own provider account instead? See [Bring Your Own Key](/cli-and-chat/bring-your-own-models) — a paid-tier feature. Note the trade-off documented there: Sigilix's hosted models are tuned to prioritize your injected context and memory most reliably, so BYOK trades that grounding guarantee for model choice and your own billing.
+
+## Read next
+
+<Cards>
+<Cards.Card title="Sigilix CLI" href="/cli-and-chat/cli">
+    Install, sign in, and review from the terminal.
+  </Cards.Card>
+<Cards.Card title="Bring Your Own Key" href="/cli-and-chat/bring-your-own-models">
+    Run the CLI and chat on your own provider key — and the grounding trade-off.
+  </Cards.Card>
+<Cards.Card title="Earned Context" href="/how-it-works/earned-context">
+    The verified layer every tier grounds against.
+  </Cards.Card>
+<Cards.Card title="Models & Usage" href="/configuration/models-and-usage">
+    The hosted roster, usage windows, and how to pick a model.
+  </Cards.Card>
+</Cards>

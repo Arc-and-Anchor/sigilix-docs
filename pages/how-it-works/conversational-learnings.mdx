@@ -38,6 +38,24 @@ Retire a rule that no longer applies:
 When Sigilix captures a new rule, it confirms with a <strong>"Learned something new"</strong> footer on its reply, so you know the lesson landed and did not vanish into the thread.
 </Callout>
 
+## What a rule can do
+
+A learned rule carries one of three polarities, inferred from what you taught:
+
+<FeatureCards>
+<FeatureCard title="Suppress">
+    "We do this on purpose — stop flagging it." Narrows what surfaces where the rule applies.
+</FeatureCard>
+<FeatureCard title="Require">
+    "Always flag when this is missing." Teaches the reviewer a positive expectation — a check your team wants enforced.
+</FeatureCard>
+<FeatureCard title="Context">
+    "This is how this area works." Pure background the specialists reason with — it changes judgment, not thresholds.
+</FeatureCard>
+</FeatureCards>
+
+Rules are scoped where they belong: to a repo by default, or org-wide when the rule genuinely applies across your repositories.
+
 ## Applied judiciously, and attributed inline
 
 A learned rule is not a hard mute. Sigilix reasons about whether the rule applies to the specific code in front of it, rather than blanket-suppressing a whole category. When a later review is shaped by a learning, the finding (or its absence) is attributed inline — you will see a note that it was **applied because of a learned rule**. The attribution matters: it keeps the system honest and lets you see exactly which lesson changed the outcome.
@@ -69,5 +87,8 @@ Learnings is the headline mechanism of review memory. A secondary, statistical s
   </Cards.Card>
 <Cards.Card title="Earned Context" href="/how-it-works/earned-context">
     How learned rules join the reusable context layer the whole product draws on.
+  </Cards.Card>
+<Cards.Card title="SDK Guidance" href="/how-it-works/sdk-guidance">
+    Sigilix's built-in, vendor-specific rules — the maintained complement to what your team teaches.
   </Cards.Card>
 </Cards>
