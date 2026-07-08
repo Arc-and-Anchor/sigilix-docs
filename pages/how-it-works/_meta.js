@@ -10,6 +10,7 @@ export default {
   "review-lifecycle": "Review Lifecycle",
   "review-memory": "Review Memory",
   "conversational-learnings": "Conversational Learnings",
+  "sdk-guidance": "SDK Guidance",
   "code-graph": "Code Graph & Blast Radius",
   "earned-context": "Earned Context",
 }
