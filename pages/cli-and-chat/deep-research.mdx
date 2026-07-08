@@ -16,6 +16,17 @@ The distinction is the substrate. A generic code chatbot reads what fits in its 
 Deep-Research Chat is part of the **private beta**. Availability is per-account during the beta — [join the private beta](https://app.sigilix.ai) to get access, and contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a> if you are already in and want it enabled for your account.
 </Callout>
 
+## Opening the chat
+
+The chat lives in the CLI. Run `sigilix` with no arguments to open the interactive UI in your repo, or `sigilix run "…"` for a one-shot question:
+
+```bash
+sigilix                                        # interactive
+sigilix run "what calls money.fromCents?"      # one-shot
+```
+
+See [CLI Command Reference](/cli-and-chat/commands) for flags, and [Sigilix CLI](/cli-and-chat/cli) for install and sign-in.
+
 ## What you can ask
 
 Deep-Research Chat is built for the questions that need *grounding*, not generation — the ones where a wrong answer is worse than no answer.
@@ -65,7 +76,10 @@ The chat can pull up a past finding and the **proof-tier receipt** it carried wh
 
 <FeatureCards>
 <FeatureCard title="VERIFIED">
-    The finding was checked by execution or backed by a signed receipt. The strongest tier.
+    The finding was corroborated by a signed receipt from your own CI. The strongest tier.
+</FeatureCard>
+<FeatureCard title="REPRODUCED">
+    The finding was demonstrated by execution — Sigilix's sealed sandbox re-ran the cited code and reproduced the behavior.
 </FeatureCard>
 <FeatureCard title="GROUNDED">
     The finding was anchored to cited code and concrete evidence in the diff or surrounding context.
@@ -80,7 +94,7 @@ Ask the chat *"why did Argus flag the session compare on PR #214, and what tier 
 ## A grounded exchange
 
 ```bash
-$ sigilix chat
+$ sigilix
 
 sigilix › why did the order-total finding fire on the refunds PR?
 

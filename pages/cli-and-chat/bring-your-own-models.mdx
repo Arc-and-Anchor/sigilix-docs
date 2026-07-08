@@ -73,25 +73,25 @@ Inference billing lands on your provider account. The believability gates, conte
 
 ## Configuring a model
 
-The CLI exposes model selection through `sigilix config`. The exact provider setup depends on which model you bring — typically you authenticate to the provider once, then select it as your active model.
+The CLI manages providers through `sigilix providers` (alias: `sigilix auth`). You connect a provider once with your own key, then pick its models per run or in the interactive UI.
 
 ```bash
-# Inspect the current model and available providers
-sigilix config model
+# See what's configured and what's available
+sigilix providers list
+sigilix models
 
-# Select a provider for your CLI / chat sessions (illustrative)
-sigilix config model codex
-sigilix config model claude-code
-sigilix config model custom
-```
+# Connect a provider with your own key (paid tiers)
+sigilix providers login
 
-```bash
-# Bring your own provider key (illustrative — store via your env/secret manager)
-sigilix config key set
+# Use a connected provider's model for a run
+sigilix run --model <provider/model> "…"
+
+# Disconnect a provider
+sigilix providers logout
 ```
 
 <Callout type="info">
-Commands above are illustrative — the precise flags and provider names are surfaced by `sigilix config model` for your account during the beta. Authentication follows each provider's own flow (Codex CLI and Claude Code authenticate to OpenAI and Anthropic respectively); for "your own SDK / keys," you supply the provider credentials.
+Connecting any non-Sigilix provider key is checked against your plan's entitlements before the key is accepted — `sigilix whoami` shows whether BYO model keys are enabled for your account. Authentication follows each provider's own flow; for "your own SDK / keys," you supply the provider credentials.
 </Callout>
 
 ## Frequently asked
@@ -109,15 +109,15 @@ You do — directly to the provider whose model you bring. That's the point of B
 
 </details>
   <details>
-<summary>Does my model still get Sigilix</summary>
+<summary>Does my model still get Sigilix's precision?</summary>
 
 Yes. The precision doesn't come from a particular model — it comes from the earned-context layer and the believability gates. Whatever model you bring fetches that verified context, so it inherits the grounding without re-deriving the repo.
 
 </details>
   <details>
-<summary>What if I don</summary>
+<summary>What if I don't bring a model?</summary>
 
-On the CLI and chat, Sigilix uses a default model so you can get going without configuring a provider. BYO is for teams that want to run on their own provider account or standardize on a specific coding agent.
+On the CLI and chat, Sigilix's own hosted lineup is the default — see [The Sigilix Models](/cli-and-chat/models) — so you can get going without configuring a provider. BYO is for teams that want to run on their own provider account or standardize on a specific coding agent.
 
 </details>
   <details>

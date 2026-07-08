@@ -73,7 +73,10 @@ Gate 4 attaches a proof tier to each finding that survives. The tier is a pill o
 
 <FeatureCards>
 <FeatureCard title="VERIFIED">
-    Checked by execution or backed by a signed receipt. The strongest tier — the claim was demonstrated, not just argued.
+    Corroborated by a signed receipt from your own CI — an independent scanner confirmed the same finding. The strongest tier: two systems agree.
+</FeatureCard>
+<FeatureCard title="REPRODUCED">
+    Demonstrated by execution. Sigilix's sealed sandbox re-ran the cited code and reproduced the claimed behavior — shown, not argued.
 </FeatureCard>
 <FeatureCard title="GROUNDED">
     Anchored to cited code and evidence that the provenance and refute gates confirmed. The finding points at real code that supports it.
@@ -84,8 +87,27 @@ Gate 4 attaches a proof tier to each finding that survives. The tier is a pill o
 </FeatureCards>
 
 <Callout type="info">
-The tiers are a hierarchy of how a finding was established, from a demonstrated result (VERIFIED) down to reasoned judgment (MODEL). Every posted finding wears one, so the tier itself tells you how far to trust it at a glance.
+The tiers are a hierarchy of *witness independence*, from an independent receipt (VERIFIED) through demonstrated execution (REPRODUCED) and confirmed anchoring (GROUNDED) down to reasoned judgment (MODEL). Every posted finding wears one, and a tier can only ever move up — a later, weaker signal never demotes an earned receipt. See [Verification &amp; the Trust Ledger](/how-it-works/verification) for how the top tiers are earned.
 </Callout>
+
+## What the gates actually check
+
+The five-gate narrative above is the shape; underneath it runs a roster of named, individually-toggleable validation gates. A candidate finding walks through them in order:
+
+| Gate | What it catches |
+|---|---|
+| Hallucination guard | A finding citing a deterministic-fact ID that no check actually produced. Only real scanner and rule outputs are admissible evidence |
+| Inline grounding | The cited code doesn't exist at the cited location |
+| Absence grounding | "X is missing" claims — the gate checks the thing claimed missing isn't actually present nearby |
+| Window blindness | A claim that only looks true because the model saw a window of the file — refuted against the surrounding source |
+| Per-domain evidence gates | Security, logic, performance, and test findings each have their own evidence requirements (e.g., a security finding must tie to a real sink/usage, not just a scary-looking name) |
+| Refutation survival | The claim is actively argued against; findings that lose the argument are dropped or downgraded |
+| Out-of-scope tagging | A finding raised from graph or retrieval context whose subject is outside the PR's changed files is tagged and rendered separately — it never blocks the merge |
+
+Two engineering properties make this safe to run on every PR:
+
+- **Recall-safe rollout.** Every gate ships in a shadow mode first — measuring what it *would* drop — and is only switched to enforcement once the telemetry shows it doesn't cost real catches. Gates fail open on internal errors and never silently drop a top-severity finding.
+- **Auditable drops.** Every suppression is recorded with its reason (failed grounding, failed refutation, hallucinated evidence, …) in telemetry. Nothing disappears without a paper trail.
 
 ## Contrast: two stages versus five gates
 
@@ -101,6 +123,9 @@ The tiers are a hierarchy of how a finding was established, from a demonstrated 
 ## Read next
 
 <Cards>
+<Cards.Card title="Verification & the Trust Ledger" href="/how-it-works/verification">
+    The execution sandbox and receipt-joining behind REPRODUCED and VERIFIED.
+  </Cards.Card>
 <Cards.Card title="Review Provenance" href="/evidence-and-provenance/review-provenance">
     Proof-tier receipts and the refute/execute stage in detail.
   </Cards.Card>

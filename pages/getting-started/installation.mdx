@@ -1,6 +1,6 @@
 ---
 title: "Installation"
-description: "GitHub App permissions, OAuth scopes, org-level vs. repo-level install, and the access boundary."
+description: "GitHub App permissions, OAuth scopes, org-level vs. repo-level install, the access boundary — and installing the Sigilix CLI via npm, bun, or Homebrew."
 ---
 
 import { Callout } from 'nextra/components'
@@ -76,6 +76,34 @@ What Sigilix doesn't do:
 - Access secrets in your repository (we read source files, not GitHub Actions secrets or environment variables)
 
 For full data handling details, see the [Sigilix Trust page](https://sigilix.ai/security), or contact [support@sigilix.ai](mailto:support@sigilix.ai).
+
+## Install the CLI (optional)
+
+The hosted GitHub App needs no local install. If you also want [Sigilix in your terminal](/cli-and-chat/cli), install the CLI — macOS and Linux are supported, and the binary is `sigilix`:
+
+```bash
+# npm
+npm install -g @sigilix/cli
+
+# bun
+bun install -g @sigilix/cli      # or run without installing: bunx @sigilix/cli
+
+# Homebrew
+brew install sigilix/tap/sigilix # or: brew tap sigilix/tap && brew install sigilix
+
+# curl
+curl -fsSL https://sigilix.ai/install | bash
+```
+
+Then sign in. The CLI talks to `api.sigilix.ai` by default — no environment variables needed:
+
+```bash
+sigilix login    # opens your browser to app.sigilix.ai and authorizes this device
+sigilix whoami   # shows the signed-in user, plan, and entitlements
+sigilix logout   # signs out (clears the stored key on this device)
+```
+
+`sigilix login` opens [app.sigilix.ai](https://app.sigilix.ai) in your browser; once you approve, the CLI stores a per-user API key for this device. The CLI is tier-aware: `sigilix whoami` shows your plan and whether paid-tier features — like [bringing your own model key](/cli-and-chat/bring-your-own-models) — are enabled for your account. See [Sigilix CLI](/cli-and-chat/cli) for what to do next.
 
 ## Uninstalling
 

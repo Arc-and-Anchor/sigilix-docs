@@ -16,6 +16,39 @@ The point is not "AI in the terminal." The point is **parity without rebuild**. 
 The Sigilix CLI is part of the **private beta**. Availability is per-account during the beta — [join the private beta](https://app.sigilix.ai) to get access, and contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a> if you are already in and want it enabled for your account.
 </Callout>
 
+## Install
+
+The CLI ships through three channels — pick whichever fits your setup. macOS and Linux are supported; the installed binary is `sigilix`.
+
+```bash
+# npm
+npm install -g @sigilix/cli
+
+# bun
+bun install -g @sigilix/cli      # or run without installing: bunx @sigilix/cli
+
+# Homebrew
+brew install sigilix/tap/sigilix # or: brew tap sigilix/tap && brew install sigilix
+```
+
+There is also a standalone installer if you don't want a package manager involved:
+
+```bash
+curl -fsSL https://sigilix.ai/install | bash
+```
+
+## Sign in
+
+The CLI talks to `api.sigilix.ai` out of the box — no environment variables or endpoint configuration needed. Authenticate it to your Sigilix account once per device:
+
+```bash
+sigilix login    # opens your browser to app.sigilix.ai and authorizes this device
+sigilix whoami   # shows the signed-in user, plan, and entitlements
+sigilix logout   # signs out (clears the stored key on this device)
+```
+
+`sigilix login` opens [app.sigilix.ai](https://app.sigilix.ai) in your browser; approve the request there and the CLI receives a per-user API key it stores for this device. The CLI is **tier-aware**: `sigilix whoami` re-checks your plan and shows which entitlements are active — including whether [bring-your-own model keys](/cli-and-chat/bring-your-own-models) (a paid-tier feature) are enabled for your account. `sigilix logout` clears the key locally; to revoke it server-side, use your account settings at [app.sigilix.ai](https://app.sigilix.ai).
+
 ## Why review locally
 
 A PR review is a great backstop, but it fires after you have pushed, opened a PR, and asked teammates for their attention. By then the cost of a finding is higher — context-switching, force-pushes, re-review churn. The CLI moves the same depth one step earlier:
@@ -41,9 +74,9 @@ The CLI is a thin client over the same engine the hosted App runs. It does three
 
 <Steps>
 
-### Resolve the diff
+### Resolve the target
 
-The CLI computes the change set the same way the hosted review does — a diff against a base (your merge-base with the default branch by default), or an explicit range you pass. Path filters and the profile from your `sigilix.json` are honored, so the CLI reviews exactly what a PR would.
+`sigilix review` reviews your **uncommitted changes** by default — staged, unstaged, and untracked files. Pass a target to review something else: a branch name (`sigilix review main` diffs your current branch against it), a commit hash, or a PR URL. The reviewer reads the full files being modified, not just the diff hunks, so code that only looks wrong in isolation is judged in context.
 
 ### Run deterministic checks first
 
@@ -69,10 +102,10 @@ Harmonia cross-checks the survivors, drops duplicates, calibrates severity, and 
 
 ## What a review looks like
 
-A local review reads like the PR review you already know — one summary from Harmonia, then findings anchored to files and lines, each tagged by specialist (Metis / Argus / Iris / Eunomia), by severity (Critical / Warning / Info), and by proof tier (VERIFIED / GROUNDED / MODEL).
+A local review reads like the PR review you already know — one summary from Harmonia, then findings anchored to files and lines, each tagged by specialist (Metis / Argus / Iris / Eunomia), by severity (Critical / Warning / Info), and by proof tier (VERIFIED / REPRODUCED / GROUNDED / MODEL).
 
 ```bash
-# Review the working tree against the default-branch merge-base
+# Review your uncommitted changes
 sigilix review
 
 # Reviewing 7 changed files (against origin/main)…
@@ -109,40 +142,32 @@ The default loop: make your change, run `sigilix review`, fix what surfaces, the
 
 </details>
   <details>
-<summary>Review a specific range</summary>
+<summary>Review a branch, a commit, or a PR</summary>
 
-Point the CLI at an explicit diff range to review a series of commits, a feature branch against its base, or a single commit in isolation. This is useful when you want to review work that is already committed but not yet pushed.
+Pass a target to review something other than your working tree — a branch name to diff your current branch against it, a commit hash to review that commit in isolation, or a PR URL to review the pull request itself.
 
 ```bash
-sigilix review --base origin/main
-sigilix review --range HEAD~3..HEAD
+sigilix review main                                  # current branch vs. main
+sigilix review 4f2c9ab                               # a single commit
+sigilix review https://github.com/acme/api/pull/214  # a pull request
 ```
 
 </details>
   <details>
-<summary>Scope a review with path filters</summary>
+<summary>Make it a pre-push habit</summary>
 
-The CLI honors the path filters and profile from your `sigilix.json`, so monorepo packages, generated files, and vendored directories are excluded exactly as they are on a PR. You can also narrow a single run to a subtree when you only want feedback on one area.
-
-```bash
-sigilix review --path "packages/api/**"
-```
-
-</details>
-  <details>
-<summary>Use it in a pre-push hook or CI</summary>
-
-Because the CLI exits with a non-zero status when a blocking finding survives the gates, you can wire it into a Git pre-push hook or a CI step as a fast first pass — letting the hosted PR review be the authoritative backstop rather than the first time anyone sees the problem.
+Run `sigilix review` before you push — manually or wired into your own pre-push hook — as a fast first pass, letting the hosted PR review be the authoritative backstop rather than the first time anyone sees the problem.
 
 </details>
 
 ## Bring your own model
 
-On paid tiers, the CLI does not lock you to one provider. Point Sigilix at OpenAI's Codex CLI, Anthropic's Claude Code, or your own SDK and provider keys, and you pay that provider's usage directly. Your model still fetches Sigilix's verified context layer, so it inherits the precision without re-deriving the repo.
+On paid tiers, the CLI does not lock you to one provider. Connect your own provider key and pay that provider's usage directly. Your model still fetches Sigilix's verified context layer, so it inherits the precision without re-deriving the repo.
 
 ```bash
-# Inspect and set the model behind your terminal workflow
-sigilix config model
+sigilix models             # list the models available to your account
+sigilix providers login    # connect a provider with your own key (paid tiers)
+sigilix run --model <provider/model> "…"   # pick a model for a single run
 ```
 
 See [Bring Your Own Models](/cli-and-chat/bring-your-own-models) for the full picture, and note that the hosted PR ensemble itself runs per-role tuned models with cross-provider fallback — BYO applies to the CLI and chat surfaces.

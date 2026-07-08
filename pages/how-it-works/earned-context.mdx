@@ -45,13 +45,13 @@ A finding like "this function no longer handles the null case" is only correct i
 
 <FeatureCards>
 <FeatureCard title="Index">
-    A searchable map of the repository — files, symbols, and structure — so context can be retrieved without re-reading the whole tree each time.
+    A searchable, semantically-embedded map of the repository — files, symbols, and structure — so context can be retrieved by meaning without re-reading the whole tree each time.
 </FeatureCard>
 <FeatureCard title="Code graph">
-    Callers, dependencies, and symbol relationships. This is how Sigilix finds the blast radius of a change and judges the diff against the whole repo.
+    Symbols plus import and call edges, kept per repo and per branch. This is how Sigilix finds the blast radius of a change and judges the diff against the whole repo — see <a href="/how-it-works/code-graph">The Code Graph &amp; Blast Radius</a>.
 </FeatureCard>
 <FeatureCard title="Trust ledger">
-    The record behind proof-tier receipts — what was verified, what was grounded, and how findings earned their tier over time.
+    The record behind proof-tier receipts — what was verified, reproduced, and grounded, and how findings earned their tier over time. See <a href="/how-it-works/verification">Verification &amp; the Trust Ledger</a>.
 </FeatureCard>
 <FeatureCard title="Review memory">
     What Sigilix has learned about this repo: taught rules (see <a href="/how-it-works/conversational-learnings">Conversational Learnings</a>) and the statistical accept/dismiss signal.
@@ -88,6 +88,12 @@ The first review on a repo pays to build the index and graph. Every review after
 ## Read next
 
 <Cards>
+<Cards.Card title="The Code Graph & Blast Radius" href="/how-it-works/code-graph">
+    The mechanics of the graph and index — edges, versioning, and blast-radius analysis.
+  </Cards.Card>
+<Cards.Card title="Verification & the Trust Ledger" href="/how-it-works/verification">
+    The checks and receipts that make each layer verified rather than cached.
+  </Cards.Card>
 <Cards.Card title="The Believability Pipeline" href="/how-it-works/believability-pipeline">
     The gates that build the trust ledger and evidence manifests as findings earn their place.
   </Cards.Card>

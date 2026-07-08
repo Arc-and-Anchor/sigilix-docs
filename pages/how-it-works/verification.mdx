@@ -1,0 +1,109 @@
+---
+title: "Verification & the Trust Ledger"
+description: "How findings are proven rather than asserted — evidence re-checking, a sealed execution sandbox that reproduces bugs, receipt-joining with your own CI, and the trust ledger that records how every finding earned its tier."
+---
+
+import { Callout, Cards, Steps } from 'nextra/components'
+import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
+
+# Verification & the Trust Ledger
+
+A review comment is a claim. Most AI reviewers stop there: the model asserts, you investigate. Sigilix runs the investigation itself — three escalating verification layers sit between a specialist's claim and your PR, and each layer that confirms a finding upgrades the [proof-tier receipt](/how-it-works/confidence-scoring) it wears.
+
+The layers are ordered by *independence of the witness*: Sigilix re-checking its own evidence is good; Sigilix executing the code is better; your own CI independently confirming the same finding is best.
+
+## Layer 1 — Evidence re-checking
+
+Before anything executes, every candidate finding's own evidence is re-checked against the PR: does the code it quotes actually appear at the line it cites, in the change under review? This is a deterministic pass — whole-token matching against the diff, not another model call. Each finding gets a verdict:
+
+| Verdict | Consequence |
+|---|---|
+| Confirmed | The cited evidence is real — the finding keeps (or upgrades) its anchor |
+| Refuted | The cited code is *not* at the cited location — the finding is demoted out of the inline channel or re-anchored to where the evidence actually is |
+| Inconclusive / no check | Nothing changes — a failed check never silently upgrades or destroys a finding |
+
+This layer is what backs the **GROUNDED** receipt: the claim is tied to code that verifiably exists in your PR.
+
+## Layer 2 — Reproduction by execution
+
+For eligible findings, Sigilix goes further: it **runs the code** in a sealed sandbox and checks whether the claimed bug actually manifests.
+
+### The sandbox is sealed
+
+Execution happens in an embedded JavaScript sandbox inside the review infrastructure — not a container with your repo mounted:
+
+<FeatureCards>
+<FeatureCard title="No host access">
+    The sandbox exposes no host functions at all — no network, no filesystem, no process, no timers, no imports. Pure computation only.
+</FeatureCard>
+<FeatureCard title="Hard resource caps">
+    Memory, stack, and deadline limits are set before any code evaluates, and the sandbox is disposed after every run.
+</FeatureCard>
+<FeatureCard title="Budgeted per PR">
+    Reproduction runs against a per-PR time budget. A review never stalls waiting on the sandbox — if the budget is spent or the review is near its wall-clock limit, reproduction is skipped, not forced.
+</FeatureCard>
+<FeatureCard title="Failure is silent-safe">
+    A harness that throws or times out yields *skipped*, never a false receipt. Reproduction can only add evidence, not manufacture it.
+</FeatureCard>
+</FeatureCards>
+
+### How a bug is reproduced
+
+The flagship harness targets **pure-logic findings** — off-by-ones, inverted conditions, boundary mistakes in self-contained functions:
+
+<Steps>
+
+### Extract both versions
+
+The flagged function and the specialist's corrected version are prepared side by side.
+
+### Run a boundary battery
+
+Both versions run over a battery of type-aware boundary inputs — the empty cases, the edges, the values that break naive logic.
+
+### Require divergence, twice
+
+The finding is **REPRODUCED** only if the two versions demonstrably diverge on at least one input *and* the divergence is deterministic across re-runs. The harness proves the change in behavior; the grounding gate has already proven the code is really in your PR.
+
+</Steps>
+
+### What is deliberately not executed
+
+Eligibility is a strict allowlist, and it fails toward *ineligible*. Classes that can only be "reproduced" by fabricating an attack — SQL injection, SSRF, path traversal, command injection — are excluded by design: demonstrating them would mean synthesizing attacker payloads against your code. Those findings stand on their grounding and deterministic evidence instead. A finding must already be GROUNDED before it can attempt reproduction — execution upgrades trust, it never substitutes for an anchor.
+
+## Layer 3 — Receipts from your own CI
+
+The strongest witness isn't Sigilix at all. If your CI runs scanners that publish results (see [SARIF Evidence](/evidence-and-provenance/sarif-evidence)), Sigilix joins those results against its own findings. When an independent tool in **your** pipeline confirms the same issue at the same place, the finding is promoted to **VERIFIED** — two unrelated systems agreeing is a categorically stronger receipt than any self-attestation.
+
+## The Trust Ledger
+
+All of this is recorded. The **trust ledger** is the running record of how findings earned their tiers:
+
+- **Per finding** — the receipt travels with the finding: which checks ran, which confirmed, and the resulting tier pill. Tiers are resolved to the *strongest* witness and only ever move up; a later, weaker signal can change how a finding is surfaced but never demote an earned tier.
+- **Per review** — the posted review carries a proof summary line (of the shape *"Proof: N runner-verified · N reproduced · N grounded"*), so you can see the evidence distribution of a whole review at a glance.
+- **Over time** — tier outcomes are aggregated on a rolling window, so the ratio of demonstrated findings to asserted ones is a measured number, monitored like any other production metric.
+
+<Callout type="info">
+The trust tier is computed by the pipeline at runtime — it is never parsed out of model output. A model cannot claim its own finding is VERIFIED; only a check can.
+</Callout>
+
+## Why this matters
+
+The failure mode of AI review is not "misses bugs" — every reviewer misses bugs. It is "asserts confidently and is wrong," which costs your team investigation time until they stop reading the reviews. Verification inverts the economics: the tiers tell you which findings were *demonstrated* (REPRODUCED, VERIFIED), which were *witnessed* (GROUNDED), and which are *judgment* (MODEL) — so trust is allocated by receipt, not by tone.
+
+## Read next
+
+<Cards>
+<Cards.Card title="Confidence & Proof Tiers" href="/how-it-works/confidence-scoring">
+    The four tier pills and the grounding gate that governs what posts.
+  </Cards.Card>
+<Cards.Card title="The Believability Pipeline" href="/how-it-works/believability-pipeline">
+    Where verification sits among the five gates.
+  </Cards.Card>
+<Cards.Card title="SARIF Evidence" href="/evidence-and-provenance/sarif-evidence">
+    Feed your CI's scanner output into the receipt-joining layer.
+  </Cards.Card>
+<Cards.Card title="Deterministic Checks" href="/how-it-works/deterministic-checks">
+    The pre-LLM layer whose facts anchor GROUNDED findings.
+  </Cards.Card>
+</Cards>
