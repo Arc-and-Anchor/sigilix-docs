@@ -1,6 +1,6 @@
 ---
 title: "CLI & Chat"
-description: "Sigilix in the terminal — review parity from the command line, plus a Deep-Research Chat grounded in your repo and its review history. Bring your own models: Codex CLI, Claude Code, or your own SDK and keys."
+description: "Sigilix in the terminal — review parity from the command line, plus a Deep-Research Chat grounded in your repo and its review history. Run it on Sigilix's own hosted models, or bring your own provider key (Anthropic, OpenAI) on paid tiers."
 ---
 
 import { Callout, Cards, Steps } from 'nextra/components'
@@ -40,24 +40,24 @@ The difference between the Deep-Research Chat and a generic code chatbot is the 
 </FeatureCard>
 </FeatureCards>
 
-## Bring your own models
+## Run it on your own key
 
-Sigilix is not locked to one provider for the CLI and chat. You can bring your own:
+The CLI and chat run on [Sigilix's own hosted models](/cli-and-chat/models) by default. On paid tiers you can instead connect **your own model-provider key** and run on that model, billed to your provider account:
 
 <FeatureCards>
-<FeatureCard title="Codex CLI">
-    Use OpenAI's Codex CLI as the model behind your terminal workflow.
+<FeatureCard title="Anthropic (Claude)">
+    Connect your Anthropic key and run the CLI on a Claude model.
 </FeatureCard>
-<FeatureCard title="Claude Code">
-    Use Anthropic's Claude Code as the agent driving the work.
+<FeatureCard title="OpenAI (GPT)">
+    Connect your OpenAI key and run the CLI on a GPT model.
 </FeatureCard>
-<FeatureCard title="Your own SDK / keys">
-    Bring your own SDK or provider keys and route through them directly.
+<FeatureCard title="Another provider you use">
+    Bring a key for another supported provider — an existing contract or gateway endpoint.
 </FeatureCard>
 </FeatureCards>
 
 <Callout type="info">
-BYO models apply to the CLI and chat surfaces, and the default when you bring nothing is [Sigilix's own model lineup](/cli-and-chat/models) — Boreas, Pyroeis, Astraeus (and Phanes, coming soon). The hosted PR ensemble runs models tuned per specialist role — see [The Ensemble](/how-it-works/the-ensemble) — with cross-provider fallback so one provider's outage cannot silence a specialist.
+Bring-your-own-key (BYOK) applies to the CLI and chat surfaces; the default when you connect nothing is [Sigilix's own model lineup](/cli-and-chat/models) — Boreas, Pyroeis, Astraeus (and Phanes, coming soon). The hosted PR ensemble runs models tuned per specialist role — see [The Ensemble](/how-it-works/the-ensemble) — with cross-provider fallback so one provider's outage cannot silence a specialist. **BYOK trades Sigilix's strongest grounding guarantee for model choice and your own billing — see [Bring Your Own Key](/cli-and-chat/bring-your-own-models).**
 </Callout>
 
 ## How it fits together

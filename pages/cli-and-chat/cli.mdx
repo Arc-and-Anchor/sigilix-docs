@@ -37,6 +37,10 @@ There is also a standalone installer if you don't want a package manager involve
 curl -fsSL https://sigilix.ai/install | bash
 ```
 
+<Callout type="info">
+**Platform support:** macOS and Linux are officially supported. A Windows build exists but is currently best-effort and unverified — prefer WSL for a supported Windows experience.
+</Callout>
+
 ## Sign in
 
 The CLI talks to `api.sigilix.ai` out of the box — no environment variables or endpoint configuration needed. Authenticate it to your Sigilix account once per device:
@@ -160,9 +164,9 @@ Run `sigilix review` before you push — manually or wired into your own pre-pus
 
 </details>
 
-## Bring your own model
+## Bring your own key
 
-On paid tiers, the CLI does not lock you to one provider. Connect your own provider key and pay that provider's usage directly. Your model still fetches Sigilix's verified context layer, so it inherits the precision without re-deriving the repo.
+By default the CLI runs on [Sigilix's own hosted models](/cli-and-chat/models). On paid tiers you can instead connect your own model-provider key (Anthropic, OpenAI, or another provider) and pay that provider's usage directly. Whatever model you bring is still handed Sigilix's verified context layer.
 
 ```bash
 sigilix models             # list the models available to your account
@@ -170,7 +174,9 @@ sigilix providers login    # connect a provider with your own key (paid tiers)
 sigilix run --model <provider/model> "…"   # pick a model for a single run
 ```
 
-See [Bring Your Own Models](/cli-and-chat/bring-your-own-models) for the full picture, and note that the hosted PR ensemble itself runs per-role tuned models with cross-provider fallback — BYO applies to the CLI and chat surfaces.
+<Callout type="warning">
+Sigilix's hosted models are tuned to prioritize the injected codebase context and learned memory that make a review grounded. A frontier model brought via BYOK carries strong internal priors and may not honor that context as fully — so **Sigilix can't guarantee a BYOK model uses your org memory and codebase context the way its hosted models do.** Read the full grounding trade-off on [Bring Your Own Key](/cli-and-chat/bring-your-own-models). (The hosted PR ensemble is unaffected — BYOK applies only to the CLI and chat.)
+</Callout>
 
 ## How the CLI relates to the hosted App
 
@@ -181,7 +187,7 @@ The CLI and the GitHub App are two surfaces over one engine. The App is the auth
     Ask why a finding fired or what a change affects — answers grounded in the same earned-context layer.
   </Cards.Card>
 <Cards.Card title="Command reference" href="/cli-and-chat/commands">
-    The CLI commands — review, chat, config, and auth — with representative usage.
+    The CLI commands — review, run, login, providers, and models — with representative usage.
   </Cards.Card>
 <Cards.Card title="The Ensemble" href="/how-it-works/the-ensemble">
     The five-specialist architecture the CLI brings to the terminal.

@@ -45,7 +45,7 @@ On the hosted PR ensemble, each specialist — **Metis** (logic), **Argus** (sec
 
 You're not locked to one choice. Select the model that matches the work and the budget you want to spend, and change it as your needs change.
 
-On the **CLI and agent surfaces**, the default is [Sigilix's own model lineup](/cli-and-chat/models) — Boreas, Pyroeis, Astraeus (and Phanes, coming soon) — served through Sigilix's managed gateway. On paid tiers you can also [bring your own model](/cli-and-chat/bring-your-own-models) with your own SDK and provider keys, and pay that provider directly. Your model still fetches Sigilix's verified [earned-context layer](/how-it-works/earned-context), so it inherits the precision without re-deriving your repo.
+On the **CLI and agent surfaces**, the default is [Sigilix's own model lineup](/cli-and-chat/models) — Boreas, Pyroeis, Astraeus (and Phanes, coming soon) — served through Sigilix's managed gateway. On paid tiers you can also [bring your own key](/cli-and-chat/bring-your-own-models) — connect your own provider key (Anthropic, OpenAI, or another provider) and pay that provider directly. Whatever model you bring is still handed Sigilix's verified [earned-context layer](/how-it-works/earned-context); note, though, that Sigilix's hosted models are tuned to prioritize that injected context most reliably (see the grounding trade-off on the BYOK page).
 
 ## Generous usage windows
 
@@ -74,8 +74,8 @@ For tier pricing and what's included at each level, see the [pricing page](https
 ## Read next
 
 <Cards>
-<Cards.Card title="Bring Your Own Models" href="/cli-and-chat/bring-your-own-models">
-    Use Codex CLI, Claude Code, or your own keys on the CLI and chat.
+<Cards.Card title="Bring Your Own Key" href="/cli-and-chat/bring-your-own-models">
+    Run the CLI and chat on your own Anthropic or OpenAI key — and the grounding trade-off.
   </Cards.Card>
 <Cards.Card title="Rate Limits" href="/configuration/rate-limits">
     How limits are applied and what happens at the ceiling.

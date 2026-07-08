@@ -127,6 +127,10 @@ Memory is layered by scope, and the layers flow in one deliberate direction:
 
 Hosted PR reviews read org-scope memory; they do not read any individual's seat memory. Teaching flows upward from review conversations everyone can see — a developer's private terminal sessions never silently shape the team's reviews.
 
+<Callout type="warning">
+Learned memory is applied to the model's judgment most reliably by **Sigilix's own hosted models**, which are tuned to defer to your team's learned rules over their own priors. A model brought via [bring-your-own-key](/cli-and-chat/bring-your-own-models) on the CLI may deprioritize or argue with that memory — see the grounding trade-off there.
+</Callout>
+
 ## Interaction with other features
 
 | Feature | How they relate |

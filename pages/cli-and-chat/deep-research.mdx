@@ -137,7 +137,7 @@ A generic chatbot will always produce an answer. Deep-Research Chat is held to t
   <details>
 <summary>It uses the model you bring</summary>
 
-On paid tiers, the chat runs on the model you point it at — Codex CLI, Claude Code, or your own SDK and keys. Whatever model answers still fetches Sigilix's verified context, so it inherits the precision without re-deriving the repo. See <a href="/cli-and-chat/bring-your-own-models">Bring Your Own Models</a>.
+On paid tiers, the chat can run on your own model-provider key — Anthropic (Claude), OpenAI (GPT), or another provider you use — instead of Sigilix's hosted models. Whatever model answers is still handed Sigilix's verified context. See <a href="/cli-and-chat/bring-your-own-models">Bring Your Own Key</a> — including the grounding trade-off, since a bring-your-own model may not honor injected context as fully as a hosted one.
 
 </details>
 
@@ -153,7 +153,7 @@ On paid tiers, the chat runs on the model you point it at — Codex CLI, Claude 
 <Cards.Card title="Sigilix CLI" href="/cli-and-chat/cli">
     Review parity in the terminal, drawing on the same earned context.
   </Cards.Card>
-<Cards.Card title="Bring Your Own Models" href="/cli-and-chat/bring-your-own-models">
-    Run the chat on Codex CLI, Claude Code, or your own keys.
+<Cards.Card title="Bring Your Own Key" href="/cli-and-chat/bring-your-own-models">
+    Run the chat on your own Anthropic or OpenAI key — and the grounding trade-off that comes with it.
   </Cards.Card>
 </Cards>

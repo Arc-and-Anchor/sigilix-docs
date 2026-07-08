@@ -65,6 +65,10 @@ A finding like "this function no longer handles the null case" is only correct i
 Each layer is <em>verified</em> understanding, not a cache of raw text. It is built by the same gates that decide what posts, so the context a later review inherits is context that already earned its place.
 </Callout>
 
+<Callout type="warning">
+This injected context is honored most reliably by **Sigilix's own hosted models**, which are tuned to prioritize it over their general knowledge. A model brought via [bring-your-own-key](/cli-and-chat/bring-your-own-models) may not use the earned context as fully — see the grounding trade-off there.
+</Callout>
+
 ## Who draws on it
 
 The earned-context layer is not just for the next PR review. It is the substrate the rest of the product reads from:
