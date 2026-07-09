@@ -52,8 +52,6 @@ Old reviews on prior SHAs of the same PR remain visible — they don't disappear
 
 ## Monitoring usage
 
-### Headers
-
 Every Sigilix-posted review has a footer in its body that reports your current usage against the window:
 
 ```text
@@ -61,25 +59,6 @@ _Sigilix · 2 of 4 reviews used in the current window · resets in 38m_
 ```
 
 Use this to gauge how close you are to the cap.
-
-### Webhook
-
-For programmatic monitoring, a `review.completed` webhook is available. It includes:
-
-```json
-{
-  "event": "review.completed",
-  "pr": { "owner": "...", "repo": "...", "number": 42 },
-  "rate_limit": {
-    "window_hours": 5,
-    "max_reviews": 10,
-    "used": 6,
-    "resets_at": "2026-05-05T03:42:00Z"
-  }
-}
-```
-
-See [Webhooks](/api-reference/webhooks) for setup.
 
 ## Hitting the limit regularly
 
