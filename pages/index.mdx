@@ -6,9 +6,46 @@ description: "Sigilix is a hosted GitHub App that runs a five-specialist ensembl
 import { Callout, Cards, Steps } from 'nextra/components'
 import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
 
-# Sigilix
+<div className="sig-docs-home-hero">
+  <div className="sig-docs-home-copy">
+    <h1>Docs for merge-ready code.</h1>
+    <div className="sig-docs-home-lede">
+      Install Sigilix once, then use these docs to understand the review pipeline,
+      triage surface, CLI, Slack assistant, configuration, and usage boundaries
+      behind every grounded answer.
+    </div>
+    <div className="sig-docs-hero-actions">
+      <a className="sig-docs-hero-cta" href="/getting-started/quickstart">Start with quickstart</a>
+      <a className="sig-docs-hero-cta sig-docs-hero-cta--secondary" href="/how-it-works/believability-pipeline">Read the pipeline</a>
+    </div>
+  </div>
+  <div className="sig-docs-hero-panel">
+    <div className="sig-docs-hero-panel-title">
+      <span>Sigilix surfaces</span>
+      <span>Grounded</span>
+    </div>
+    <div className="sig-docs-hero-list">
+      <div className="sig-docs-hero-row">
+        <span className="sig-docs-hero-row-label">Review</span>
+        <span>One PR comment with surviving findings, proof tiers, and suggested repairs.</span>
+      </div>
+      <div className="sig-docs-hero-row">
+        <span className="sig-docs-hero-row-label">Triage</span>
+        <span>Issues and failed CI runs routed through code, logs, ownership, and history.</span>
+      </div>
+      <div className="sig-docs-hero-row">
+        <span className="sig-docs-hero-row-label">CLI</span>
+        <span>Local coding-agent sessions that reuse repository context and review memory.</span>
+      </div>
+      <div className="sig-docs-hero-row">
+        <span className="sig-docs-hero-row-label">Slack</span>
+        <span>Thread-native answers and handoffs without making the team leave the channel.</span>
+      </div>
+    </div>
+  </div>
+</div>
 
-Sigilix is a hosted GitHub App for multi-agent AI code review — the mark of merge-ready code. Install it once, and a review fires automatically on every pull request. Believability here is architectural, not a prompt: a finding cannot post unless it earns its way through a sequence of gates.
+Sigilix is a hosted GitHub App for multi-agent AI code review — the mark of merge-ready code. Believability here is architectural, not a prompt: a finding cannot post unless it earns its way through a sequence of gates.
 
 Every pull request is read in parallel by four domain specialists — **Metis** (logic and architecture), **Argus** (security), **Iris** (performance), and **Eunomia** (tests) — and then unified by **Harmonia**, the synthesizer that cross-checks their findings, deduplicates noise, calibrates severity, and posts a single coherent review.
 
@@ -17,7 +54,7 @@ Before the LLM specialists fire, a deterministic layer scans the diff for secret
 The output looks like one comment from a senior engineer who's read everything carefully.
 
 <Callout type="info">
-Sigilix is in **private beta**. [Join our private beta →](https://app.sigilix.ai)
+Sigilix is in **private beta** — there's no public self-serve signup yet. [Join the private beta →](https://app.sigilix.ai)
 </Callout>
 
 <Cards>

@@ -79,7 +79,7 @@ These are noisy per-finding. The corpus aggregates them across **many PRs**, and
 
 It does **not** silence findings outright. When a category on your repo accumulates repeated dismissals inside a trailing window (on the order of three dismissals across ninety days), future findings that match are **softened — downgraded one severity tier** — rather than suppressed:
 
-```
+```text
 Category dismissed repeatedly on this repo (recent window)
   → matching findings soften one severity tier
 

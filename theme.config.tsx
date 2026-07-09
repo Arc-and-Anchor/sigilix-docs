@@ -1,32 +1,19 @@
 import React from "react";
 import type { DocsThemeConfig } from "nextra-theme-docs";
 import { useConfig } from "nextra-theme-docs";
+import { DocsCta, DocsMain } from "@/components/DocsShell";
 
 const SigilixMark = () => (
-  <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+  <span className="sig-docs-logo">
     <img
       src="/logo/sigil-favicon.png"
       alt=""
       aria-hidden="true"
       width={24}
       height={24}
-      style={{ borderRadius: 6, display: "block" }}
     />
-    <span style={{ fontWeight: 600, fontSize: 18, letterSpacing: "-0.01em" }}>
-      Sigilix
-    </span>
-    <span
-      style={{
-        fontFamily: "ui-monospace, SFMono-Regular, JetBrains Mono, Menlo, monospace",
-        fontSize: 10,
-        letterSpacing: "0.18em",
-        textTransform: "uppercase",
-        opacity: 0.6,
-        marginLeft: 4,
-      }}
-    >
-      Docs
-    </span>
+    <span className="sig-docs-logo-word">Sigilix</span>
+    <span className="sig-docs-logo-kicker">Docs</span>
   </span>
 );
 
@@ -51,7 +38,7 @@ function DocsHead() {
       <meta name="twitter:description" content={description} />
       <link rel="icon" type="image/png" href="/logo/sigil-favicon.png" />
       <link rel="apple-touch-icon" href="/logo/sigil-favicon.png" />
-      <meta name="theme-color" content="#f1140d" />
+      <meta name="theme-color" content="#000000" />
     </>
   );
 }
@@ -62,6 +49,10 @@ const config: DocsThemeConfig = {
     link: "https://github.com/Sigilix/sigilix-docs",
   },
   docsRepositoryBase: "https://github.com/Sigilix/sigilix-docs/blob/main",
+  backgroundColor: {
+    dark: "0,0,0",
+    light: "0,0,0",
+  },
   footer: {
     content: (
       <span>
@@ -78,8 +69,21 @@ const config: DocsThemeConfig = {
     ),
   },
   color: {
-    hue: 2,
-    saturation: 90,
+    hue: {
+      dark: 2,
+      light: 2,
+    },
+    saturation: {
+      dark: 88,
+      light: 88,
+    },
+    lightness: {
+      dark: 58,
+      light: 58,
+    },
+  },
+  navbar: {
+    extraContent: <DocsCta />,
   },
   search: {
     placeholder: "Search docs…",
@@ -91,10 +95,13 @@ const config: DocsThemeConfig = {
     defaultMenuCollapseLevel: 1,
     toggleButton: true,
   },
+  main: DocsMain,
   head: DocsHead,
-  darkMode: true,
+  // Hide the theme toggle while next-themes forces the dark docs skin.
+  darkMode: false,
   nextThemes: {
     defaultTheme: "dark",
+    forcedTheme: "dark",
   },
 };
 
