@@ -394,7 +394,29 @@ pre code {
   border-color: var(--sig-border-soft) !important;
 }
 
-.nextra-steps h3::before {
+/* The step number badge. Nextra centers the digit with a fragile
+   `margin-top`/`text-indent` nudge tuned for its default heading size; our
+   heading overrides (font-size/line-height) broke that, misaligning the number
+   in the circle and the circle against the label. Center both with flexbox and
+   position the circle on the heading's own line, independent of font metrics. */
+.nextra-steps :is(h2, h3, h4) {
+  position: relative;
+}
+
+.nextra-steps :is(h2, h3, h4)::before {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  margin-block: auto !important;
+  margin-top: 0 !important;
+  line-height: 1 !important;
+  text-indent: 0 !important;
+  font-size: 0.95rem !important;
+  font-variant-numeric: tabular-nums;
   border: 1px solid var(--sig-border-strong) !important;
   background: #080808 !important;
   color: var(--sig-text) !important;

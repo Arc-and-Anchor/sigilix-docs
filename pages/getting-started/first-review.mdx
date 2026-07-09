@@ -1,6 +1,6 @@
 ---
 title: "Anatomy of a Review"
-description: "What every Sigilix review contains — Harmonia summary, inline findings, severity badges, proof-tier pills, suggested patches — and how to read it."
+description: "What every Sigilix review contains — synthesizer summary, inline findings, severity badges, proof-tier pills, suggested patches — and how to read it."
 ---
 
 import { Callout, Cards } from 'nextra/components'
@@ -18,11 +18,11 @@ Every review Sigilix posts has the same shape. Once you know the shape, you can 
     </div>
 
     <Callout type="info">
-      **Sigilix Summary** — Harmonia synthesized 4 findings across 3 specialists. 1 requires action before merge.
+      **Sigilix Summary** — the synthesizer unified 4 findings across 3 specialists. 1 requires action before merge.
     </Callout>
 
     <details>
-<summary>Argus · Security · Critical · VERIFIED</summary>
+<summary>Security · Critical · VERIFIED</summary>
 
 Unsanitized `userId` from `req.params` passed directly into a SQL template in `auth.ts:142`. Use the parameterized query pattern established in `authService.ts`.
 
@@ -31,7 +31,7 @@ Unsanitized `userId` from `req.params` passed directly into a SQL template in `a
 </details>
 
       <details>
-<summary>Iris · Performance · Warning · GROUNDED</summary>
+<summary>Performance · Warning · GROUNDED</summary>
 
 Nested loop in `aggregateReports` scales with repo count. Consider indexing `createdAt` or paginating upstream.
 
@@ -40,7 +40,7 @@ Nested loop in `aggregateReports` scales with repo count. Consider indexing `cre
 </details>
 
       <details>
-<summary>Eunomia · Tests · Info · GROUNDED</summary>
+<summary>Tests · Info · GROUNDED</summary>
 
 The new branch in `chargeCustomer` has no test covering the partial-refund path. Add a case before merge.
 
@@ -57,21 +57,21 @@ Top-right of every review:
 
 The verdict updates on every push (`pull_request.synchronize`). If you fix the blocking findings and push, the next Sigilix review will flip to Approved.
 
-## The Harmonia summary
+## The synthesizer summary
 
-The first paragraph is from **Harmonia** (the synthesizer). It tells you:
+The first paragraph is from the **synthesizer**. It tells you:
 - How many findings survived deduplication
 - How many specialists contributed
 - How many require action before merge
 
-This is the only block worth reading if you're triaging fast. If Harmonia says "0 findings," skim and move on. If Harmonia says "1 critical," that's your thing.
+This is the only block worth reading if you're triaging fast. If the synthesizer says "0 findings," skim and move on. If the synthesizer says "1 critical," that's your thing.
 
 ## The inline findings
 
 Each finding is collapsed by default and lives on a specific line in the diff. Click to expand and read:
 
-- **Specialist tag** — Metis, Argus, Iris, Eunomia (Harmonia never posts inline findings — it only synthesizes)
-- **Category** — the area within that specialist's domain (e.g., Argus · Security)
+- **Specialist tag** — logic, security, performance, tests (the synthesizer never posts inline findings — it only synthesizes)
+- **Category** — the area within that specialist's domain (e.g., Security)
 - **Severity** — Critical / Warning / Info
 - **Proof-tier pill** — VERIFIED (corroborated by a receipt from your own CI), REPRODUCED (demonstrated by execution in Sigilix's sealed sandbox), GROUNDED (anchored to cited code), or MODEL (model judgment). See [Verification & the Trust Ledger](/how-it-works/verification).
 - **Body** — what's wrong, why, and the minimal fix
@@ -79,13 +79,13 @@ Each finding is collapsed by default and lives on a specific line in the diff. C
 
 ## Severity calibration
 
-Sigilix uses three severity levels. Calibration is done by Harmonia during synthesis:
+Sigilix uses three severity levels. Calibration is done by the synthesizer during synthesis:
 
 - **Critical** — broken correctness, security exposure, or data integrity risk. Should block the merge.
 - **Warning** — important but not catastrophic. Logic bug in a cold path, missing error handling on a non-fatal boundary, performance regression.
 - **Info** — nit-level. Naming, dead code, doc gaps. Surfaced for awareness but never blocks.
 
-A finding's severity can shift up or down during synthesis if multiple specialists flag the same code (escalation) or if Harmonia judges the finding a false positive (suppression).
+A finding's severity can shift up or down during synthesis if multiple specialists flag the same code (escalation) or if the synthesizer judges the finding a false positive (suppression).
 
 ## Re-reviews on push
 
