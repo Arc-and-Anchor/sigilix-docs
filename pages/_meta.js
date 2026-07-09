@@ -3,7 +3,7 @@ export default {
   "sep-platform": { type: "separator", title: "Platform" },
   "getting-started": "Getting Started",
   "how-it-works": "How It Works",
-  "sep-memory": { type: "separator", title: "Memory — the moat" },
+  "sep-memory": { type: "separator", title: "Memory" },
   "memory": "Memory",
   "sep-platform-2": { type: "separator", title: "Platform" },
   "triage": "Triage",
