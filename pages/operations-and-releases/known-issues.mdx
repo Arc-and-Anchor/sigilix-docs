@@ -59,9 +59,9 @@ The retry is in `.github/workflows/deploy.yml` (visible in the [Sigilix org](htt
 
 **Root cause.** Early fallbacks were configured **same-family** — a specialist's primary and its fallback ran on the same provider's infrastructure. When that provider had an incident, the primary AND the fallback failed together, defeating the fallback's purpose.
 
-**Mitigation in Sigilix.** This is fixed. Every domain specialist — **Metis** (`logic`), **Argus** (`security`), **Iris** (`performance`), **Eunomia** (`tests`) — now has a **cross-provider fallback on independent infrastructure**. Each specialist runs a model tuned to its role, and its fallback lives on a different provider, so a single provider outage can't silence a specialist.
+**Mitigation in Sigilix.** This is fixed. Every domain specialist — **Logic & Architecture**, **Security**, **Performance**, **Tests** — now has a **cross-provider fallback on independent infrastructure**. Each specialist runs a model tuned to its role, and its fallback lives on a different provider, so a single provider outage can't silence a specialist.
 
-When one provider goes down, the affected specialists fail over to their cross-provider fallbacks and the review still completes with all four domain specialists. The security specialist (Argus) in particular never silently skips: it fails over rather than dropping out.
+When one provider goes down, the affected specialists fail over to their cross-provider fallbacks and the review still completes with all four domain specialists. The security specialist in particular never silently skips: it fails over rather than dropping out.
 
 **What to do if you see it.** Two independent providers being down simultaneously is rare. If it happens, check the [provider-side status pages](https://status.cloudflare.com/) and Sigilix's status feed. A `3 of 4` review still has a verdict; merge it with awareness that one specialist's perspective is missing.
 

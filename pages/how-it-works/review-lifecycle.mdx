@@ -16,7 +16,7 @@ Sigilix does not run one pipeline for every event. A single incoming GitHub or L
 | Event | Pipeline |
 |---|---|
 | PR opened / first look | PR overview (cheap, fast) |
-| PR opened / synchronize | Ensemble review (the five specialists — this page) |
+| PR opened / synchronize | Ensemble review (the four specialists — this page) |
 | CI failure | CI-failure triage (grounded inline root cause) |
 | Issue opened (Linear / Jira) | Issue triage (title, priority, estimate, labels, linked PR) |
 | `/sigilix describe` / `/sigilix improve` | Describe / improve |
@@ -40,7 +40,7 @@ Mention triggers (`@sigilix` on a PR comment thread) are routed by the dispatche
 
 ## The pipeline stages
 
-```
+```text
 0. Dispatcher routes the webhook → ensemble-review pipeline
    ↓
 1. Webhook received
@@ -63,7 +63,7 @@ Mention triggers (`@sigilix` on a PR comment thread) are routed by the dispatche
    ↓
 10. Quorum check
    ↓
-11. Synthesizer (Harmonia) — grounding gate, proof-tier receipts, memory calibration
+11. Synthesizer — grounding gate, proof-tier receipts, memory calibration
    ↓
 12. Post-validation (provenance + line check)
    ↓
@@ -104,7 +104,7 @@ The rule floor covers the clear-cut cases:
 - **Auth-sensitive paths touched** → security forced on
 - **Migration / schema files changed** → security + logic forced on
 - **Lockfile or `package.json` changes** → security forced on (supply-chain)
-- **Default** → all four domain specialists (Metis, Argus, Iris, Eunomia)
+- **Default** → all four domain specialists (logic, security, performance, tests)
 
 For PRs the rules don't decide, a fast classifier judges which domains the change plausibly touches. Its authority is deliberately bounded: **the classifier can never override the rule layer on security or logic** — those roles run unless *both* layers independently agree the PR can't need them, and any skip decision was shadow-tested against recall telemetry before it was allowed to take effect. When a dispatched specialist fails at runtime, the posted review carries a degraded-coverage notice rather than a silent gap.
 
@@ -152,12 +152,12 @@ The four (or fewer, per router) domain specialists run in parallel via `Promise.
 - Its own system prompt
 - A model tuned to its role, with a cross-provider fallback
 
-| Specialist | Role | Model selection |
-|---|---|---|
-| Metis | `logic` | Reasoning-heavy primary, cross-provider fallback |
-| Argus | `security` | Fast high-volume primary, cross-provider fallback |
-| Iris | `performance` | Throughput-tuned primary, cross-provider fallback |
-| Eunomia | `tests` | Fast broad-coverage primary, cross-provider fallback |
+| Role | Model selection |
+|---|---|
+| `logic` | Reasoning-heavy primary, cross-provider fallback |
+| `security` | Fast high-volume primary, cross-provider fallback |
+| `performance` | Throughput-tuned primary, cross-provider fallback |
+| `tests` | Fast broad-coverage primary, cross-provider fallback |
 
 Specific model IDs are tuned over time from telemetry and intentionally not pinned in the docs. If a specialist's primary model fails (transient 503/429 or budget exhaustion), retry once. If retries are exhausted, the cross-provider fallback fires once. If the fallback also fails, that specialist's contribution is skipped.
 
@@ -165,9 +165,9 @@ Specific model IDs are tuned over time from telemetry and intentionally not pinn
 
 Sigilix requires a minimum number of successful specialists to proceed. If quorum isn't met, the review is aborted with `internal_error` and the queue retries.
 
-### 11. Synthesizer (Harmonia)
+### 11. Synthesizer
 
-See the [Synthesizer page](/how-it-works/synthesizer) for the four sub-stages. Harmonia runs a calibration-strong model with a cross-provider fallback. This is where the **grounding gate** runs and each surviving finding earns its [proof-tier receipt](/how-it-works/confidence-scoring).
+See the [Synthesizer page](/how-it-works/synthesizer) for the four sub-stages. The synthesizer runs a calibration-strong model with a cross-provider fallback. This is where the **grounding gate** runs and each surviving finding earns its [proof-tier receipt](/how-it-works/confidence-scoring).
 
 Cross-PR [review memory](/how-it-works/review-memory) feeds into this stage to calibrate severity per-category and apply learned rules.
 

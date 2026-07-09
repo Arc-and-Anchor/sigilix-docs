@@ -1,23 +1,60 @@
 ---
 title: "Introduction"
-description: "Sigilix is a hosted GitHub App that runs a five-specialist ensemble on every PR, behind a believability pipeline that lets a finding post only once it earns it. Here's what it catches, how it's built, and why it's not just another AI reviewer."
+description: "Sigilix is a hosted GitHub App that runs a four-specialist ensemble on every PR, behind a believability pipeline that lets a finding post only once it earns it. Here's what it catches, how it's built, and why it's not just another AI reviewer."
 ---
 
 import { Callout, Cards, Steps } from 'nextra/components'
 import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
 
-# Sigilix
+<div className="sig-docs-home-hero">
+  <div className="sig-docs-home-copy">
+    <h1>Docs for merge-ready code.</h1>
+    <div className="sig-docs-home-lede">
+      Install Sigilix once, then use these docs to understand the review pipeline,
+      triage surface, CLI, Slack assistant, configuration, and usage boundaries
+      behind every grounded answer.
+    </div>
+    <div className="sig-docs-hero-actions">
+      <a className="sig-docs-hero-cta" href="/getting-started/quickstart">Start with quickstart</a>
+      <a className="sig-docs-hero-cta sig-docs-hero-cta--secondary" href="/how-it-works/believability-pipeline">Read the pipeline</a>
+    </div>
+  </div>
+  <div className="sig-docs-hero-panel">
+    <div className="sig-docs-hero-panel-title">
+      <span>Sigilix surfaces</span>
+      <span>Grounded</span>
+    </div>
+    <div className="sig-docs-hero-list">
+      <div className="sig-docs-hero-row">
+        <span className="sig-docs-hero-row-label">Review</span>
+        <span>One PR comment with surviving findings, proof tiers, and suggested repairs.</span>
+      </div>
+      <div className="sig-docs-hero-row">
+        <span className="sig-docs-hero-row-label">Triage</span>
+        <span>Issues and failed CI runs routed through code, logs, ownership, and history.</span>
+      </div>
+      <div className="sig-docs-hero-row">
+        <span className="sig-docs-hero-row-label">CLI</span>
+        <span>Local coding-agent sessions that reuse repository context and review memory.</span>
+      </div>
+      <div className="sig-docs-hero-row">
+        <span className="sig-docs-hero-row-label">Slack</span>
+        <span>Thread-native answers and handoffs without making the team leave the channel.</span>
+      </div>
+    </div>
+  </div>
+</div>
 
-Sigilix is a hosted GitHub App for multi-agent AI code review — the mark of merge-ready code. Install it once, and a review fires automatically on every pull request. Believability here is architectural, not a prompt: a finding cannot post unless it earns its way through a sequence of gates.
+Sigilix is a hosted GitHub App for multi-agent AI code review — the mark of merge-ready code. Believability here is architectural, not a prompt: a finding cannot post unless it earns its way through a sequence of gates.
 
-Every pull request is read in parallel by four domain specialists — **Metis** (logic and architecture), **Argus** (security), **Iris** (performance), and **Eunomia** (tests) — and then unified by **Harmonia**, the synthesizer that cross-checks their findings, deduplicates noise, calibrates severity, and posts a single coherent review.
+Every pull request is read in parallel by four domain specialists — **Logic & Architecture**, **Security**, **Performance**, and **Tests** — and then unified by the **synthesizer**, which cross-checks their findings, deduplicates noise, calibrates severity, and posts a single coherent review.
 
 Before the LLM specialists fire, a deterministic layer scans the diff for secrets, dependency vulnerabilities, AST rule violations, and any regex rules you've defined in `sigilix.json`. Those findings are injected into the specialists as authoritative facts. And before any specialist judges a line, Sigilix expands context — pulling callers, dependencies, and symbols from the code graph, the repo index, and review memory — so the diff is judged against the whole repository, not a window.
 
 The output looks like one comment from a senior engineer who's read everything carefully.
 
 <Callout type="info">
-Sigilix is in **private beta**. [Join our private beta →](https://app.sigilix.ai)
+Sigilix is **live and self-serve**. Start free, or [start a 14-day Pro trial →](https://app.sigilix.ai/login?intent=trial&plan=pro). See [pricing](https://sigilix.ai/pricing) for Free, Pro, Teams, Max, and Ultra.
 </Callout>
 
 <Cards>
@@ -35,26 +72,26 @@ Sigilix is in **private beta**. [Join our private beta →](https://app.sigilix.
   </Cards.Card>
 </Cards>
 
-## The five specialists
+## The four specialists
 
 Sigilix doesn't run one generalist model. It runs four domain specialists in parallel, each focused on what it does best, unified by a fifth role — the synthesizer.
 
 <FeatureCards>
-<FeatureCard title="Metis · Logic & Architecture">
+<FeatureCard title="Logic & Architecture">
     Correctness, control flow, edge cases, architectural fit.
 </FeatureCard>
-<FeatureCard title="Argus · Security">
+<FeatureCard title="Security">
     Injection, authz gaps, secret exposure, unsafe patterns. Security never silently skips.
 </FeatureCard>
-<FeatureCard title="Iris · Performance">
+<FeatureCard title="Performance">
     Hot paths, allocations, N+1s, algorithmic regressions.
 </FeatureCard>
-<FeatureCard title="Eunomia · Tests">
+<FeatureCard title="Tests">
     Coverage gaps, deleted assertions, weak or misleading test changes.
 </FeatureCard>
 </FeatureCards>
 
-Each specialist runs a model tuned to its role — a reasoning-heavy model for logic, a faster high-volume model for security — behind a cross-provider fallback so one provider's outage can't silence a specialist. **Harmonia** runs after the four, cross-checks their findings against each other, drops duplicates, calibrates severity, and writes the single review you actually read.
+Each specialist runs a model tuned to its role — a reasoning-heavy model for logic, a faster high-volume model for security — behind a cross-provider fallback so one provider's outage can't silence a specialist. The **synthesizer** runs after the four, cross-checks their findings against each other, drops duplicates, calibrates severity, and writes the single review you actually read.
 
 ## Why findings are believable
 
@@ -107,8 +144,8 @@ Disagree with a finding? Reply in plain language — `@sigilix remember we use i
 
 When Sigilix reviews a PR, you get one review from `sigilix[bot]` containing:
 
-1. A **Harmonia summary** — what changed, what concerns survived dedup, and whether the verdict is *Approved* or *Request changes*.
-2. **Inline findings** anchored to specific lines, tagged by specialist (Metis, Argus, Iris, Eunomia) and severity (Critical / Warning / Info), each carrying its proof-tier pill.
+1. A **synthesizer summary** — what changed, what concerns survived dedup, and whether the verdict is *Approved* or *Request changes*.
+2. **Inline findings** anchored to specific lines, tagged by specialist (logic, security, performance, tests) and severity (Critical / Warning / Info), each carrying its proof-tier pill.
 3. **Suggested patches** for findings where a clean fix is in scope.
 
 The review goes where developers already are — in the PR thread. Beyond the PR, the same engine powers the [Sigilix CLI and Deep-Research Chat](/cli-and-chat/overview), running on Sigilix's own hosted models or — on paid tiers — [your own provider key](/cli-and-chat/bring-your-own-models).

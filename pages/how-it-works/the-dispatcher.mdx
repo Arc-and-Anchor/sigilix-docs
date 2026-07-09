@@ -1,6 +1,6 @@
 ---
 title: "The Dispatcher"
-description: "One webhook, many pipelines. A single GitHub or Linear event is routed to the pipeline it deserves — so a cheap PR overview never waits behind the full five-specialist ensemble."
+description: "One webhook, many pipelines. A single GitHub or Linear event is routed to the pipeline it deserves — so a cheap PR overview never waits behind the full four-specialist ensemble."
 ---
 
 import { Callout, Cards, Steps } from 'nextra/components'
@@ -30,7 +30,7 @@ flowchart TD
     hook([Webhook])
     disp{{Dispatcher}}
     overview["PR overview<br/>(fast)"]
-    ensemble["Ensemble review<br/>(five specialists)"]
+    ensemble["Ensemble review<br/>(four specialists)"]
     citriage["CI-failure triage"]
     issue["Issue triage<br/>(Linear / Jira)"]
     slash["describe / improve<br/>(slash commands)"]
@@ -60,7 +60,7 @@ flowchart TD
     A fast pass that describes what the pull request changes. Cheap to run and useful immediately — it does not wait behind the full ensemble.
 </FeatureCard>
 <FeatureCard title="Ensemble review">
-    The full five-specialist pass: four domain specialists (Metis, Argus, Iris, Eunomia) unified by Harmonia, the synthesizer. This is the deep review.
+    The full four-specialist pass: logic, security, performance, and tests, unified by the synthesizer. This is the deep review.
 
   See [Ensemble review](/how-it-works/the-ensemble).
 </FeatureCard>
@@ -81,7 +81,7 @@ flowchart TD
 ## Why route at all
 
 <Callout type="info">
-The point of the dispatcher is cost and latency isolation. The expensive work — the five-specialist ensemble running models tuned per role — is reserved for the events that need depth. Everything else takes a path sized to its job.
+The point of the dispatcher is cost and latency isolation. The expensive work — the four-specialist ensemble running models tuned per role — is reserved for the events that need depth. Everything else takes a path sized to its job.
 </Callout>
 
 A single endpoint that always ran the full ensemble would be slow and wasteful. A PR that only needs a one-paragraph overview would pay the price of a deep security, logic, performance, and test review. A CI failure would be analyzed by four domain specialists when it only needs a grounded read of the failure log. By classifying the event first, the dispatcher matches effort to need:

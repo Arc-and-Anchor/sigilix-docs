@@ -13,7 +13,7 @@ Deep-Research Chat is plain-language Q&A over your repository **and everything S
 The distinction is the substrate. A generic code chatbot reads what fits in its window. Deep-Research Chat reads from the [earned-context layer](/how-it-works/earned-context) — the same verified understanding of your repo that powers hosted reviews. The chat loop is not the product; the **verified context your model fetches** is.
 
 <Callout type="info">
-Deep-Research Chat is part of the **private beta**. Availability is per-account during the beta — [join the private beta](https://app.sigilix.ai) to get access, and contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a> if you are already in and want it enabled for your account.
+Deep-Research Chat is included with your plan — [sign up free or start a 14-day Pro trial](https://app.sigilix.ai/login) to use it. Questions? Contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a>.
 </Callout>
 
 ## Opening the chat
@@ -33,7 +33,7 @@ Deep-Research Chat is built for the questions that need *grounding*, not generat
 
 <FeatureCards>
 <FeatureCard title="Why did this finding fire?">
-    Retrieve a past finding, the specialist that raised it (Metis, Argus, Iris, or Eunomia), the code it cited, and its proof-tier receipt — and ask the chat to explain the reasoning behind it.
+    Retrieve a past finding, the specialist that raised it (logic, security, performance, or tests), the code it cited, and its proof-tier receipt — and ask the chat to explain the reasoning behind it.
 </FeatureCard>
 <FeatureCard title="What does this change affect?">
     Walk the code graph from the lines you touched to their callers, dependents, and the symbols downstream — so blast-radius answers reason about the real edges, not a guess.
@@ -89,7 +89,7 @@ The chat can pull up a past finding and the **proof-tier receipt** it carried wh
 </FeatureCard>
 </FeatureCards>
 
-Ask the chat *"why did Argus flag the session compare on PR #214, and what tier was it?"* and it can retrieve that finding, its cited code, and its receipt — and explain it — instead of re-deriving an opinion from scratch.
+Ask the chat *"why did the Security specialist flag the session compare on PR #214, and what tier was it?"* and it can retrieve that finding, its cited code, and its receipt — and explain it — instead of re-deriving an opinion from scratch.
 
 ## A grounded exchange
 
@@ -99,11 +99,11 @@ $ sigilix
 sigilix › why did the order-total finding fire on the refunds PR?
 
   Retrieving from earned context…
-    ↳ finding f-3391 · Metis · GROUNDED · PR #198
+    ↳ finding f-3391 · Logic · GROUNDED · PR #198
     ↳ cited: src/billing/refund.ts L54–61
     ↳ code graph: refund.ts → ledger.applyDelta → money.fromCents
 
-  Metis raised it because `refund.ts` computed the credit in floating-
+  The Logic specialist raised it because `refund.ts` computed the credit in floating-
   point dollars and passed it to `applyDelta`, which the ledger expects
   in integer cents (see money.fromCents). The finding cited L54–61 and
   was GROUNDED — anchored to that conversion, not inferred. A taught

@@ -46,8 +46,8 @@ Most vulnerabilities are introduced **transitively**. You add `popular-framework
 
 The scanner walks the resolved dependency tree from the lockfile, not just the top-level `dependencies` block. Transitive matches are flagged with the resolution chain shown:
 
-```
-[Argus] Critical: prototype-pollution in lodash <4.17.21
+```text
+[Security] Critical: prototype-pollution in lodash <4.17.21
 package-lock.json — added via your-app > popular-framework > old-lodash
 
 Fix: bump popular-framework to ≥3.2.0 (resolves lodash 4.17.21 transitively),

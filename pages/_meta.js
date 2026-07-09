@@ -14,6 +14,4 @@ export default {
   "configuration": "Configuration",
   "operations-and-releases": "Operations & Releases",
   "troubleshooting": "Troubleshooting",
-  "sep-api": { type: "separator", title: "API Reference" },
-  "api-reference": "API",
 }

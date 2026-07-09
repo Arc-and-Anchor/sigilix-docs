@@ -10,12 +10,12 @@ import { Callout, Cards } from 'nextra/components'
 Sigilix limits review volume to keep shared infrastructure stable. This page covers the window mechanics, burst behavior, and what happens at the limit.
 
 <Callout type="info">
-  Sigilix is in **private beta**. Rate limits are set per account during the beta rather than by a published Free/Pro/Max tier. The mechanics below (rolling window, coalescing, monitoring) are accurate; the exact number of reviews allowed for your account is provisioned when you're onboarded. If you need more throughput, [contact us](mailto:support@sigilix.ai).
+  Rate limits scale with your plan (Free, Pro, Teams, Max, Ultra) — see [pricing](https://sigilix.ai/pricing). The mechanics below (rolling window, coalescing, monitoring) apply on every plan; higher tiers get larger windows. If you need more throughput, upgrade your plan or [contact us](mailto:support@sigilix.ai).
 </Callout>
 
 ## The rolling window
 
-Sigilix uses a **rolling window** keyed by GitHub installation. Your account is provisioned with a review allowance over that window during the private beta.
+Sigilix uses a **rolling window** keyed by GitHub installation. Your plan sets the review allowance over that window.
 
 The window is rolling, not fixed. At any moment, Sigilix counts how many reviews you've completed in the trailing window. As old reviews age out, fresh capacity is freed up. **Usage windows reset on a 5-day cadence** — not weekly.
 
@@ -52,38 +52,17 @@ Old reviews on prior SHAs of the same PR remain visible — they don't disappear
 
 ## Monitoring usage
 
-### Headers
-
 Every Sigilix-posted review has a footer in its body that reports your current usage against the window:
 
-```
+```text
 _Sigilix · 2 of 4 reviews used in the current window · resets in 38m_
 ```
 
 Use this to gauge how close you are to the cap.
 
-### Webhook
-
-For programmatic monitoring, a `review.completed` webhook is available. It includes:
-
-```json
-{
-  "event": "review.completed",
-  "pr": { "owner": "...", "repo": "...", "number": 42 },
-  "rate_limit": {
-    "window_hours": 5,
-    "max_reviews": 10,
-    "used": 6,
-    "resets_at": "2026-05-05T03:42:00Z"
-  }
-}
-```
-
-See [Webhooks](/api-reference/webhooks) for setup.
-
 ## Hitting the limit regularly
 
-If reviews queue during peak hours, or you're hitting the cap multiple days per week, your account allowance may need raising. During the private beta, throughput is provisioned per account — [contact us](mailto:support@sigilix.ai) and we'll adjust it.
+If reviews queue during peak hours, or you're hitting the cap multiple days per week, upgrade to a higher plan for a larger window — see [pricing](https://sigilix.ai/pricing). For custom throughput, [contact us](mailto:support@sigilix.ai).
 
 ## Read next
 
@@ -91,7 +70,7 @@ If reviews queue during peak hours, or you're hitting the cap multiple days per 
 <Cards.Card title="sigilix.json" href="/configuration/configuration-reference">
     Full configuration schema.
   </Cards.Card>
-<Cards.Card title="Join the private beta" href="https://sigilix.ai">
-    Pricing (per-seat + usage, bring-your-own-key) is handled per account during the beta.
+<Cards.Card title="Pricing & plans" href="https://sigilix.ai/pricing">
+    Free, Pro, Teams, Max, and Ultra — per-seat plus usage, with bring-your-own-key on paid tiers.
   </Cards.Card>
 </Cards>

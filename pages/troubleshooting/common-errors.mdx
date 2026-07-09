@@ -37,12 +37,12 @@ Sigilix has a 5MB diff cap. PRs with diffs larger than that get a "diff too larg
 
 ## "Review posted but a specialist is missing"
 
-If a Sigilix review's footer says `_3 of 4 specialists succeeded._`, one of the four domain specialists — Metis (logic), Argus (security), Iris (performance), or Eunomia (tests) — failed. This usually means:
+If a Sigilix review's footer says `_3 of 4 specialists succeeded._`, one of the four domain specialists — logic, security, performance, or tests — failed. This usually means:
 
 - The specialist's primary model returned a 5xx (overloaded) and the cross-provider fallback also failed
 - The specialist ran out of its review budget. The budget is size-scaled — small diffs finish quickly, large diffs are allowed to run up to the platform's wall-clock ceiling — so a specialist running long usually means an unusually large or dense diff, not a fixed per-call cap
 
-The review still posts with the available specialists; Harmonia synthesizes whatever returned. Sigilix doesn't retry the missing specialist on the same SHA — push a new commit to trigger a fresh review.
+The review still posts with the available specialists; the synthesizer combines whatever returned. Sigilix doesn't retry the missing specialist on the same SHA — push a new commit to trigger a fresh review.
 
 If a specific specialist is consistently failing, [contact us](mailto:support@sigilix.ai) — there may be an outage at the model provider.
 
@@ -52,7 +52,7 @@ This is the **anchorless fallback**. It happens when GitHub rejects Sigilix's in
 
 The verdict is still posted; the findings are rolled into the review body as markdown grouped by file. Look for the footer:
 
-```
+```text
 _Inline anchoring unavailable for this review; findings grouped above._
 ```
 
