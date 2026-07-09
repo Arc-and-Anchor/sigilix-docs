@@ -1,0 +1,107 @@
+---
+title: "The Compounding Advantage"
+description: "The moat isn't the model — it's your organization's accumulated context. As learnings, earned context, semantic recall, and review memory build up per org, every subsequent review by the same hosted models is better-informed and more tailored to your codebase."
+---
+
+import { Callout, Cards, Steps } from 'nextra/components'
+import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
+
+# The Compounding Advantage
+
+The models Sigilix runs are, on their own, a commodity — any tool can call the same frontier APIs. What no competitor can clone is **your organization's accumulated context**: the rules your team taught, the categories it consistently values or dismisses, and the verified understanding of your repositories that every review deposits. That corpus is yours, it grows every time Sigilix reviews your code, and it makes each subsequent review more tailored than the last.
+
+<Callout type="info">
+This advantage is entirely **context and retrieval**. As your org accumulates memory and earned context, the *same* hosted models are simply given richer, more specific information about your codebase and conventions on every review. The improvement comes from better inputs, not from changing a model.
+</Callout>
+
+## What accumulates
+
+Four distinct stores grow per organization, and each sharpens a different part of a review:
+
+<FeatureCards>
+<FeatureCard title="Conversational Learnings">
+    Every rule your team teaches — captured, scoped, and mirrored installation-wide — is injected into future review prompts as explicit repository-specific guidance. See <a href="/memory/conversational-learnings">Conversational Learnings</a>.
+</FeatureCard>
+<FeatureCard title="The accept / dismiss corpus">
+    The categories your team consistently acts on or dismisses calibrate flag-worthiness per repo, so the review's noise floor fits your team's taste. See <a href="/memory/review-memory">Review Memory</a>.
+</FeatureCard>
+<FeatureCard title="Earned context">
+    The semantically-embedded code index and the code graph, rebuilt as your repo evolves, let each review reason about callers, dependencies, and blast radius across the whole repository. See <a href="/how-it-works/earned-context">Earned Context</a>.
+</FeatureCard>
+<FeatureCard title="Seat memory">
+    Per-developer memory the CLI agent accumulates, recalled semantically, so terminal sessions get more fluent with your codebase over time. See <a href="/memory/org-and-seat-layering">Org &amp; Seat Layering</a>.
+</FeatureCard>
+</FeatureCards>
+
+## How it compounds
+
+Each of these is deposited by the work you're already doing, and read back into the next piece of work — a flywheel, not a batch job.
+
+<Steps>
+
+### The first review pays the setup cost
+
+The first time Sigilix reviews a repo, it builds the index and code graph and starts with an empty memory. This is the most expensive review the repo will ever get, and the least tailored.
+
+### Every review deposits more
+
+Each subsequent review adds to the trust ledger, sharpens the accept/dismiss corpus, and — whenever your team corrects or teaches it — captures new learnings. Nothing is thrown away except what deliberately ages out.
+
+### The next review inherits it all
+
+Before the specialists judge the next diff, Sigilix injects the relevant learnings, the calibrated corpus signals, and the earned context into the same hosted models. The review is now judged against your repository and your team's stated conventions — not a generic notion of "good code."
+
+### The gap widens
+
+The more your org uses Sigilix, the more context each review inherits, and the more tailored — and quieter on your team's known non-issues — it becomes. A competitor starting fresh on your codebase has none of this; they'd have to re-earn it, one correction at a time.
+
+</Steps>
+
+```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'background': '#0B0C10',
+    'primaryColor': '#1A1D23',
+    'primaryTextColor': '#E2E8F0',
+    'primaryBorderColor': '#4A5568',
+    'lineColor': '#4A5568',
+    'fontFamily': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace'
+  }
+} }%%
+flowchart LR
+    r1(["Review N"])
+    ctx[("Accumulated context<br/>learnings · corpus · earned context")]
+    r2(["Review N+1<br/>(better-informed)"])
+
+    r1 -- "deposits" --> ctx
+    ctx -- "injected into" --> r2
+    r2 -- "deposits more" --> ctx
+
+    classDef node fill:#1A1D23,stroke:#4A5568,color:#E2E8F0,stroke-width:1px
+    classDef output fill:#0B0C10,stroke:#4A5568,color:#E2E8F0,stroke-width:1px,stroke-dasharray: 4 4
+    class ctx node
+    class r1,r2 output
+```
+
+## Why competitors can't clone it
+
+A rival can license the same base models tomorrow. What they cannot obtain is the record of every judgment your team has made inside Sigilix — because that record is *created by your team's use of the product*. It is not a dataset Sigilix ships; it is your organization's own accumulated context, scoped to you and never shared across customers. The switching cost this creates is real and grows with every review: leaving means starting the flywheel over from zero somewhere else.
+
+<Callout type="info">
+The corollary: the value shows up with use. A repo's first week of reviews is the least tailored it will ever be; give the memory a few correction cycles and the reviews visibly fit your codebase better. That's the intended shape — a reviewer that earns its understanding of *your* code.
+</Callout>
+
+## Read next
+
+<Cards>
+<Cards.Card title="Memory overview" href="/memory/overview">
+    The layers of memory and how they fit together.
+  </Cards.Card>
+<Cards.Card title="Org & Seat Layering" href="/memory/org-and-seat-layering">
+    How accumulated memory is scoped, shared, and isolated.
+  </Cards.Card>
+<Cards.Card title="Earned Context" href="/how-it-works/earned-context">
+    The verified per-repo understanding that compounds alongside memory.
+  </Cards.Card>
+</Cards>

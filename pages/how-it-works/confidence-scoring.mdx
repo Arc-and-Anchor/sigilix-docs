@@ -57,7 +57,7 @@ The model's opinion of itself is one input among four, and the weakest one. This
 
 ## Dismissals feed a false-positive ruler
 
-What happens after a finding posts also feeds back. When your team dismisses a finding, the dismissal is recorded with a bounded reason — *not a bug*, *bad anchor*, *already covered*, *too minor*, *wrong context* — and those reasons drive an internal **false-positive rate** metric, computed per specialist with statistical confidence intervals and treated as a lower bound on the true rate. Repeated dismissals of a category on your repo also soften future findings of that category — see [Review Memory](/how-it-works/review-memory). The pipeline is tuned against this ruler: precision regressions show up as a moving number, not anecdotes.
+What happens after a finding posts also feeds back. When your team dismisses a finding, the dismissal is recorded with a bounded reason — *not a bug*, *bad anchor*, *already covered*, *too minor*, *wrong context* — and those reasons drive an internal **false-positive rate** metric, computed per specialist with statistical confidence intervals and treated as a lower bound on the true rate. Repeated dismissals of a category on your repo also soften future findings of that category — see [Review Memory](/memory/review-memory). The pipeline is tuned against this ruler: precision regressions show up as a moving number, not anecdotes.
 
 <Callout type="info">
 Grounding is content-matched, not line-counted. Models routinely miscount line numbers but quote code verbatim, so the gate matches the quoted code against the source to anchor the finding precisely — including to deleted lines (`side: LEFT`) when the finding's subject is removed code.

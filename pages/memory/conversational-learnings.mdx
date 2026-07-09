@@ -54,7 +54,7 @@ A learned rule carries one of three polarities, inferred from what you taught:
 </FeatureCard>
 </FeatureCards>
 
-Rules are scoped where they belong: to a repo by default, or org-wide when the rule genuinely applies across your repositories.
+Rules are captured at **repo scope** and mirrored into an installation-wide **org corpus**, so guidance you teach on one repo can carry across your organization. See [Org & Seat Layering](/memory/org-and-seat-layering) for how that mirror and the read-time union work.
 
 ## Applied judiciously, and attributed inline
 
@@ -82,11 +82,14 @@ Learnings is the headline mechanism of review memory. A secondary, statistical s
 ## Read next
 
 <Cards>
+<Cards.Card title="Review Memory" href="/memory/review-memory">
+    How a learning shapes a review, plus the statistical accept/dismiss layer beneath it.
+  </Cards.Card>
+<Cards.Card title="Org & Seat Layering" href="/memory/org-and-seat-layering">
+    Repo-scope vs org-wide rules, and how learnings compose with per-developer seat memory.
+  </Cards.Card>
 <Cards.Card title="Commands" href="/configuration/commands">
     The full command reference, including <code>@sigilix remember</code> and <code>@sigilix forget</code>.
-  </Cards.Card>
-<Cards.Card title="Earned Context" href="/how-it-works/earned-context">
-    How learned rules join the reusable context layer the whole product draws on.
   </Cards.Card>
 <Cards.Card title="SDK Guidance" href="/how-it-works/sdk-guidance">
     Sigilix's built-in, vendor-specific rules — the maintained complement to what your team teaches.
