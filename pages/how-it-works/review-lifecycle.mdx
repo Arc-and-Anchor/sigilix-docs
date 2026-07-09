@@ -136,7 +136,7 @@ Before any specialist runs, Sigilix expands the diff into the context it needs t
 
 - **Code graph.** Callers, dependencies, and symbol definitions for the changed code, so a specialist can see who calls the function being modified — see [The Code Graph & Blast Radius](/how-it-works/code-graph).
 - **Index retrieval.** A retrieval call against the codebase index for the PR's title + body; the retrieved chunks are passed to all specialists, so they don't each re-retrieve.
-- **Review memory.** Relevant [Conversational Learnings](/how-it-works/conversational-learnings) and category calibration for this repo.
+- **Review memory.** Relevant [Conversational Learnings](/memory/conversational-learnings) and category calibration for this repo.
 
 This is what stops a specialist from flagging "function is unused" when it's called three files away. The accumulated repo understanding — index, code graph, trust ledger, review memory — is the [earned-context layer](/how-it-works/earned-context) that the CLI and Deep-Research Chat also draw on.
 
@@ -169,7 +169,7 @@ Sigilix requires a minimum number of successful specialists to proceed. If quoru
 
 See the [Synthesizer page](/how-it-works/synthesizer) for the four sub-stages. The synthesizer runs a calibration-strong model with a cross-provider fallback. This is where the **grounding gate** runs and each surviving finding earns its [proof-tier receipt](/how-it-works/confidence-scoring).
 
-Cross-PR [review memory](/how-it-works/review-memory) feeds into this stage to calibrate severity per-category and apply learned rules.
+Cross-PR [review memory](/memory/review-memory) feeds into this stage to calibrate severity per-category and apply learned rules.
 
 ### 12. Post-validation
 
@@ -198,7 +198,7 @@ When `PrReviewRunDO` is in `mode=post` ([ARC-190](/operations-and-releases/durab
 Two records land:
 
 - **Review telemetry** — duration, finding counts, severity distribution, specialist outcomes, fallback flags. Internal monitoring + per-PR cost accounting.
-- **Feedback-signal capture** — PR-thread reactions, "Commit suggestion" applies, reply text matching accept/dismiss patterns. Feeds the cross-PR [review memory](/how-it-works/review-memory).
+- **Feedback-signal capture** — PR-thread reactions, "Commit suggestion" applies, reply text matching accept/dismiss patterns. Feeds the cross-PR [review memory](/memory/review-memory).
 
 ## Guarantees
 

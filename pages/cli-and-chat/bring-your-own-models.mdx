@@ -15,7 +15,7 @@ This is the bet behind bring-your-own-key: the value isn't the model itself. The
 <Callout type="warning">
 **BYOK trades the strongest grounding guarantee for model choice and your own billing — read this first.**
 
-Sigilix's accuracy comes from **grounding**: the codebase context Sigilix injects into a review and the org/seat [memory](/how-it-works/review-memory) it has learned about your repo. Sigilix's own hosted models (Boreas, Pyroeis, Astraeus) are **tuned to prioritize that injected context** — to defer to your repository's facts and your team's learned rules over their own general knowledge.
+Sigilix's accuracy comes from **grounding**: the codebase context Sigilix injects into a review and the org/seat [memory](/memory/review-memory) it has learned about your repo. Sigilix's own hosted models (Boreas, Pyroeis, Astraeus) are **tuned to prioritize that injected context** — to defer to your repository's facts and your team's learned rules over their own general knowledge.
 
 Frontier models accessed through BYOK carry **strong internal priors**. In observed behavior, a general-purpose frontier model can **deprioritize, argue with, or override** injected context and memory in favor of what it already "believes" — a tendency sometimes described as *prior-knowledge dominance* or an *alignment conflict* between the model's own training and the context it's handed. This is a known behavior of large models given authoritative external context, not a defect specific to any one provider.
 
