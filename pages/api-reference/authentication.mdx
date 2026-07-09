@@ -7,7 +7,7 @@ import { Cards } from 'nextra/components'
 
 # Authentication
 
-The Sigilix API is **in private beta**. This page documents the authentication model; endpoints will land in subsequent releases.
+Sigilix itself is live and self-serve, but the public **REST API is not yet generally available**. This page documents the planned authentication model; endpoints will land in subsequent releases.
 
 ## Authentication
 
@@ -35,7 +35,7 @@ Choose the minimum scopes you need. The dashboard shows which endpoints each sco
 
 ## Rate limits
 
-API requests are rate-limited separately from review limits. During the private beta, API limits are set **per account** rather than by a public tier. Every response carries the current window state in headers:
+API requests are rate-limited separately from review limits. API limits are set **per account** rather than by a published tier. Every response carries the current window state in headers:
 
 ```text
 X-RateLimit-Limit: 1000
@@ -53,7 +53,7 @@ For server-to-server integrations (e.g., a third-party platform integrating with
 
 <Cards>
 <Cards.Card title="Endpoints" href="/api-reference/endpoints">
-    The reviews and findings endpoints (private beta).
+    The reviews and findings endpoints (pre-GA).
   </Cards.Card>
 <Cards.Card title="Webhooks" href="/api-reference/webhooks">
     Outbound webhook events Sigilix can fire on your endpoints.

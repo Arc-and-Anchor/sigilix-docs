@@ -1,41 +1,46 @@
 ---
-title: "Billing (private beta)"
-description: "How billing works while Sigilix is in private beta."
+title: "Billing"
+description: "How Sigilix billing works — the Free, Pro, Teams, Max, and Ultra plans, the 14-day Pro trial, usage, and bring-your-own-key."
 ---
 
 import { Callout, Cards } from 'nextra/components'
 
-# Billing (private beta)
+# Billing
 
 <Callout type="info">
-Sigilix is in **private beta**. There are no public self-serve plans yet — no Free/Pro/Max tiers, no checkout, no published prices. Billing is handled per-account during the beta.
+Sigilix is **live and self-serve**. Start on the Free plan, or [start a 14-day Pro trial](https://app.sigilix.ai/login?intent=trial&plan=pro) — no card required to try. See the [pricing page](https://sigilix.ai/pricing) for current numbers.
 </Callout>
 
-## How billing works during the beta
+## Plans
 
-While Sigilix is in private beta, your account's terms — what's included, how usage is counted, and any cost — are arranged directly with us when you're onboarded. Nothing is charged automatically, and there's no plan to pick.
+Sigilix has five self-serve plans plus Enterprise. Pricing and included usage are published on the [pricing page](https://sigilix.ai/pricing) — the canonical source:
 
-If you want to start using Sigilix, the front door is **"Join our private beta"** on the marketing site.
+- **Free** — PR review with a low-cap usage window. No card required.
+- **Pro** — triage, review, CLI, and Deep-Research Chat, with a **14-day trial**.
+- **Teams** — all features across a seat range, billed per seat.
+- **Max** — more usage and deeper reasoning.
+- **Ultra** — the largest usage windows and org controls.
+- **Enterprise** — for scale and compliance; [talk to us](mailto:sales@sigilix.ai).
 
-## What pricing will look like
+## How you're billed
 
-When Sigilix opens up, pricing is expected to combine, conceptually:
+Pricing combines:
 
 - **A per-seat component** — for the people on your team using reviews, the CLI, and Deep-Research Chat.
-- **A usage component** — scaled to how much review work you run.
-- **Bring-your-own-key (BYOK)** — connect your own model-provider key (Anthropic, OpenAI, or another provider) so model spend stays on your side.
+- **A usage component** — scaled to how much review work you run. Usage windows reset on a 5-day cadence — see [Rate Limits](/configuration/rate-limits).
+- **Bring-your-own-key (BYOK)** — on paid tiers, connect your own model-provider key (Anthropic, OpenAI, or another provider) so model spend stays on your side. See [Bring Your Own Key](/cli-and-chat/bring-your-own-models).
 
-We're not publishing specific numbers here while the model is still being finalized. The marketing pricing page is the canonical place those land.
+Manage your plan, seats, and payment method from the [Sigilix dashboard](https://app.sigilix.ai).
 
 ## Questions about billing
 
-For anything billing-related during the beta — onboarding terms, usage questions, invoices — contact [support@sigilix.ai](mailto:support@sigilix.ai).
+For anything billing-related — plan changes, usage questions, invoices — contact [support@sigilix.ai](mailto:support@sigilix.ai).
 
 ## Read next
 
 <Cards>
 <Cards.Card title="Rate Limits" href="/configuration/rate-limits">
-    Account-level rate limiting during the beta.
+    How usage windows scale with your plan.
   </Cards.Card>
 <Cards.Card title="CLI & Chat" href="/cli-and-chat/overview">
     The Sigilix CLI and Deep-Research Chat, on hosted models or your own key.

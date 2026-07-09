@@ -6,8 +6,11 @@ export function DocsMain({ children }: { children: ReactNode }) {
 
 export function DocsCta() {
   return (
-    <a className="sig-docs-nav-cta" href="https://app.sigilix.ai">
-      Join the private beta
+    <a
+      className="sig-docs-nav-cta"
+      href="https://app.sigilix.ai/login?intent=trial&plan=pro"
+    >
+      Start free trial
     </a>
   );
 }
