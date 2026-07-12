@@ -255,14 +255,14 @@ body {
   color: var(--sig-text);
 }
 
-.sig-docs-main a:not(.nextra-card):not(.sig-docs-hero-cta):not(.sig-docs-nav-cta) {
+.sig-docs-main a:not(.sig-card):not(.sig-docs-hero-cta):not(.sig-docs-nav-cta) {
   color: var(--sig-text);
   text-decoration-color: rgba(255, 255, 255, 0.35);
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
 
-.sig-docs-main a:not(.nextra-card):not(.sig-docs-hero-cta):not(.sig-docs-nav-cta):hover {
+.sig-docs-main a:not(.sig-card):not(.sig-docs-hero-cta):not(.sig-docs-nav-cta):hover {
   color: #fff;
   text-decoration-color: rgba(255, 255, 255, 0.8);
 }
@@ -321,37 +321,38 @@ pre code {
   border-color: var(--sig-border-soft) !important;
 }
 
-.nextra-cards {
-  gap: 14px !important;
-}
-
-.nextra-card,
+.sig-card,
 .sig-feature-card {
-  border: 1px solid var(--sig-border-soft) !important;
-  border-radius: var(--sig-radius) !important;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.018)) !important;
-  box-shadow: none !important;
-  color: var(--sig-text-soft) !important;
+  border: 1px solid var(--sig-border-soft);
+  border-radius: var(--sig-radius);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.018));
+  box-shadow: none;
+  color: var(--sig-text-soft);
 }
 
-.nextra-card:hover,
+.sig-card:hover,
 .sig-feature-card:hover {
-  border-color: var(--sig-border-strong) !important;
-  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: var(--sig-border-strong);
+  background: rgba(255, 255, 255, 0.06);
 }
 
-.nextra-card span,
+.sig-card-title,
 .sig-feature-card-title {
-  color: var(--sig-text) !important;
+  color: var(--sig-text);
 }
 
+.sig-cards,
 .sig-feature-cards {
   display: grid;
   gap: 14px;
   margin-top: 1.25rem;
+  /* Two columns keeps even rows for the 2/4/6-card grids the docs use, instead
+     of Nextra's auto-fill 3-up which stranded a lone card on a second row. */
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
 }
 
+.sig-card,
 .sig-feature-card {
   padding: 1rem;
   transition:
@@ -359,11 +360,22 @@ pre code {
     background 160ms ease;
 }
 
+/* Stretch to the tallest card in the row so rows stay flush. */
+.sig-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-decoration: none;
+}
+
+.sig-card-title,
 .sig-feature-card-title {
+  display: block;
   margin: 0;
   font-weight: 650;
 }
 
+.sig-card-body,
 .sig-feature-card-body {
   margin-top: 0.55rem;
   color: var(--sig-text-muted);
@@ -371,7 +383,13 @@ pre code {
   line-height: 1.6;
 }
 
-.sig-feature-card-body :last-child {
+.sig-card-body > :first-child,
+.sig-feature-card-body > :first-child {
+  margin-top: 0;
+}
+
+.sig-card-body > :last-child,
+.sig-feature-card-body > :last-child {
   margin-bottom: 0;
 }
 
@@ -679,6 +697,7 @@ footer {
 }
 
 @media (max-width: 640px) {
+  .sig-cards,
   .sig-feature-cards {
     grid-template-columns: 1fr;
   }
