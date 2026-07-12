@@ -8,7 +8,7 @@ import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
 
 # The Believability Pipeline
 
-Most AI review is two stages: the model emits text, and the text becomes a comment. There is nothing between the model's judgment and your PR thread. That is why single-stage reviewers are confidently wrong — a hallucinated finding has nothing to clear before it reaches you.
+The simplest way to build AI review is two stages: the model emits text, and the text becomes a comment. Nothing sits between the model's judgment and your PR thread, so when a finding is a hallucination it has nothing to clear before it reaches you. That two-stage baseline is the design Sigilix set out to improve on.
 
 Sigilix puts five gates in that gap. A finding produced by a specialist is not a comment; it is a candidate. To become a posted finding, it has to survive evidence, provenance contracts, refute/execute, proof-tier receipts, and memory. Believability here is architectural, not a prompt that says "please be accurate."
 
@@ -109,10 +109,10 @@ Two engineering properties make this safe to run on every PR:
 - **Recall-safe rollout.** Every gate ships in a shadow mode first — measuring what it *would* drop — and is only switched to enforcement once the telemetry shows it doesn't cost real catches. Gates fail open on internal errors and never silently drop a top-severity finding.
 - **Auditable drops.** Every suppression is recorded with its reason (failed grounding, failed refutation, hallucinated evidence, …) in telemetry. Nothing disappears without a paper trail.
 
-## Contrast: two stages versus five gates
+## Contrast: the two-stage baseline versus five gates
 
 <FeatureCards>
-<FeatureCard title="The field">
+<FeatureCard title="Two-stage baseline">
     Model produces text → text becomes a comment. Nothing checks whether the finding cites real code, matches the diff, or survives refutation. Hallucinations pass straight through.
 </FeatureCard>
 <FeatureCard title="Sigilix">
