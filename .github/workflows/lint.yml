@@ -6,8 +6,11 @@ on:
     branches: [init/scaffold, main]
 
 jobs:
-  build:
-    name: build
+  # The job name IS the status-check context. The branch ruleset requires a check
+  # named "lint", so this job must be called "lint" — when it was named "build" the
+  # required check could never be satisfied, which is why `main` could not be created.
+  lint:
+    name: lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

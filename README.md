@@ -90,3 +90,15 @@ This is a standard Next.js app — deploy on Vercel:
 ## License
 
 All Rights Reserved · Sigilix 2026
+
+## Deploying
+
+`main` is the production branch — docs.sigilix.ai builds from it.
+
+If a change is merged but not live, check that the Vercel project's **Production Branch**
+is set to `main` (it previously pointed at an unused branch, so merges only ever produced
+Preview builds). To force a production deploy from a local checkout:
+
+```bash
+npx vercel deploy --prod --yes
+```
