@@ -1,13 +1,13 @@
 ---
 title: "The Ensemble"
-description: "Why Sigilix runs four domain specialists unified by a synthesizer instead of one generalist — the architectural argument with concrete examples."
+description: "Why Sigilix runs four domain specialists unified by a synthesizer rather than a single-generalist design — the architectural argument with concrete examples."
 ---
 
 import { Cards } from 'nextra/components'
 
 # The Ensemble
 
-Most AI code review tools run a single model with a single prompt over the diff. The model is asked to be everything at once — security expert, performance engineer, architect, semantics nitpicker — and it does each role about half as well as a focused specialist would.
+The most direct way to build AI code review is to run a single model with a single prompt over the diff. That one model is asked to be everything at once — security expert, performance engineer, architect, semantics nitpicker — and a lone generalist does each role about half as well as a focused specialist would.
 
 Sigilix's architecture is different. Four domain specialists run per review, in parallel — **Logic & Architecture**, **Security**, **Performance**, **Tests** — with focused prompts and role-tuned models, unified by the **synthesizer** that arbitrates between them. Before the LLM specialists fire, a pre-LLM layer of deterministic checks — secret scanning, AST rule packs, user-defined regex rules — extracts cheap signal from the diff.
 
@@ -68,11 +68,11 @@ Every review goes:
 4. **The synthesizer deduplicates, calibrates, and renders** — overlapping findings collapse into one; severity shifts based on agreement; review memory adjusts category-level flag-worthiness; each surviving finding earns a proof-tier receipt; the final verdict is decided.
 5. **One comment is posted** — single GitHub review with the synthesizer summary at the top and inline findings below.
 
-## Why this beats single-agent review
+## Why the ensemble beats a single-agent design
 
 ### 1. Different prompts catch different things
 
-A single-agent reviewer with one prompt can ask the model to "look for security issues, performance issues, architectural violations, and naming problems." The model attends to roughly one of those at a time and trades off depth.
+A single-agent design with one prompt asks the model to "look for security issues, performance issues, architectural violations, and naming problems." The model attends to roughly one of those at a time and trades off depth.
 
 Sigilix's specialists each have a focused prompt. The security specialist is asked *only* about security. Its prompt is dense with OWASP-relevant patterns, secret-leak heuristics, and authentication boundary rules. The model running that prompt finds more security issues than the same model running a generalist prompt — by a wide margin.
 
@@ -86,7 +86,7 @@ The right model for the job, not one model for everything. See [Specialists](/ho
 
 ### 3. Cross-reference suppresses hallucinations
 
-Single-agent review hallucinates findings. The model is confidently wrong about a function being unused, a variable being uninitialized, or a security pattern being broken — when the reviewer reads the file in question, the finding is fiction.
+A single-agent design is prone to hallucinated findings. One model, with nothing to check it, can be confidently wrong about a function being unused, a variable being uninitialized, or a security pattern being broken — and when the file in question is actually read, the finding is fiction.
 
 Sigilix's synthesizer cross-references findings with the source code. If the security specialist flags a SQL injection at line 42 but the synthesizer's structural-provenance check shows the parameter actually passes through a parameterized-query helper, the finding is suppressed before it reaches you.
 
@@ -101,11 +101,11 @@ When multiple specialists flag the same code, that's a strong signal. The synthe
 - **Two+ specialists flag** → Warning or Critical (depending on category)
 - **Specialist + the synthesizer's structural check confirms** → Critical
 
-A single-agent reviewer can't calibrate this way — it has nobody to disagree with.
+A single-agent design can't calibrate this way — it has nobody to disagree with.
 
 ### 5. The interface is one comment, not 40
 
-If you've used a single-agent reviewer that dumps every thought it has into the PR thread, you know the cost. Reviewers stop reading after the third "Consider adding a docstring." Real findings get buried.
+A single-agent design that dumps every thought it has into the PR thread carries a cost you may have felt: reviewers stop reading after the third "Consider adding a docstring," and real findings get buried.
 
 The synthesizer deduplicates relentlessly. If two specialists both flag the same loop, you see one comment, not two. If a finding is a duplicate of one already posted on a prior SHA, you see it once.
 

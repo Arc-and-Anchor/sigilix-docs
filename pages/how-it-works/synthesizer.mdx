@@ -99,9 +99,9 @@ If GitHub rejects the inline-anchor positions in the review payload (typical 422
 
 This recovers verdicts that would otherwise be silently lost.
 
-## Why this beats single-agent review
+## Why the synthesizer beats a single-agent design
 
-A single-agent reviewer has no synthesis stage. It produces raw output and posts it. There's no deduplication, no cross-reference, no calibration, no proof-tier receipt. Every false positive ships. Every redundant comment ships. Every hallucinated line number ships.
+A single-agent design has no synthesis stage. It produces raw output and posts it — no deduplication, no cross-reference, no calibration, no proof-tier receipt. Whatever the model emits ships as-is: a false positive, a redundant comment, a hallucinated line number all reach the PR unchecked.
 
 The synthesizer is the difference. The four-stage pipeline is what makes Sigilix's reviews believable and readable.
 
