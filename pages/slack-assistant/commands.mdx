@@ -16,7 +16,7 @@ Every command runs inside your workspace's scope and draws on the [earned-contex
 | Command | What it does |
 | --- | --- |
 | `@Sigilix <question>` | A grounded answer to a codebase question, cited to `file:line`, PRs, and ADRs. |
-| `@Sigilix review <PR or branch>` | Runs the full Metis / Argus / Iris / Eunomia + Harmonia ensemble. |
+| `@Sigilix review <PR or branch>` | Runs the full Logic / Security / Performance / Tests + synthesizer ensemble. |
 | `@Sigilix summarize <PR>` | Verdict, effort estimate, gates passed, and risk-ranked files. |
 | `@Sigilix file issue` | Opens a triaged Linear or Jira ticket from the thread. |
 | `@Sigilix open a PR` | Turns the thread's decision into code plus a regression test. |
@@ -40,7 +40,7 @@ It keeps explaining **in-thread until the team is aligned** — follow up with "
 
 ## `@Sigilix review <PR or branch>`
 
-Run the full ensemble on demand. The four specialists — **Metis** (logic & architecture), **Argus** (security), **Iris** (performance), **Eunomia** (tests) — run in parallel, unified by **Harmonia**, exactly as on an automatic review. See [The Ensemble](/how-it-works/the-ensemble).
+Run the full ensemble on demand. The four specialists — **Logic & Architecture**, **Security**, **Performance**, **Tests** — run in parallel, unified by the **synthesizer**, exactly as on an automatic review. See [The Ensemble](/how-it-works/the-ensemble).
 
 The verdict and inline findings post to **GitHub**; a summary posts back to the **Slack channel** so the thread stays informed without leaving Slack.
 
@@ -48,17 +48,17 @@ The verdict and inline findings post to **GitHub**; a summary posts back to the 
 @lee   @Sigilix review #627
 
 @Sigilix  Running the ensemble on #627 ("add bulk export")…
-          Metis ✓   Argus ⚠ 1 finding   Iris ✓   Eunomia ⚠ 1 finding
+          logic ✓   security ⚠ 1 finding   performance ✓   tests ⚠ 1 finding
           Verdict: Request changes. Posted 2 inline findings to #627.
-          • Argus (Warning): export endpoint missing tenant scope —
+          • Security (Warning): export endpoint missing tenant scope —
             `export/bulk.ts:41`
-          • Eunomia (Info): no test covers the empty-result path —
+          • Tests (Info): no test covers the empty-result path —
             `export/bulk.test.ts`
 ```
 
 ## `@Sigilix summarize <PR>`
 
-A fast read on where a PR stands: an effort estimate, which believability gates the findings passed, the files ranked by risk, and [Harmonia](/how-it-works/synthesizer)'s verdict. Useful before a merge decision or a standup.
+A fast read on where a PR stands: an effort estimate, which believability gates the findings passed, the files ranked by risk, and the [synthesizer](/how-it-works/synthesizer)'s verdict. Useful before a merge decision or a standup.
 
 ```text
 @kim   @Sigilix summarize #631
@@ -95,7 +95,7 @@ Turn the decision into code. @Sigilix opens a pull request with the change **plu
           • Moves `assertIdempotent(key)` above the pending short-circuit
             in `payments/refunds.ts`
           • Adds a regression test mirroring `refunds.test.ts`
-          Ran the ensemble: Metis ✓ Argus ✓ Iris ✓ Eunomia ✓ — Approved.
+          Ran the ensemble: logic ✓ security ✓ performance ✓ tests ✓ — Approved.
 ```
 
 <Callout type="info">

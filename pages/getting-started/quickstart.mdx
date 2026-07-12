@@ -10,22 +10,22 @@ import { Callout, Cards, Steps } from 'nextra/components'
 This guide installs Sigilix on a single repository and walks you through your first review.
 
 <Callout type="info">
-Sigilix is in **private beta** — there's no public self-serve signup or paid plan yet. [Join our private beta](https://app.sigilix.ai) to get your account provisioned.
+Sigilix is **live and self-serve**. Start on the Free plan or [start a 14-day Pro trial](https://app.sigilix.ai/login?intent=trial&plan=pro) — no waitlist. See [pricing](https://sigilix.ai/pricing) for all plans.
 </Callout>
 
 ## Prerequisites
 
 - A GitHub account with admin permissions on at least one repository
-- A Sigilix beta account ([join the private beta](https://app.sigilix.ai))
+- A Sigilix account ([sign up free](https://app.sigilix.ai/login))
 - A few minutes
 
 ## 1. Install the GitHub App
 
 <Steps>
 
-### Join the private beta
+### Create your account
 
-Go to [app.sigilix.ai](https://app.sigilix.ai) and request access. Once your account is provisioned, sign in to continue.
+Go to [app.sigilix.ai](https://app.sigilix.ai/login) and sign up — start free, or begin a 14-day Pro trial. Then sign in to continue.
 
 ### Sign in with GitHub
 
@@ -58,8 +58,8 @@ Open any pull request on the installed repository — or push a new commit to an
 
 Within a minute or two, you'll see a new review on the PR from `sigilix[bot]`. The review includes:
 
-- A summary from **Harmonia** (the synthesizer): what was reviewed, how many findings survived dedup, and the verdict
-- Inline findings (if any) anchored to specific lines, tagged by specialist (Metis, Argus, Iris, Eunomia)
+- A summary from the **synthesizer**: what was reviewed, how many findings survived dedup, and the verdict
+- Inline findings (if any) anchored to specific lines, tagged by specialist (logic, security, performance, tests)
 - Severity badges: Critical / Warning / Info
 - A proof-tier pill on each finding (VERIFIED / REPRODUCED / GROUNDED / MODEL) — see the [believability pipeline](/how-it-works/believability-pipeline)
 
@@ -67,7 +67,7 @@ Within a minute or two, you'll see a new review on the PR from `sigilix[bot]`. T
 
 If Sigilix flagged real issues, fix them and push again. Sigilix re-reviews on every push (`pull_request.synchronize`) and updates the verdict — if all blocking findings are resolved, the next review approves.
 
-If a finding is a false positive or out of scope, reply to it. You can dismiss it, or teach Sigilix a rule so it stops happening: reply `@sigilix remember <the rule>` and it will apply — and attribute — that rule in later reviews. See [Conversational Learnings](/how-it-works/conversational-learnings).
+If a finding is a false positive or out of scope, reply to it. You can dismiss it, or teach Sigilix a rule so it stops happening: reply `@sigilix remember <the rule>` and it will apply — and attribute — that rule in later reviews. See [Conversational Learnings](/memory/conversational-learnings).
 
 ## 4. Configure (optional)
 

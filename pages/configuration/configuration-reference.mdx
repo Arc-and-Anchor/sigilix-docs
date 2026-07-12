@@ -51,7 +51,7 @@ The schema has grown in three additive versions. Older configs keep working; new
 | v3 | `deterministicChecks` | ARC-193 |
 | v3+ | Per-subsystem opt-outs (commands, depVulnScan, astRules, sarifEvidence, reviewMemory, describe) | ARC-181, ARC-185, ARC-186, ARC-188, ARC-189, ARC-191 |
 
-The `<role>` token in `rules` is always one of `logic`, `security`, `performance`, `tests`. These are the internal specialist role names; their public-facing brand counterparts are Metis (logic), Argus (security), Iris (performance), and Eunomia (tests) respectively. A fifth specialist, the synthesizer **Harmonia**, runs after the four domain specialists to unify their findings.
+The `<role>` token in `rules` is always one of `logic`, `security`, `performance`, `tests` — the four domain specialists. A separate **synthesizer** runs after them to unify their findings; it is not one of the four and has no `rules.<role>` token.
 
 ## Minimal example
 
@@ -334,7 +334,7 @@ Each subsystem ships **enabled** by default and can be turned off per-repo:
 | `depVulnScan` | Dependency vulnerability scan ([ARC-186](/evidence-and-provenance/dependency-vulnerabilities)) | `{ "enabled": false }` |
 | `astRules` | AST rule-pack scanner ([How It Works](/how-it-works/deterministic-checks)) | `{ "enabled": false }` |
 | `sarifEvidence` | SARIF evidence channel ([ARC-188](/evidence-and-provenance/sarif-evidence)) | `{ "enabled": false }` |
-| `reviewMemory` | Cross-PR review memory ([How It Works](/how-it-works/review-memory)) | `{ "enabled": false }` |
+| `reviewMemory` | Cross-PR review memory ([How It Works](/memory/review-memory)) | `{ "enabled": false }` |
 | `describe` | `/sigilix describe` command | `{ "enabled": false }` |
 
 See [Opt-outs](/configuration/opt-outs) for the consolidated reference.

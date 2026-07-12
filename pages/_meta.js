@@ -3,6 +3,9 @@ export default {
   "sep-platform": { type: "separator", title: "Platform" },
   "getting-started": "Getting Started",
   "how-it-works": "How It Works",
+  "sep-memory": { type: "separator", title: "Memory" },
+  "memory": "Memory",
+  "sep-platform-2": { type: "separator", title: "Platform" },
   "triage": "Triage",
   "evidence-and-provenance": "Evidence & Provenance",
   "integrations": "Integrations",
@@ -14,6 +17,4 @@ export default {
   "configuration": "Configuration",
   "operations-and-releases": "Operations & Releases",
   "troubleshooting": "Troubleshooting",
-  "sep-api": { type: "separator", title: "API Reference" },
-  "api-reference": "API",
 }

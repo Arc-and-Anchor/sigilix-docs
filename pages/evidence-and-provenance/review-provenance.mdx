@@ -24,12 +24,12 @@ Every review comment includes a hidden manifest at the bottom:
 <!-- sigilix-meta: {
   "headSha": "abc1234567890",
   "specialists": {
-    "logic":       { "specialist": "Metis", "outcome": "ok",       "ms": 21300 },
-    "security":    { "specialist": "Argus",  "outcome": "fallback", "ms": 28100 },
-    "performance": { "specialist": "Iris", "outcome": "ok",       "ms": 19800 },
-    "tests":       { "specialist": "Eunomia", "outcome": "ok",       "ms": 16400 }
+    "logic":       { "specialist": "Logic", "outcome": "ok",       "ms": 21300 },
+    "security":    { "specialist": "Security",  "outcome": "fallback", "ms": 28100 },
+    "performance": { "specialist": "Performance", "outcome": "ok",       "ms": 19800 },
+    "tests":       { "specialist": "Tests", "outcome": "ok",       "ms": 16400 }
   },
-  "synthesis":   { "specialist": "Harmonia", "outcome": "ok", "ms": 9800 },
+  "synthesis":   { "specialist": "Synthesizer", "outcome": "ok", "ms": 9800 },
   "evidence":    { "sarif": 3, "depVulns": 1, "secrets": 0 },
   "proofTiers":  { "verified": 1, "reproduced": 0, "grounded": 4, "model": 0 },
   "deterministicChecks": 2,
@@ -40,10 +40,10 @@ Every review comment includes a hidden manifest at the bottom:
 
 The block is invisible in GitHub's rendered view but readable in the raw comment source. The `sigilix-meta` marker lets tooling parse it programmatically.
 
-The four domain specialists — **Metis** (logic/architecture), **Argus** (security), **Iris** (performance), **Eunomia** (tests) — run in parallel and are unified by **Harmonia**, the synthesizer that runs after them. The manifest records the role key (`logic` / `security` / `performance` / `tests` / `synthesis`) alongside each specialist's display name.
+The four domain specialists — **Logic & Architecture**, **Security**, **Performance**, **Tests** — run in parallel and are unified by the **synthesizer** that runs after them. The manifest records the role key (`logic` / `security` / `performance` / `tests` / `synthesis`) alongside each specialist's display name.
 
 <Callout type="info">
-  The manifest deliberately does **not** pin specific model IDs. Each specialist runs a model tuned to its role — a reasoning-heavy model for logic, a faster high-volume model for security — and each has a cross-provider fallback so one provider's outage can't silence a specialist. Which underlying model served a given run is an implementation detail that churns; what the manifest commits to is the durable contract (which specialist ran, whether it fell back, and the proof tier each finding earned).
+  Each specialist runs a Sigilix-tuned model matched to its role — a reasoning-heavy model for logic, a faster high-volume model for security — each with a cross-provider fallback so one provider's outage can't silence a specialist. The manifest commits to the durable contract: which specialist ran, whether it fell back, and the proof tier each finding earned.
 </Callout>
 
 ## Outcomes per specialist
@@ -64,7 +64,7 @@ When a `pull_request.synchronize` event arrives (a new commit pushed), the new r
 
 If they differ — i.e., the prior review was against an older SHA — Sigilix updates the prior comment with a **stale marker**:
 
-```
+```text
 > _⚠️ This review was on abc1234. The current head is def5678. See the [new review](...) for the latest findings._
 ```
 
@@ -80,7 +80,7 @@ Each individual finding also carries provenance metadata:
 - Whether it was sourced from an evidence channel (SARIF, depVulns, secrets, deterministicChecks)
 - Whether it was the result of agreement (multiple specialists flagged the same `path:line`)
 
-In the rendered review, this is the `[Metis]` / `[Argus]` / `[Iris]` / `[Eunomia]` prefix on each inline finding, plus an evidence badge (`[Trivy via SARIF]`, `[Secret scanner]`, etc.) when the finding came from an external channel.
+In the rendered review, this is the `[Logic]` / `[Security]` / `[Performance]` / `[Tests]` prefix on each inline finding, plus an evidence badge (`[Trivy via SARIF]`, `[Secret scanner]`, etc.) when the finding came from an external channel.
 
 ## Proof-tier receipts
 

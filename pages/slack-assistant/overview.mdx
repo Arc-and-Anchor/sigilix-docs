@@ -12,7 +12,7 @@ The hosted GitHub App reviews every PR. But the questions that decide a change r
 The Slack assistant puts Sigilix where that conversation already happens. There is no separate product and no separate brain: the bot in your channels is **@Sigilix**, the same engine that runs the [ensemble](/how-it-works/the-ensemble) on your pull requests. When you @mention it, it answers from the same substrate it reviews against — and it answers the same way it reviews: grounding before judgment, citations before claims.
 
 <Callout type="info">
-The Slack assistant is part of the Sigilix **private beta**. The Slack app is installed per workspace and stays inside the scopes your GitHub App install already grants. [Join the private beta](https://app.sigilix.ai) to get access, and contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a> if you are already in and want it enabled for a workspace.
+The Slack app is installed per workspace and stays inside the scopes your GitHub App install already grants. [Sign up free or start a 14-day Pro trial](https://app.sigilix.ai/login) to get started, and contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a> if you want help enabling it for a workspace.
 </Callout>
 
 ## Grounded in earned context
@@ -59,7 +59,7 @@ A grounded answer often becomes a decision, and a decision often becomes work. @
 @Sigilix  Opened #631 → `fix/refund-idempotency-order`. It moves
           `assertIdempotent(key)` above the pending short-circuit and adds
           a regression test mirroring `refunds.test.ts`. Ran the full
-          ensemble: Metis ✓  Argus ✓  Iris ✓  Eunomia ✓ — verdict: Approved.
+          ensemble: logic ✓  security ✓  performance ✓  tests ✓ — verdict: Approved.
 ```
 
 The same grounding stack that lets it answer the first message is what lets it write a believable patch, a real regression test, and a review for the last one.

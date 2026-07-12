@@ -1,6 +1,6 @@
 ---
 title: "Sigilix CLI"
-description: "Review parity in the terminal. The Sigilix CLI runs the same five-specialist ensemble and believability gates as the hosted GitHub App against your local changes — before you ever open a PR — reaching for the earned context every hosted review built."
+description: "Review parity in the terminal. The Sigilix CLI runs the same four-specialist ensemble and believability gates as the hosted GitHub App against your local changes — before you ever open a PR — reaching for the earned context every hosted review built."
 ---
 
 import { Callout, Cards, Steps } from 'nextra/components'
@@ -8,12 +8,12 @@ import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
 
 # Sigilix CLI
 
-The hosted GitHub App reviews every PR. The Sigilix CLI brings that same review to where the change is born: your working tree. Run it against a dirty branch, a stash, or a diff range and you get the same five-specialist ensemble — **Metis** (logic & architecture), **Argus** (security), **Iris** (performance), and **Eunomia** (tests), unified by **Harmonia** (the synthesizer) — behind the same believability gates that decide what posts on a PR.
+The hosted GitHub App reviews every PR. The Sigilix CLI brings that same review to where the change is born: your working tree. Run it against a dirty branch, a stash, or a diff range and you get the same four-specialist ensemble — **Logic & Architecture**, **Security**, **Performance**, and **Tests**, unified by the **synthesizer** — behind the same believability gates that decide what posts on a PR.
 
 The point is not "AI in the terminal." The point is **parity without rebuild**. The CLI does not re-derive your repository from scratch each run. It reaches for the [earned-context layer](/how-it-works/earned-context) — the index, code graph, trust ledger, review memory, and evidence manifests that hosted reviews deposit — so a local review is judged against the whole repository, not the window of lines you happen to have changed.
 
 <Callout type="info">
-The Sigilix CLI is part of the **private beta**. Availability is per-account during the beta — [join the private beta](https://app.sigilix.ai) to get access, and contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a> if you are already in and want it enabled for your account.
+The Sigilix CLI is included with your plan — [sign up free or start a 14-day Pro trial](https://app.sigilix.ai/login), then run `sigilix login`. Questions? Contact <a href="mailto:support@sigilix.ai">support@sigilix.ai</a>.
 </Callout>
 
 ## Install
@@ -59,7 +59,7 @@ A PR review is a great backstop, but it fires after you have pushed, opened a PR
 
 <FeatureCards>
 <FeatureCard title="Same ensemble">
-    Metis, Argus, Iris, and Eunomia run in parallel and are unified by Harmonia — identical roles to the hosted review, not a stripped-down lint pass.
+    logic, security, performance, and tests run in parallel and are unified by the synthesizer — identical roles to the hosted review, not a stripped-down lint pass.
 </FeatureCard>
 <FeatureCard title="Same gates">
     Findings clear the same believability pipeline before they surface, so the terminal is as quiet and as trustworthy as the PR thread.
@@ -92,7 +92,7 @@ Instead of re-indexing your repo on every invocation, the CLI reaches for the ea
 
 ### Run the ensemble
 
-Metis, Argus, Iris, and Eunomia review the expanded diff in parallel. Each emits candidate findings anchored to specific lines.
+logic, security, performance, and tests review the expanded diff in parallel. Each emits candidate findings anchored to specific lines.
 
 ### Pass the believability gates
 
@@ -100,13 +100,13 @@ Every candidate must clear the five-stage [believability pipeline](/how-it-works
 
 ### Synthesize and print
 
-Harmonia cross-checks the survivors, drops duplicates, calibrates severity, and prints one coherent review: a summary plus inline findings tagged by specialist and severity, each carrying its proof-tier pill.
+The synthesizer cross-checks the survivors, drops duplicates, calibrates severity, and prints one coherent review: a summary plus inline findings tagged by specialist and severity, each carrying its proof-tier pill.
 
 </Steps>
 
 ## What a review looks like
 
-A local review reads like the PR review you already know — one summary from Harmonia, then findings anchored to files and lines, each tagged by specialist (Metis / Argus / Iris / Eunomia), by severity (Critical / Warning / Info), and by proof tier (VERIFIED / REPRODUCED / GROUNDED / MODEL).
+A local review reads like the PR review you already know — one summary from the synthesizer, then findings anchored to files and lines, each tagged by specialist (Logic / Security / Performance / Tests), by severity (Critical / Warning / Info), and by proof tier (VERIFIED / REPRODUCED / GROUNDED / MODEL).
 
 ```bash
 # Review your uncommitted changes
@@ -115,26 +115,26 @@ sigilix review
 # Reviewing 7 changed files (against origin/main)…
 #   deterministic checks ……… 1 dependency advisory injected
 #   earned context …………………… index + code graph + review memory loaded
-#   ensemble ……………………………… Metis · Argus · Iris · Eunomia
-#   synthesis ……………………………… Harmonia
+#   ensemble ……………………………… Logic · Security · Performance · Tests
+#   synthesis ……………………………… Synthesizer
 #
 # ── src/auth/session.ts ─────────────────────────────────────
-#   ✗ Critical · Argus · GROUNDED   L42
+#   ✗ Critical · Security · GROUNDED   L42
 #     Session token compared with == instead of a constant-time
 #     compare; vulnerable to timing analysis.
 #
-#   ⚠ Warning · Metis · GROUNDED    L88
+#   ⚠ Warning · Logic · GROUNDED    L88
 #     Early return skips the audit-log write on the error path.
 #
 # ── src/db/orders.ts ────────────────────────────────────────
-#   ⚠ Warning · Iris · MODEL        L17
+#   ⚠ Warning · Performance · MODEL        L17
 #     Query inside the loop — likely N+1 over `order.items`.
 #
 # Verdict: Request changes · 1 Critical · 2 Warnings
 ```
 
 <Callout type="info">
-The output above is illustrative — exact wording, glyphs, and counts depend on your repo and the change. The shape is real: a Harmonia summary, inline findings tagged by specialist and severity, and a proof-tier pill on every finding.
+The output above is illustrative — exact wording, glyphs, and counts depend on your repo and the change. The shape is real: a synthesizer summary, inline findings tagged by specialist and severity, and a proof-tier pill on every finding.
 </Callout>
 
 ## Common workflows
@@ -190,7 +190,7 @@ The CLI and the GitHub App are two surfaces over one engine. The App is the auth
     The CLI commands — review, run, login, providers, and models — with representative usage.
   </Cards.Card>
 <Cards.Card title="The Ensemble" href="/how-it-works/the-ensemble">
-    The five-specialist architecture the CLI brings to the terminal.
+    The four-specialist architecture the CLI brings to the terminal.
   </Cards.Card>
 <Cards.Card title="Earned Context" href="/how-it-works/earned-context">
     The reusable, verified layer every review deposits — and what the CLI reads from.

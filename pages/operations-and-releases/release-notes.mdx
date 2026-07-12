@@ -23,7 +23,7 @@ Phase 3 reviews were stateless. Phase 4 reviews remember.
 
 | Ship | What changed | Reference |
 |---|---|---|
-| **ARC-189** — Cross-PR review memory | Sigilix records accept/dismiss feedback signals per finding category, per repo. Future reviews calibrate flag-worthiness against that history. | [Review Memory](/how-it-works/review-memory) |
+| **ARC-189** — Cross-PR review memory | Sigilix records accept/dismiss feedback signals per finding category, per repo. Future reviews calibrate flag-worthiness against that history. | [Review Memory](/memory/review-memory) |
 | **ARC-184** — Review provenance & stale markers | Every review carries a manifest of which models/specialists ran. Reviews on outdated SHAs are marked, never silently re-used. | [Review Provenance](/evidence-and-provenance/review-provenance) |
 | **ARC-194** — Incremental review on synchronize | Pushing a new commit only re-reviews what changed. Findings on unchanged lines carry forward with a "still applies" marker. | [Review Lifecycle](/how-it-works/review-lifecycle) |
 
@@ -35,7 +35,7 @@ Sigilix now consumes — and emits — structured evidence that external tools c
 |---|---|---|
 | **ARC-186** — Dependency vulnerability scan | Bundled npm CVE database, range-aware and transitive-aware. Inline findings on lockfile diffs. | [Dependency Vulnerabilities](/evidence-and-provenance/dependency-vulnerabilities) |
 | **ARC-188** — SARIF evidence channel | Upload Trivy / Semgrep / gitleaks / CodeQL SARIF v2.1.0 reports as PR artifacts; Sigilix pulls them in and injects high-severity findings as authoritative evidence. | [SARIF Evidence](/evidence-and-provenance/sarif-evidence) |
-| **ARC-180** — Fix Plan | Harmonia (the synthesizer) renders a prioritized repair queue at the top of each review — what to fix first, in what order. | (in-product) |
+| **ARC-180** — Fix Plan | the synthesizer renders a prioritized repair queue at the top of each review — what to fix first, in what order. | (in-product) |
 
 ## Theme 4: Interactivity
 
@@ -65,9 +65,9 @@ The least-glamorous theme and the most production-impactful.
 
 | Ship | What changed |
 |---|---|
-| **Phase 4a.1** — Timeouts + perf-model retune + synth timeout handling | The performance specialist (Iris) was retuned to a faster, higher-volume model after shadow telemetry; Harmonia, the synthesizer, learned to handle partial specialist outputs gracefully. |
+| **Phase 4a.1** — Timeouts + perf-model retune + synth timeout handling | The performance specialist was retuned to a faster, higher-volume model after shadow telemetry; the synthesizer learned to handle partial specialist outputs gracefully. |
 | **Phase 4a.2** — `wrapFailure` across abort path | Specialist abort signals propagate through `Promise.allSettled` correctly. No more silently-dropped failures. |
-| **Phase 4a.3** — Specialist budget rebalance | The logic specialist's (Metis) budget was extended to fund the cross-provider fallback after the primary's first retry. |
+| **Phase 4a.3** — Specialist budget rebalance | The logic specialist's budget was extended to fund the cross-provider fallback after the primary's first retry. |
 | **Phase 4a.4** — Size-scaled review budget | The review budget became size-scaled — small diffs finish fast, large diffs run up to the platform's wall-clock ceiling — rather than a single fixed per-call cap. |
 | **ARC-190** — Durable-Object split of pr-review webhook ingest | Per-PR serialization across regions. Two concurrent webhooks on the same PR can no longer post duplicate reviews. | [Durable Objects](/operations-and-releases/durable-objects) |
 

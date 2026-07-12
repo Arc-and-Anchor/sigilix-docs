@@ -31,7 +31,7 @@ Two properties of the tiers are architectural, not stylistic:
 
 ## The grounding gate
 
-Between a specialist producing a finding and that finding posting, Harmonia runs the **grounding gate**: the finding must be anchored to the code it claims to be about.
+Between a specialist producing a finding and that finding posting, the synthesizer runs the **grounding gate**: the finding must be anchored to the code it claims to be about.
 
 | Check | Outcome |
 |---|---|
@@ -57,7 +57,7 @@ The model's opinion of itself is one input among four, and the weakest one. This
 
 ## Dismissals feed a false-positive ruler
 
-What happens after a finding posts also feeds back. When your team dismisses a finding, the dismissal is recorded with a bounded reason — *not a bug*, *bad anchor*, *already covered*, *too minor*, *wrong context* — and those reasons drive an internal **false-positive rate** metric, computed per specialist with statistical confidence intervals and treated as a lower bound on the true rate. Repeated dismissals of a category on your repo also soften future findings of that category — see [Review Memory](/how-it-works/review-memory). The pipeline is tuned against this ruler: precision regressions show up as a moving number, not anecdotes.
+What happens after a finding posts also feeds back. When your team dismisses a finding, the dismissal is recorded with a bounded reason — *not a bug*, *bad anchor*, *already covered*, *too minor*, *wrong context* — and those reasons drive an internal **false-positive rate** metric, computed per specialist with statistical confidence intervals and treated as a lower bound on the true rate. Repeated dismissals of a category on your repo also soften future findings of that category — see [Review Memory](/memory/review-memory). The pipeline is tuned against this ruler: precision regressions show up as a moving number, not anecdotes.
 
 <Callout type="info">
 Grounding is content-matched, not line-counted. Models routinely miscount line numbers but quote code verbatim, so the gate matches the quoted code against the source to anchor the finding precisely — including to deleted lines (`side: LEFT`) when the finding's subject is removed code.
@@ -87,7 +87,7 @@ A Critical finding the gate could not ground is demoted or dropped before it can
 
 ## Advisory cap
 
-To prevent comment dilution, Harmonia surfaces the top few low-severity (Info / nit) findings inline and aggregates the rest into a single "advisory nits" line in the summary. The remainder are recorded in telemetry, not posted. Switch [`profile`](/configuration/path-filters-and-profile) to `assertive` if you want low-severity findings surfaced more aggressively.
+To prevent comment dilution, the synthesizer surfaces the top few low-severity (Info / nit) findings inline and aggregates the rest into a single "advisory nits" line in the summary. The remainder are recorded in telemetry, not posted. Switch [`profile`](/configuration/path-filters-and-profile) to `assertive` if you want low-severity findings surfaced more aggressively.
 
 ## Tuning what posts
 
@@ -111,6 +111,6 @@ Every finding's lifecycle is recorded: which proof tier it earned, whether the g
     How REPRODUCED and VERIFIED are earned — the sandbox, the receipts, the ledger.
   </Cards.Card>
 <Cards.Card title="Synthesizer" href="/how-it-works/synthesizer">
-    How Harmonia runs the grounding gate and stamps proof-tier receipts.
+    How the synthesizer runs the grounding gate and stamps proof-tier receipts.
   </Cards.Card>
 </Cards>

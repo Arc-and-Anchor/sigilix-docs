@@ -8,7 +8,7 @@ import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
 
 # Earned Context
 
-A reviewer that starts from zero every time is doing the same expensive work over and over. Sigilix doesn't. Each review leaves something behind — a verified layer of understanding about your repository — and the next review, the CLI, and the chat all build on it instead of rediscovering it.
+A reviewer that starts from zero every time is doing the same expensive work over and over. Sigilix doesn't. Each review leaves something behind — a verified layer of understanding about your repository — and the next review, the CLI, and the chat all build on it instead of rediscovering it. This is the engine that fuels Sigilix's models: verified repository context, deposited by the work and fed back in on every run, so our tuned models reason about *your* system rather than software in general.
 
 This is what makes Sigilix judge a diff in context. Before any specialist runs, Sigilix expands the change against the whole repo: who calls the function being modified, what depends on it, which symbols it touches. The diff is read against the repository, not through a keyhole.
 
@@ -54,7 +54,7 @@ A finding like "this function no longer handles the null case" is only correct i
     The record behind proof-tier receipts — what was verified, reproduced, and grounded, and how findings earned their tier over time. See <a href="/how-it-works/verification">Verification &amp; the Trust Ledger</a>.
 </FeatureCard>
 <FeatureCard title="Review memory">
-    What Sigilix has learned about this repo: taught rules (see <a href="/how-it-works/conversational-learnings">Conversational Learnings</a>) and the statistical accept/dismiss signal.
+    What Sigilix has learned about this repo: taught rules (see <a href="/memory/conversational-learnings">Conversational Learnings</a>) and the statistical accept/dismiss signal.
 </FeatureCard>
 <FeatureCard title="Evidence manifests">
     The cited code, anchors, and checks that back each finding — the provenance that lets a claim be re-examined rather than re-derived.

@@ -7,7 +7,7 @@ import { Callout, Cards } from 'nextra/components'
 
 # Review Memory
 
-A single-pass reviewer makes the same mistakes on every PR. Tell it once that your codebase uses integer cents and it forgets by the next review. Sigilix's review memory is built so guidance you give *once* shapes every review afterward — and so you can see exactly when a learned rule was applied.
+A reviewer with no memory makes the same mistakes on every PR — tell it once that your codebase uses integer cents and the lesson is gone by the next review. Sigilix's review memory is built the opposite way: guidance you give *once* shapes every review afterward — and you can see exactly when a learned rule was applied.
 
 There are two layers. The headline is **Conversational Learnings**: rules you teach in plain language. Underneath sits a quieter **statistical accept/dismiss corpus** that nudges category-level flag-worthiness from how your team engages with findings.
 
@@ -49,12 +49,12 @@ Learnings make reviews quieter where you've earned it, but they do not let the r
 
 ### Privacy and scope
 
-- Learnings are **scoped to your installation** — per repo by default, or org-wide where a rule genuinely applies across your repos. They are never shared across customers.
+- Learnings are captured at **repo scope** and mirrored to an installation-wide **org corpus**, so guidance can carry across your repos. They are never shared across customers. See [Org & Seat Layering](/memory/org-and-seat-layering).
 - You teach team-level rules ("we use integer cents"), not models of individual reviewers.
 - Forgetting a rule with `@sigilix forget` removes it from the active set.
 
 <Callout type="info">
-Conversational Learnings is the per-customer flywheel: every correction you give compounds into a reviewer that fits your codebase. See [Conversational Learnings](/how-it-works/conversational-learnings) for the full lifecycle, and [Commands](/configuration/commands) for `remember` / `forget`.
+Conversational Learnings is the per-customer flywheel: every correction you give compounds into a reviewer that fits your codebase. See [Conversational Learnings](/memory/conversational-learnings) for the full lifecycle, and [Commands](/configuration/commands) for `remember` / `forget`.
 </Callout>
 
 ## Statistical accept/dismiss corpus (secondary)
@@ -79,7 +79,7 @@ These are noisy per-finding. The corpus aggregates them across **many PRs**, and
 
 It does **not** silence findings outright. When a category on your repo accumulates repeated dismissals inside a trailing window (on the order of three dismissals across ninety days), future findings that match are **softened — downgraded one severity tier** — rather than suppressed:
 
-```
+```text
 Category dismissed repeatedly on this repo (recent window)
   → matching findings soften one severity tier
 
@@ -99,33 +99,12 @@ The corpus is scoped **per repo** — by finding category, and secondarily by fi
 | "Will it remember a specific bug?" | No. The corpus stores aggregate signals, not findings. |
 | "Can I reset it?" | Set `{ "reviewMemory": { "enabled": false } }` to ignore the corpus for a review, then re-enable. A hard reset is a support request. |
 
-## How memories age
+## How memories age, and who they belong to
 
-Not everything worth remembering is worth remembering forever. Every captured memory is classified at write time into one of four types, and only the ephemeral types ever expire:
+Two mechanisms sit underneath this page and each has its own deep-dive:
 
-| Type | Example | Lifetime |
-|---|---|---|
-| **Durable preference** | "We use integer cents, never floats, for money" | Never expires |
-| **Architectural fact** | "Payment retries live in `billing/retry`, not the queue consumer" | Never expires |
-| **Ephemeral project state** | "The v2 migration is mid-flight on this branch" | Decays after its anchoring PR closes |
-| **Transient feedback** | A one-off dismissal tied to a specific PR | Decays after its anchoring PR closes |
-
-A background **memory-gardener** pass runs on a fixed schedule and retires ephemeral memories whose anchoring PR has been closed for more than three weeks. Two properties keep this safe:
-
-- **Bias toward keeping.** Anything ambiguous — an open PR, a memory with no clear anchor, a legacy entry that predates classification — is kept, never reaped. The two durable types are never touched.
-- **Archive, not delete.** Retired memories are tombstoned into an archive rather than destroyed, so a mistaken decay is recoverable.
-
-The result is a memory that stays *current* as well as large: conventions persist indefinitely, while stale project chatter ages out on its own.
-
-## Org memory and seat memory
-
-Memory is layered by scope, and the layers flow in one deliberate direction:
-
-- **Org-scope learnings** — rules taught through PR reviews — belong to the installation and shape every hosted review across the org's repos (per each rule's scope).
-- **Seat memory** — what the [CLI's](/cli-and-chat/cli) agent learns working with an individual developer — is scoped to that developer and repo.
-- When a developer works in the CLI, their seat memory is **unioned with the org's learnings**: the terminal agent knows what the team's PR reviews have taught, not just what that one developer has. The union is additive and capped — org rules enrich a seat, they never overwrite or leak another seat's memory.
-
-Hosted PR reviews read org-scope memory; they do not read any individual's seat memory. Teaching flows upward from review conversations everyone can see — a developer's private terminal sessions never silently shape the team's reviews.
+- **Aging.** Not every memory should last forever. Memories are classified by type; ephemeral ones decay on a schedule while durable conventions persist. See [Dynamic Memory & Decay](/memory/dynamic-memory).
+- **Scope.** Memory is layered by org and by developer seat, flowing in one deliberate direction. See [Org & Seat Layering](/memory/org-and-seat-layering).
 
 <Callout type="warning">
 Learned memory is applied to the model's judgment most reliably by **Sigilix's own hosted models**, which are tuned to defer to your team's learned rules over their own priors. A model brought via [bring-your-own-key](/cli-and-chat/bring-your-own-models) on the CLI may deprioritize or argue with that memory — see the grounding trade-off there.
@@ -146,10 +125,16 @@ The general rule: **memory adjusts LLM judgment calls, never deterministic findi
 ## Read next
 
 <Cards>
-<Cards.Card title="Conversational Learnings" href="/how-it-works/conversational-learnings">
+<Cards.Card title="Conversational Learnings" href="/memory/conversational-learnings">
     Teach a rule in plain language; see it applied and attributed inline.
   </Cards.Card>
-<Cards.Card title="Confidence Scoring" href="/how-it-works/confidence-scoring">
+<Cards.Card title="Dynamic Memory & Decay" href="/memory/dynamic-memory">
+    The memory taxonomy, the gardener, and how stale habits age out.
+  </Cards.Card>
+<Cards.Card title="Org & Seat Layering" href="/memory/org-and-seat-layering">
+    How org memory and per-developer seat memory compose — and stay isolated.
+  </Cards.Card>
+<Cards.Card title="Confidence & Proof Tiers" href="/how-it-works/confidence-scoring">
     Proof-tier receipts and the grounding gate that govern what posts.
   </Cards.Card>
 </Cards>
