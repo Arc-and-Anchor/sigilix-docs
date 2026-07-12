@@ -8,7 +8,7 @@ import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
 
 # The Sigilix Models
 
-The CLI and agent surfaces run on Sigilix's own model lineup — four tiers, one contract:
+Sigilix is an AI lab. The CLI and agent surfaces run on **Sigilix's own model line** — Boreas, Pyroeis, and Astraeus, memory-native models we tune for engineering work and for your organization's code and memory. Four tiers, one contract:
 
 | Model | Tier | Status |
 |---|---|---|
@@ -21,9 +21,9 @@ The CLI and agent surfaces run on Sigilix's own model lineup — four tiers, one
 The hosted **PR review ensemble** is a different lane: each review specialist runs a model tuned to its role, behind cross-provider fallback — see [The Ensemble](/how-it-works/the-ensemble). The lineup on this page powers the **CLI and agent** surfaces.
 </Callout>
 
-## One contract, tiered capability
+## Tuned models, one contract
 
-What makes a model a Sigilix model is not the base engine underneath — it is the **agent contract** every tier runs:
+Every tier is one of our own tuned models, and every tier runs the same **agent contract** — the loop through which the rest of the platform fuels the model with real repository context on each run:
 
 <FeatureCards>
 <FeatureCard title="Ground before edit">
@@ -40,17 +40,15 @@ What makes a model a Sigilix model is not the base engine underneath — it is t
 </FeatureCard>
 </FeatureCards>
 
-The tiers share this contract and differ in the strength of the model driving it: Boreas for everyday work, Pyroeis for harder changes, Astraeus for the hardest multi-file and subtle-logic work.
+The tiers share this contract and differ in the strength of the tuned model driving it: Boreas for everyday work, Pyroeis for harder changes, Astraeus for the hardest multi-file and subtle-logic work.
 
 ## How they're served
 
-The lineup is served **model-as-a-service through Sigilix's managed, authenticated gateway** — you authenticate to Sigilix (`sigilix login`) and never touch the model host or hold provider keys.
+The line is served **through Sigilix's authenticated gateway** — you authenticate to Sigilix (`sigilix login`) and never manage provider keys or serving infrastructure.
 
 - **Ordered failover.** Each model has an ordered chain of independent serving backends. Failover triggers only before the first response byte (connection failures, timeouts, upstream errors) — a genuine request error is returned, not retried into confusion.
 - **Never silent.** Every response records which backend served it, so a fallback is observable, not invisible.
 - **Availability guarded.** Per-model daily ceilings protect the service from runaway usage instead of degrading everyone's latency.
-
-The base engine behind each tier is deliberately swappable and — like the [ensemble's per-role models](/how-it-works/specialists) — not pinned in the docs: the durable contract is the tier's role, the grounding, and the memory, not a model ID that churns.
 
 ## Using them
 
