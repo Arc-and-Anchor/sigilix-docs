@@ -43,7 +43,7 @@ The block is invisible in GitHub's rendered view but readable in the raw comment
 The four domain specialists — **Logic & Architecture**, **Security**, **Performance**, **Tests** — run in parallel and are unified by the **synthesizer** that runs after them. The manifest records the role key (`logic` / `security` / `performance` / `tests` / `synthesis`) alongside each specialist's display name.
 
 <Callout type="info">
-  The manifest deliberately does **not** pin specific model IDs. Each specialist runs a model tuned to its role — a reasoning-heavy model for logic, a faster high-volume model for security — and each has a cross-provider fallback so one provider's outage can't silence a specialist. Which underlying model served a given run is an implementation detail that churns; what the manifest commits to is the durable contract (which specialist ran, whether it fell back, and the proof tier each finding earned).
+  Each specialist runs a Sigilix-tuned model matched to its role — a reasoning-heavy model for logic, a faster high-volume model for security — each with a cross-provider fallback so one provider's outage can't silence a specialist. The manifest commits to the durable contract: which specialist ran, whether it fell back, and the proof tier each finding earned.
 </Callout>
 
 ## Outcomes per specialist

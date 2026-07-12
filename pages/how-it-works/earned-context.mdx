@@ -8,7 +8,7 @@ import { FeatureCards, FeatureCard } from '@/components/FeatureCards'
 
 # Earned Context
 
-A reviewer that starts from zero every time is doing the same expensive work over and over. Sigilix doesn't. Each review leaves something behind — a verified layer of understanding about your repository — and the next review, the CLI, and the chat all build on it instead of rediscovering it.
+A reviewer that starts from zero every time is doing the same expensive work over and over. Sigilix doesn't. Each review leaves something behind — a verified layer of understanding about your repository — and the next review, the CLI, and the chat all build on it instead of rediscovering it. This is the engine that fuels Sigilix's models: verified repository context, deposited by the work and fed back in on every run, so our tuned models reason about *your* system rather than software in general.
 
 This is what makes Sigilix judge a diff in context. Before any specialist runs, Sigilix expands the change against the whole repo: who calls the function being modified, what depends on it, which symbols it touches. The diff is read against the repository, not through a keyhole.
 

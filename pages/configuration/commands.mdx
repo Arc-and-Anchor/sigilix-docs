@@ -132,7 +132,7 @@ Override the default model for this command, using a model identifier from Sigil
 Unknown model names fall back to the command's default with a single warning logged in telemetry. The review proceeds — the validation is fail-open.
 
 <Callout type="info">
-  The command-override allowlist is intentionally a different set of model identifiers from the specialist fallbacks. The specialist ensemble is internally tuned for cross-provider resilience and pins specific model versions for that purpose; command overrides expose a broader, more current selection because commands run independently of the ensemble's cross-provider failover logic.
+  The command-override allowlist is a different set of model identifiers from the specialist fallbacks. The specialist ensemble runs Sigilix-tuned models with cross-provider resilience; command overrides expose a broader, more current selection because commands run independently of the ensemble's failover logic.
 </Callout>
 
 ### What you can't override

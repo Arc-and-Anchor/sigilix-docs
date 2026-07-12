@@ -159,7 +159,7 @@ The four (or fewer, per router) domain specialists run in parallel via `Promise.
 | `performance` | Throughput-tuned primary, cross-provider fallback |
 | `tests` | Fast broad-coverage primary, cross-provider fallback |
 
-Specific model IDs are tuned over time from telemetry and intentionally not pinned in the docs. If a specialist's primary model fails (transient 503/429 or budget exhaustion), retry once. If retries are exhausted, the cross-provider fallback fires once. If the fallback also fails, that specialist's contribution is skipped.
+Each specialist runs a Sigilix-tuned model matched to its role, refined over time from telemetry. If a specialist's primary model fails (transient 503/429 or budget exhaustion), retry once. If retries are exhausted, the cross-provider fallback fires once. If the fallback also fails, that specialist's contribution is skipped.
 
 ### 10. Quorum check
 
