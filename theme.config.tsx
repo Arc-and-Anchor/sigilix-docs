@@ -3,15 +3,29 @@ import type { DocsThemeConfig } from "nextra-theme-docs";
 import { useConfig } from "nextra-theme-docs";
 import { DocsCta, DocsMain } from "@/components/DocsShell";
 
+// Sigilix brand mark — isometric S-hexagon (traced vector). Uses currentColor,
+// so it adopts the surrounding text color (white on the dark docs skin).
+const SigilMark = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 1254 1254"
+    xmlns="http://www.w3.org/2000/svg"
+    role="img"
+    aria-label="Sigilix"
+    className={className}
+  >
+    <g
+      transform="translate(0.000000,1254.000000) scale(0.100000,-0.100000)"
+      fill="currentColor"
+      stroke="none"
+    >
+      <path d="M5479 9567 c-431 -266 -944 -583 -1139 -704 -195 -121 -435 -268 -532 -328 l-178 -108 0 -759 0 -758 83 -54 c144 -95 1011 -656 1337 -866 173 -111 410 -264 525 -338 116 -75 307 -198 425 -275 179 -116 218 -138 237 -131 32 13 762 498 763 507 0 4 -26 24 -57 44 -32 20 -204 132 -383 248 -179 116 -461 298 -628 405 -166 107 -434 280 -595 384 -290 187 -631 406 -675 433 -37 23 -79 98 -97 174 -13 54 -16 100 -13 202 4 118 7 138 31 189 44 90 -24 44 917 623 639 393 775 475 788 475 21 0 523 -307 1857 -1135 533 -331 766 -475 770 -475 3 0 5 254 5 564 l0 564 -232 145 c-128 80 -321 199 -428 264 -107 66 -316 196 -465 288 -281 175 -1275 785 -1403 861 -41 24 -86 44 -101 44 -19 0 -279 -155 -812 -483z M5840 7870 c-239 -149 -438 -270 -442 -270 -26 0 7 -27 125 -101 72 -45 213 -135 312 -199 99 -64 261 -168 360 -232 452 -289 1181 -759 1493 -962 l102 -66 -1 -278 c0 -196 -4 -287 -13 -312 -11 -30 -46 -57 -252 -195 -131 -88 -462 -311 -734 -495 -272 -184 -501 -334 -510 -334 -17 0 -54 24 -840 544 -669 442 -844 557 -1150 755 -530 343 -643 415 -651 415 -5 0 -9 -253 -9 -563 l0 -563 33 -19 c121 -71 1359 -878 2189 -1427 l436 -289 684 452 c852 564 1803 1192 1885 1244 l63 40 0 725 0 725 -332 210 c-183 116 -405 257 -493 314 -88 57 -293 188 -455 291 -162 103 -533 339 -824 524 -290 185 -531 336 -535 336 -3 -1 -202 -122 -441 -270z" />
+    </g>
+  </svg>
+);
+
 const SigilixMark = () => (
   <span className="sig-docs-logo">
-    <img
-      src="/logo/sigil-favicon.png"
-      alt=""
-      aria-hidden="true"
-      width={24}
-      height={24}
-    />
+    <SigilMark className="sig-docs-mark" />
     <span className="sig-docs-logo-word">Sigilix</span>
     <span className="sig-docs-logo-kicker">Docs</span>
   </span>
