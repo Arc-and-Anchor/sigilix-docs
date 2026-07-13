@@ -84,9 +84,10 @@ body {
   color: var(--sig-text);
 }
 
-.sig-docs-logo img {
+.sig-docs-mark {
   display: block;
-  border-radius: 7px;
+  width: 24px;
+  height: 24px;
 }
 
 .sig-docs-logo-word {
